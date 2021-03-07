@@ -14,7 +14,6 @@ import '../logger.dart';
 import '../model/project_info.dart';
 import '../server_connection.dart';
 import 'main_page.dart';
-import 'style.dart';
 import 'svg_icon_button.dart';
 
 class LoginPage extends StatefulWidget {

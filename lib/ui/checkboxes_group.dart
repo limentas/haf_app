@@ -2,21 +2,20 @@ import 'package:flutter/material.dart';
 
 import '../model/field_type.dart';
 import '../utils.dart';
-import 'style.dart';
+import 'my_form_controller.dart';
 
 class CheckboxesGroup extends StatelessWidget {
-  CheckboxesGroup(this._valueTitleMap, this._labelText, this._helperText,
-      this._initialValue, this._isMandatory, this._onChanged, this._onSaved,
+  CheckboxesGroup(this._formController, this._valueTitleMap, this._initialValue,
+      this._isMandatory, this._onChanged, this._onSaved,
       {Key key})
       : super(key: key);
 
   final Map<String, String> _valueTitleMap;
-  final String _labelText;
-  final String _helperText;
   final Iterable<String> _initialValue;
   final bool _isMandatory;
   final FieldValueChange _onChanged;
   final FieldSaveValue _onSaved;
+  final MyFormController _formController;
 
   void tapItem(
       BuildContext context, FormFieldState<List<String>> state, String value) {

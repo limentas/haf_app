@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:haf_spb_app/model/empirical_evidence.dart';
 import 'package:haf_spb_app/server_connection.dart';
+import 'package:haf_spb_app/ui/my_form_controller.dart';
 import 'package:quiver/strings.dart';
 
 import '../logger.dart';
@@ -50,7 +51,7 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
   final InstrumentInstance _instrumentInstance;
   final void Function(BuildContext) _saveFunction;
   final _fieldsList = new List<InstrumentField>();
-  final _formKey = GlobalKey<FormState>();
+  final _formController = new MyFormController();
   final BranchingLogicEvaluator _branchingLogicEvaluator;
   bool _hasChanges = false;
   int _checkSecondaryIdRequestId = 0;
@@ -63,6 +64,8 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
       if (!field.isHidden && !field.isRecordId) _fieldsList.add(field);
     }
   }
+
+  WillPopCallback _willPopCallback;
 
   Future<bool> _onWillPop(BuildContext context) async {
     if (!_hasChanges) {
@@ -99,116 +102,71 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
 
   @override
   Widget build(BuildContext context) {
+    if (_willPopCallback != null)
+      ModalRoute.of(context).removeScopedWillPopCallback(_willPopCallback);
+    _willPopCallback = () => _onWillPop(context);
+    ModalRoute.of(context).addScopedWillPopCallback(_willPopCallback);
+
+    var formWidgets = new List<Widget>(_fieldsList.length + 2);
+    var index = 0;
+    for (var field in _fieldsList) {
+      var editWidget = field.fieldType.buildEditControl(context,
+          _formController, _instrumentInstance.valuesMap[field.variable],
+          onValidateStatusChanged: () {},
+          onChanged: field.isSecondaryId
+              ? (newValues) => _secondaryIdFieldValueOnChangedHandler(
+                  field, newValues, context)
+              : (newValues) =>
+                  _regularFieldValueOnChangedHandler(field, newValues),
+          onSaved: (value) => _onSavedHandler(field, value));
+      var widgetGroupList = new List<Widget>();
+      if (!isEmpty(field.question))
+        widgetGroupList.add(Padding(
+            padding: EdgeInsets.only(left: 0, bottom: 6),
+            child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(field.question,
+                    style: Theme.of(context).textTheme.subtitle2))));
+      if (!isEmpty(field.helperText))
+        widgetGroupList.add(Padding(
+            padding: EdgeInsets.only(left: 14, right: 14, bottom: 6),
+            child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(field.helperText,
+                    style: Theme.of(context).textTheme.caption))));
+      widgetGroupList.add(editWidget);
+      var combinedWidget = new Padding(
+          padding: EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            children: widgetGroupList,
+          ));
+      formWidgets[index++] = isEmpty(field.branchingLogic)
+          ? combinedWidget
+          : Visibility(
+              visible: _branchingLogicEvaluator.calculate(
+                  field.branchingLogic, _instrumentInstance),
+              child: combinedWidget);
+    }
+    formWidgets[index++] = SizedBox(height: 30);
+    formWidgets[index++] = ElevatedButton(
+        //Save button
+        onPressed: () {
+          FocusScope.of(context).unfocus(); //to unfocus text fields
+          if (!_formController.validate()) {
+            Scaffold.of(context).showSnackBar(SnackBar(
+                content: Text(
+                    'Ошибка ввода данных - ошибочные поля отмечены красным')));
+            return;
+          }
+          _formController.save();
+          _saveFunction(context); //This will change current view
+        },
+        style:
+            ButtonStyle(minimumSize: MaterialStateProperty.all(Size(150, 50))),
+        child: Text("СОХРАНИТЬ", style: Theme.of(context).textTheme.button));
     return new SliverPadding(
         padding: EdgeInsets.symmetric(vertical: 30, horizontal: 30),
-        //   sliver: SliverList(
-        //     delegate: SliverChildBuilderDelegate((context, index) {
-        //       if (_fieldsList.length <= index) return null;
-        //       var field = _fieldsList[index];
-        //       var widget = field.fieldType.buildEditControl(
-        //           context, _instrumentInstance.valuesMap[field.variable],
-        //           onValidateStatusChanged: () {},
-        //           onChanged: field.isSecondaryId
-        //               ? (newValues) => _secondaryIdFieldValueOnChangedHandler(
-        //                   field, newValues, context)
-        //               : (newValues) =>
-        //                   _regularFieldValueOnChangedHandler(field, newValues),
-        //           onSaved: (value) => _onSavedHandler(field, value));
-        //       return isEmpty(field.branchingLogic)
-        //           ? Padding(
-        //               padding: EdgeInsets.symmetric(vertical: 10), child: widget)
-        //           : Visibility(
-        //               visible: _branchingLogicEvaluator.calculate(
-        //                   field.branchingLogic, _instrumentInstance),
-        //               child: Padding(
-        //                   padding: EdgeInsets.symmetric(vertical: 10),
-        //                   child: widget));
-        //     }),
-        //   ),
-        // );
-
-        sliver: SliverToBoxAdapter(
-            child: WillPopScope(
-                onWillPop: () => _onWillPop(context),
-                child: Column(children: [
-                  Form(
-                      key: _formKey,
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        physics: new NeverScrollableScrollPhysics(),
-                        itemCount: _fieldsList.length,
-                        itemBuilder: (context, index) {
-                          var field = _fieldsList[index];
-                          var widget = field.fieldType.buildEditControl(context,
-                              _instrumentInstance.valuesMap[field.variable],
-                              onValidateStatusChanged: () {},
-                              onChanged: field.isSecondaryId
-                                  ? (newValues) =>
-                                      _secondaryIdFieldValueOnChangedHandler(
-                                          field, newValues, context)
-                                  : (newValues) =>
-                                      _regularFieldValueOnChangedHandler(
-                                          field, newValues),
-                              onSaved: (value) =>
-                                  _onSavedHandler(field, value));
-                          var widgetGroupList = new List<Widget>();
-                          if (!isEmpty(field.question))
-                            widgetGroupList.add(Padding(
-                                padding: EdgeInsets.only(left: 0, bottom: 6),
-                                child: Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(field.question,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .subtitle2))));
-                          if (!isEmpty(field.helperText))
-                            widgetGroupList.add(Padding(
-                                padding: EdgeInsets.only(
-                                    left: 14, right: 14, bottom: 6),
-                                child: Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(field.helperText,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .caption))));
-                          widgetGroupList.add(widget);
-                          return isEmpty(field.branchingLogic)
-                              ? Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 16),
-                                  child: Column(
-                                    children: widgetGroupList,
-                                  ))
-                              : Visibility(
-                                  visible: _branchingLogicEvaluator.calculate(
-                                      field.branchingLogic,
-                                      _instrumentInstance),
-                                  child: Padding(
-                                      padding:
-                                          EdgeInsets.symmetric(vertical: 10),
-                                      child: widget));
-                        },
-                      )),
-                  SizedBox(height: 30),
-                  ElevatedButton(
-                      //Save button
-                      onPressed: () {
-                        FocusScope.of(context)
-                            .unfocus(); //to unfocus text fields
-                        if (!_formKey.currentState.validate()) {
-                          Scaffold.of(context).showSnackBar(SnackBar(
-                              content: Text(
-                                  'Ошибка ввода данных - ошибочные поля отмечены красным')));
-                          return;
-                        }
-                        _formKey.currentState.save();
-                        _saveFunction(context); //This will change current view
-                      },
-                      style: ButtonStyle(
-                          minimumSize:
-                              MaterialStateProperty.all(Size(150, 50))),
-                      child: Text("СОХРАНИТЬ",
-                          style: Theme.of(context).textTheme.button)),
-                ]))));
+        sliver: SliverList(delegate: SliverChildListDelegate(formWidgets)));
   }
 
   void _onSavedHandler(InstrumentField field, Iterable<String> newValues) {

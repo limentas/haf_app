@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../ui/my_form_controller.dart';
 import '../ui/app_text_field.dart';
 import '../ui/updown_intfield.dart';
 import '../ui/datetime_field.dart';
@@ -16,7 +17,8 @@ class TextFieldType extends FieldType {
     return [defaultValue]; //ExpressionsEvaluator evaulator();
   }
 
-  Widget buildEditControl(BuildContext context, Iterable<String> initialValue,
+  Widget buildEditControl(BuildContext context, MyFormController formController,
+      Iterable<String> initialValue,
       {@required void onValidateStatusChanged(),
       @required FieldValueChange onChanged,
       @required FieldSaveValue onSaved}) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../ui/my_form_controller.dart';
 import '../ui/radio_buttons_group.dart';
 import 'code_list.dart';
 import 'field_type.dart';
@@ -16,7 +17,8 @@ class RadioFieldType extends FieldType {
 
   Iterable<String> parseDefaultValue(String defaultValue) => [defaultValue];
 
-  Widget buildEditControl(BuildContext context, Iterable<String> initialValue,
+  Widget buildEditControl(BuildContext context, MyFormController formController,
+      Iterable<String> initialValue,
       {@required void onValidateStatusChanged(),
       @required FieldValueChange onChanged,
       @required FieldSaveValue onSaved}) {

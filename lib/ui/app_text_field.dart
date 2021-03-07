@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../model/field_type.dart';
 import '../utils.dart';
-import 'style.dart';
 
 class AppTextField extends StatefulWidget {
   AppTextField(

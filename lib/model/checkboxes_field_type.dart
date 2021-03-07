@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../ui/my_form_controller.dart';
 import '../ui/checkboxes_group.dart';
 import '../utils.dart';
 import 'code_list.dart';
@@ -20,17 +21,12 @@ class CheckboxesFieldType extends FieldType {
     return defaultValue.split(',');
   }
 
-  Widget buildEditControl(BuildContext context, Iterable<String> initialValue,
+  Widget buildEditControl(BuildContext context, MyFormController formController,
+      Iterable<String> initialValue,
       {@required void onValidateStatusChanged(),
       @required FieldValueChange onChanged,
       @required FieldSaveValue onSaved}) {
-    return CheckboxesGroup(
-        codeMap,
-        instrumentField.question,
-        instrumentField.helperText,
-        initialValue,
-        instrumentField.isMandatory,
-        onChanged,
-        onSaved);
+    return CheckboxesGroup(formController, codeMap, initialValue,
+        instrumentField.isMandatory, onChanged, onSaved);
   }
 }

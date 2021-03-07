@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../ui/my_form_controller.dart';
 import 'code_list.dart';
 import 'field_type_enum.dart';
 import 'text_field_type.dart';
@@ -19,7 +20,8 @@ abstract class FieldType {
 
   String toReadableForm(Iterable<String> value);
   Iterable<String> parseDefaultValue(String defaultValue);
-  Widget buildEditControl(BuildContext context, Iterable<String> initialValue,
+  Widget buildEditControl(BuildContext context, MyFormController formController,
+      Iterable<String> initialValue,
       {@required void onValidateStatusChanged(),
       @required FieldValueChange onChanged,
       @required FieldSaveValue onSaved});
