@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../ui/my_form_controller.dart';
-import '../ui/app_text_field.dart';
-import '../ui/updown_intfield.dart';
-import '../ui/datetime_field.dart';
-import 'field_type.dart';
-import 'text_validation_type.dart';
+import '../../ui/my_form_controller.dart';
+import '../../ui/fields_controls/app_text_field.dart';
+import '../../ui/fields_controls/updown_intfield.dart';
+import '../../ui/fields_controls/datetime_field.dart';
+import '../field_type.dart';
+import '../text_validation_type.dart';
 
 class TextFieldType extends FieldType {
   TextFieldType();
@@ -17,9 +17,10 @@ class TextFieldType extends FieldType {
     return [defaultValue]; //ExpressionsEvaluator evaulator();
   }
 
+  @override
   Widget buildEditControl(BuildContext context, MyFormController formController,
       Iterable<String> initialValue,
-      {@required void onValidateStatusChanged(),
+      {@required ValidateStatusChange onValidateStatusChanged,
       @required FieldValueChange onChanged,
       @required FieldSaveValue onSaved}) {
     var normalizedInitialValue = initialValue == null || initialValue.isEmpty
@@ -27,18 +28,19 @@ class TextFieldType extends FieldType {
         : initialValue.first;
     switch (instrumentField.textValidationType) {
       case TextValidationType.Int:
-        return UpDownIntField(instrumentField.question,
-            instrumentField.helperText, onChanged, onSaved,
+        return UpDownIntField(
+            formController, onValidateStatusChanged, onChanged, onSaved,
             initialValue: normalizedInitialValue,
+            isMandatory: instrumentField.isMandatory,
             minValue: instrumentField.minValue,
             maxValue: instrumentField.maxValue);
       case TextValidationType.Float:
-        return createTextField(context, normalizedInitialValue,
+        return createTextField(context, formController, normalizedInitialValue,
             onValidateStatusChanged, onChanged, onSaved,
             inputType:
                 TextInputType.numberWithOptions(signed: true, decimal: true));
       case TextValidationType.Number:
-        return createTextField(context, normalizedInitialValue,
+        return createTextField(context, formController, normalizedInitialValue,
             onValidateStatusChanged, onChanged, onSaved,
             inputType:
                 TextInputType.numberWithOptions(signed: true, decimal: true));
@@ -46,9 +48,11 @@ class TextFieldType extends FieldType {
       case TextValidationType.DateMdy:
       case TextValidationType.DateYmd:
         return DatetimeField(
+            formController,
             instrumentField,
             dateTimeFormatForDisplay(instrumentField.textValidationType),
             normalizedInitialValue,
+            onValidateStatusChanged,
             onChanged,
             onSaved);
       case TextValidationType.DateTimeDmyhm:
@@ -58,31 +62,35 @@ class TextFieldType extends FieldType {
       case TextValidationType.DateTimeMdyhms:
       case TextValidationType.DateTimeYmdhms:
         return DatetimeField(
+            formController,
             instrumentField,
             dateTimeFormatForDisplay(instrumentField.textValidationType),
             normalizedInitialValue,
+            onValidateStatusChanged,
             onChanged,
             onSaved,
             selectTime: true);
       case TextValidationType.Time:
         return DatetimeField(
+            formController,
             instrumentField,
             dateTimeFormatForDisplay(instrumentField.textValidationType),
             normalizedInitialValue,
+            onValidateStatusChanged,
             onChanged,
             onSaved,
             selectDate: false,
             selectTime: true);
       case TextValidationType.Phone:
-        return createTextField(context, normalizedInitialValue,
+        return createTextField(context, formController, normalizedInitialValue,
             onValidateStatusChanged, onChanged, onSaved,
             inputType: TextInputType.phone);
       case TextValidationType.Zipcode:
-        return createTextField(context, normalizedInitialValue,
+        return createTextField(context, formController, normalizedInitialValue,
             onValidateStatusChanged, onChanged, onSaved,
             inputType: TextInputType.number);
       case TextValidationType.Email:
-        return createTextField(context, normalizedInitialValue,
+        return createTextField(context, formController, normalizedInitialValue,
             onValidateStatusChanged, onChanged, onSaved,
             inputType: TextInputType.emailAddress);
       case TextValidationType.Signature:
@@ -90,8 +98,13 @@ class TextFieldType extends FieldType {
       default:
         if (instrumentField.textValidationType == null) {
           //text field without validation
-          return createTextField(context, normalizedInitialValue,
-              onValidateStatusChanged, onChanged, onSaved);
+          return createTextField(
+              context,
+              formController,
+              normalizedInitialValue,
+              onValidateStatusChanged,
+              onChanged,
+              onSaved);
         } else {
           throw new ArgumentError.value(instrumentField.textValidationType);
         }
@@ -100,18 +113,19 @@ class TextFieldType extends FieldType {
 
   Widget createTextField(
       BuildContext context,
+      MyFormController formController,
       String initialValue,
-      void onValidateStatusChanged(),
+      ValidateStatusChange onValidateStatusChanged,
       FieldValueChange onChanged,
       FieldSaveValue onSaved,
       {TextInputType inputType}) {
     return AppTextField(
-        instrumentField.question,
-        instrumentField.helperText,
+        formController,
         initialValue,
         inputType,
         instrumentField.isMandatory,
         instrumentField.isSecondaryId,
+        onValidateStatusChanged,
         onChanged,
         onSaved);
   }

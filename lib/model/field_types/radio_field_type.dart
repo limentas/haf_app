@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../ui/my_form_controller.dart';
-import '../ui/radio_buttons_group.dart';
-import 'code_list.dart';
-import 'field_type.dart';
+import '../../ui/my_form_controller.dart';
+import '../../ui/fields_controls/radio_buttons_group.dart';
+import '../code_list.dart';
+import '../field_type.dart';
 
 class RadioFieldType extends FieldType {
   final CodeList codeList;
@@ -17,19 +17,20 @@ class RadioFieldType extends FieldType {
 
   Iterable<String> parseDefaultValue(String defaultValue) => [defaultValue];
 
+  @override
   Widget buildEditControl(BuildContext context, MyFormController formController,
       Iterable<String> initialValue,
-      {@required void onValidateStatusChanged(),
+      {@required ValidateStatusChange onValidateStatusChanged,
       @required FieldValueChange onChanged,
       @required FieldSaveValue onSaved}) {
     return RadioButtonsGroup(
+        formController,
         codeList.codeListItems,
-        instrumentField.question,
-        instrumentField.helperText,
         initialValue == null || initialValue.isEmpty
             ? null
             : initialValue.first,
         instrumentField.isMandatory,
+        onValidateStatusChanged,
         onChanged,
         onSaved);
   }

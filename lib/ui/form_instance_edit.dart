@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -55,6 +56,7 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
   final BranchingLogicEvaluator _branchingLogicEvaluator;
   bool _hasChanges = false;
   int _checkSecondaryIdRequestId = 0;
+  final _errorVariables = new HashSet<String>();
 
   @override
   void initState() {
@@ -112,7 +114,14 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
     for (var field in _fieldsList) {
       var editWidget = field.fieldType.buildEditControl(context,
           _formController, _instrumentInstance.valuesMap[field.variable],
-          onValidateStatusChanged: () {},
+          onValidateStatusChanged: (errorMessage) {
+            setState(() {
+              if (isEmpty(errorMessage))
+                _errorVariables.remove(field.variable);
+              else
+                _errorVariables.add(field.variable);
+            });
+          },
           onChanged: field.isSecondaryId
               ? (newValues) => _secondaryIdFieldValueOnChangedHandler(
                   field, newValues, context)
@@ -136,10 +145,18 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
                     style: Theme.of(context).textTheme.caption))));
       widgetGroupList.add(editWidget);
       var combinedWidget = new Padding(
-          padding: EdgeInsets.symmetric(vertical: 16),
-          child: Column(
-            children: widgetGroupList,
-          ));
+          padding: EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+          child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              decoration: ShapeDecoration(
+                  shape: Border(
+                      left: _errorVariables.contains(field.variable)
+                          ? BorderSide(
+                              width: 3, color: Theme.of(context).errorColor)
+                          : BorderSide.none)),
+              child: Column(
+                children: widgetGroupList,
+              )));
       formWidgets[index++] = isEmpty(field.branchingLogic)
           ? combinedWidget
           : Visibility(
@@ -165,7 +182,7 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
             ButtonStyle(minimumSize: MaterialStateProperty.all(Size(150, 50))),
         child: Text("СОХРАНИТЬ", style: Theme.of(context).textTheme.button));
     return new SliverPadding(
-        padding: EdgeInsets.symmetric(vertical: 30, horizontal: 30),
+        padding: EdgeInsets.symmetric(vertical: 30, horizontal: 2),
         sliver: SliverList(delegate: SliverChildListDelegate(formWidgets)));
   }
 
@@ -180,7 +197,6 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
     //If we have some dependent variables then we need to call setState
     //to update UI state
     if (field.hasDependentVariables) {
-      logger.d("Setting state");
       setState(() {
         _instrumentInstance.valuesMap.removeAll(field.variable);
         if (newValues != null && newValues.isNotEmpty)

@@ -3,13 +3,15 @@ import 'package:flutter/material.dart';
 import '../ui/my_form_controller.dart';
 import 'code_list.dart';
 import 'field_type_enum.dart';
-import 'text_field_type.dart';
+import 'field_types/text_field_type.dart';
 import 'instrument_field.dart';
-import 'combobox_field_type.dart';
-import 'radio_field_type.dart';
-import 'switch_field_type.dart';
-import 'checkboxes_field_type.dart';
+import 'field_types/combobox_field_type.dart';
+import 'field_types/radio_field_type.dart';
+import 'field_types/switch_field_type.dart';
+import 'field_types/checkboxes_field_type.dart';
 
+//error = null if validation successfull
+typedef ValidateStatusChange = void Function(String error);
 typedef FieldValueChange = void Function(Iterable<String> newValue);
 typedef FieldSaveValue = void Function(Iterable<String> newValue);
 
@@ -22,7 +24,7 @@ abstract class FieldType {
   Iterable<String> parseDefaultValue(String defaultValue);
   Widget buildEditControl(BuildContext context, MyFormController formController,
       Iterable<String> initialValue,
-      {@required void onValidateStatusChanged(),
+      {@required ValidateStatusChange onValidateStatusChanged,
       @required FieldValueChange onChanged,
       @required FieldSaveValue onSaved});
 

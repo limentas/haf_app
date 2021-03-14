@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import 'code_list.dart';
-import 'field_type.dart';
-import '../ui/tristate_switch.dart';
-import '../ui/my_form_controller.dart';
+import '../code_list.dart';
+import '../field_type.dart';
+import '../../ui/fields_controls/tristate_switch.dart';
+import '../../ui/my_form_controller.dart';
 
 enum SwitchFieldTypeEnum { YesNo, TrueFalse }
 
@@ -20,18 +20,14 @@ class SwitchFieldType extends FieldType {
 
   Iterable<String> parseDefaultValue(String defaultValue) => [defaultValue];
 
+  @override
   Widget buildEditControl(BuildContext context, MyFormController formController,
       Iterable<String> initialValue,
-      {@required void onValidateStatusChanged(),
+      {@required ValidateStatusChange onValidateStatusChanged,
       @required FieldValueChange onChanged,
       @required FieldSaveValue onSaved}) {
-    return TristateSwitch(
-        _type,
-        instrumentField.question,
-        instrumentField.helperText,
-        instrumentField.isMandatory,
-        onChanged,
-        onSaved,
+    return TristateSwitch(_type, formController, instrumentField.isMandatory,
+        onValidateStatusChanged, onChanged, onSaved,
         initialValue: initialValue == null ||
                 initialValue.isEmpty ||
                 initialValue.first.isEmpty
