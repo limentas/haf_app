@@ -70,6 +70,9 @@ class _DatetimeFieldState extends State<DatetimeField>
     if (initialValue != null && initialValue.isNotEmpty) {
       try {
         _selectedDateTime = DateFormat(_dbFormat).parse(initialValue);
+        _selectedValueDbFormat = _selectedDateTime != null
+            ? DateFormat(_dbFormat).format(_selectedDateTime)
+            : null;
       } on FormatException {
         _selectedDateTime = null;
       }

@@ -10,7 +10,6 @@ import '../server_connection.dart';
 import '../model/project_info.dart';
 import 'client_page.dart';
 import 'new_client_page.dart';
-import 'style.dart';
 
 class MainPage extends StatefulWidget {
   MainPage(this._connection, this._projectInfo, {Key key}) : super(key: key);
@@ -30,7 +29,7 @@ class _MainPageState extends State<MainPage> {
   final ServerConnection _connection;
   final ProjectInfo _projectInfo;
   final _clientIdTextFieldController =
-      TextEditingController(text: "ром17нат1277"); //TODO: clear
+      TextEditingController(text: ""); //ром17нат1277
 
   bool _showBusyIndicator = false;
 

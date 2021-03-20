@@ -158,15 +158,19 @@ class _UpDownIntFieldState extends State<UpDownIntField>
                   OutlinedButton(
                       onPressed: () {
                         FocusScope.of(context).unfocus();
-                        if (currentValue == _minValue) return;
-                        currentValue -= 10;
+                        var current = currentValue;
+                        if (current == _minValue) return;
+                        if (current == null) current = 0;
+                        currentValue = current - 10;
                       },
                       child: Text("‒10", style: buttonTextStyle)),
                   OutlinedButton(
                       onPressed: () {
                         FocusScope.of(context).unfocus();
+                        var current = currentValue;
                         if (currentValue == _minValue) return;
-                        --currentValue;
+                        if (current == null) current = 0;
+                        currentValue = current - 1;
                       },
                       child: Text("‒1", style: buttonTextStyle)),
                   SizedBox(width: 30),
@@ -189,15 +193,19 @@ class _UpDownIntFieldState extends State<UpDownIntField>
                   OutlinedButton(
                       onPressed: () {
                         FocusScope.of(context).unfocus();
+                        var current = currentValue;
                         if (currentValue == _maxValue) return;
-                        ++currentValue;
+                        if (current == null) current = 0;
+                        currentValue = current + 1;
                       },
                       child: Text("+1", style: buttonTextStyle)),
                   OutlinedButton(
                       onPressed: () {
                         FocusScope.of(context).unfocus();
+                        var current = currentValue;
                         if (currentValue == _maxValue) return;
-                        currentValue += 10;
+                        if (current == null) current = 0;
+                        currentValue = current + 10;
                       },
                       child: Text("+10", style: buttonTextStyle)),
                 ]))));

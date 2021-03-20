@@ -10,9 +10,11 @@ import '../text_validation_type.dart';
 class TextFieldType extends FieldType {
   TextFieldType();
 
+  @override
   String toReadableForm(Iterable<String> value) =>
       value.isEmpty ? "" : value.first;
 
+  @override
   Iterable<String> parseDefaultValue(String defaultValue) {
     return [defaultValue]; //ExpressionsEvaluator evaulator();
   }

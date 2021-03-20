@@ -13,11 +13,13 @@ class SwitchFieldType extends FieldType {
 
   SwitchFieldType(this._type, this._codeList);
 
+  @override
   String toReadableForm(Iterable<String> value) {
     if (value.isEmpty) return "";
     return _codeList.codeListItems[value.first] ?? value.first;
   }
 
+  @override
   Iterable<String> parseDefaultValue(String defaultValue) => [defaultValue];
 
   @override

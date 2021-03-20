@@ -10,11 +10,13 @@ class RadioFieldType extends FieldType {
 
   RadioFieldType(this.codeList);
 
+  @override
   String toReadableForm(Iterable<String> value) {
     if (value.isEmpty) return "";
     return codeList.codeListItems[value.first] ?? value.first;
   }
 
+  @override
   Iterable<String> parseDefaultValue(String defaultValue) => [defaultValue];
 
   @override

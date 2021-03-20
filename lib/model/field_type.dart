@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:haf_spb_app/model/field_types/slider_field_type.dart';
 
 import '../ui/my_form_controller.dart';
 import 'code_list.dart';
@@ -46,10 +47,11 @@ abstract class FieldType {
         return SwitchFieldType(SwitchFieldTypeEnum.YesNo, codeLists.first);
       case FieldTypeEnum.TrueFalse:
         return SwitchFieldType(SwitchFieldTypeEnum.TrueFalse, codeLists.first);
-      case FieldTypeEnum.File:
       case FieldTypeEnum.Slider:
+        return SliderFieldType();
+      case FieldTypeEnum.File:
       case FieldTypeEnum.DescriptiveText:
-        return null; //TODO: add Slider
+        return null;
     }
     throw ArgumentError.value(type, "type",
         "Unsupported FieldTypeEnum value in function FieldType.create");

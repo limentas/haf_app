@@ -279,11 +279,6 @@ class ServerConnection {
         return null;
       }
       var recordsJsonList = recordsListRaw as List;
-      if (recordsJsonList.isEmpty) {
-        logger
-            .e("Error occured during retrieving client info. Data: $jsonData");
-        return null;
-      }
       return recordsJsonList.map((e) => RedcapRecord.fromJson(e)).toList();
     } on FormatException catch (e) {
       logger.e("Json format exception", e);
