@@ -6,11 +6,17 @@ import 'form_instance_details_page.dart';
 import '../model/instrument_field.dart';
 import '../model/instrument_info.dart';
 import '../model/instrument_instance.dart';
+import '../model/client_info.dart';
+import '../model/project_info.dart';
 
 class ClientRepeatFormTab extends StatelessWidget {
-  ClientRepeatFormTab(this._instrumentInfo, this._formInstances, {Key key})
+  ClientRepeatFormTab(this._projectInfo, this._clientInfo, this._instrumentInfo,
+      this._formInstances,
+      {Key key})
       : super(key: key);
 
+  final ProjectInfo _projectInfo;
+  final ClientInfo _clientInfo;
   final List<InstrumentInstance> _formInstances;
   final InstrumentInfo _instrumentInfo;
   final _keyTextStyle = new TextStyle(color: Colors.grey[700], fontSize: 16);
@@ -59,6 +65,8 @@ class ClientRepeatFormTab extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                         builder: (context) => FormInstanceDetailsPage(
+                            _projectInfo,
+                            _clientInfo,
                             _instrumentInfo,
                             instance.valuesMap,
                             instance.number),

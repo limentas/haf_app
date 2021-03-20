@@ -100,10 +100,13 @@ class _ClientPageState extends State<ClientPage>
     for (var instrument in _projectInfo.instrumentsByName.values) {
       var page = instrument.isRepeating
           ? ClientRepeatFormTab(
+              _projectInfo,
+              _clientInfo,
               instrument,
               _clientInfo.repeatInstruments[instrument.formNameId].values
                   .toList())
-          : FormInstanceDetails(instrument, _clientInfo.valuesMap);
+          : FormInstanceDetails(
+              _projectInfo, _clientInfo, instrument, _clientInfo.valuesMap);
 
       _pages.add(page);
     }

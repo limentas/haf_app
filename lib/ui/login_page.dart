@@ -237,6 +237,8 @@ class _LoginPageState extends State<LoginPage> {
         });
       }
 
+      var locationFuture = Location.init();
+
       setState(() {
         _showBusyIndicator = true;
         _busyMessage = "Получаем данные...";
@@ -252,13 +254,13 @@ class _LoginPageState extends State<LoginPage> {
         return;
       }
 
-      Location.init().then((v) {
-        if (Location.inited)
-          logger.i("Location: ${Location.latitude}:${Location.longitude}" +
-              ":${Location.altitude}");
-      });
-
       await Storage.init();
+
+      await locationFuture;
+
+      if (Location.inited)
+        logger.i("Location: ${Location.latitude}:${Location.longitude}" +
+            ":${Location.altitude}");
 
       Navigator.push(
         context,

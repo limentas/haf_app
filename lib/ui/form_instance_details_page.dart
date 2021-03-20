@@ -3,13 +3,17 @@ import 'package:quiver/collection.dart';
 
 import 'form_instance_details.dart';
 import '../model/instrument_info.dart';
+import '../model/client_info.dart';
+import '../model/project_info.dart';
 
 class FormInstanceDetailsPage extends StatelessWidget {
-  FormInstanceDetailsPage(
+  FormInstanceDetailsPage(this._projectInfo, this._clientInfo,
       this._instrumentInfo, this._values, this._instanceNumber,
       {Key key})
       : super(key: key);
 
+  final ProjectInfo _projectInfo;
+  final ClientInfo _clientInfo;
   final InstrumentInfo _instrumentInfo;
   final ListMultimap<String, String> _values;
   final int _instanceNumber;
@@ -69,7 +73,8 @@ class FormInstanceDetailsPage extends StatelessWidget {
                         handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
                             context),
                       ),
-                      FormInstanceDetails(_instrumentInfo, _values),
+                      FormInstanceDetails(
+                          _projectInfo, _clientInfo, _instrumentInfo, _values),
                     ],
                   );
                 },

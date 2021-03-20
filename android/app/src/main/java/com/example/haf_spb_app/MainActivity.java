@@ -1,4 +1,4 @@
-package com.example.haf_spb_app;
+package dev.slebe.haf_app;
 
 import io.flutter.embedding.android.FlutterActivity;
 

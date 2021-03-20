@@ -40,14 +40,18 @@ class FormInstanceEdit extends StatefulWidget {
 }
 
 class _FormInstanceEditState extends State<FormInstanceEdit> {
-  _FormInstanceEditState(this._connection, this._projectInfo, this._clientInfo,
-      this._instrumentInfo, this._instrumentInstance, this._saveFunction)
+  _FormInstanceEditState(
+      this._connection,
+      this._projectInfo,
+      ClientInfo clientInfo,
+      this._instrumentInfo,
+      this._instrumentInstance,
+      this._saveFunction)
       : _branchingLogicEvaluator =
-            BranchingLogicEvaluator(_projectInfo, _clientInfo);
+            BranchingLogicEvaluator(_projectInfo, clientInfo);
 
   final ServerConnection _connection;
   final ProjectInfo _projectInfo;
-  final ClientInfo _clientInfo;
   final InstrumentInfo _instrumentInfo;
   final InstrumentInstance _instrumentInstance;
   final void Function(BuildContext) _saveFunction;
@@ -109,63 +113,15 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
     _willPopCallback = () => _onWillPop(context);
     ModalRoute.of(context).addScopedWillPopCallback(_willPopCallback);
 
-    var formWidgets = new List<Widget>(_fieldsList.length + 2);
-    var index = 0;
+    var formWidgets = new List<Widget>();
     for (var field in _fieldsList) {
-      var editWidget = field.fieldType.buildEditControl(context,
-          _formController, _instrumentInstance.valuesMap[field.variable],
-          onValidateStatusChanged: (errorMessage) {
-            setState(() {
-              if (isEmpty(errorMessage))
-                _errorVariables.remove(field.variable);
-              else
-                _errorVariables.add(field.variable);
-            });
-          },
-          onChanged: field.isSecondaryId
-              ? (newValues) => _secondaryIdFieldValueOnChangedHandler(
-                  field, newValues, context)
-              : (newValues) =>
-                  _regularFieldValueOnChangedHandler(field, newValues),
-          onSaved: (value) => _onSavedHandler(field, value));
-      var widgetGroupList = new List<Widget>();
-      if (!isEmpty(field.question))
-        widgetGroupList.add(Padding(
-            padding: EdgeInsets.only(left: 0, bottom: 6),
-            child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(field.question,
-                    style: Theme.of(context).textTheme.subtitle2))));
-      if (!isEmpty(field.helperText))
-        widgetGroupList.add(Padding(
-            padding: EdgeInsets.only(left: 14, right: 14, bottom: 6),
-            child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(field.helperText,
-                    style: Theme.of(context).textTheme.caption))));
-      widgetGroupList.add(editWidget);
-      var combinedWidget = new Padding(
-          padding: EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-          child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 12),
-              decoration: ShapeDecoration(
-                  shape: Border(
-                      left: _errorVariables.contains(field.variable)
-                          ? BorderSide(
-                              width: 3, color: Theme.of(context).errorColor)
-                          : BorderSide.none)),
-              child: Column(
-                children: widgetGroupList,
-              )));
-      formWidgets[index++] = isEmpty(field.branchingLogic)
-          ? combinedWidget
-          : Visibility(
-              visible: _branchingLogicEvaluator.calculate(
-                  field.branchingLogic, _instrumentInstance),
-              child: combinedWidget);
+      if (isNotEmpty(field.sectionName)) {
+        formWidgets.add(createSectionTitleWidget(context, field));
+      }
+      formWidgets.add(createEditWidgetGroup(context, field));
     }
-    formWidgets[index++] = SizedBox(height: 30);
-    formWidgets[index++] = ElevatedButton(
+    formWidgets.add(SizedBox(height: 30));
+    formWidgets.add(ElevatedButton(
         //Save button
         onPressed: () {
           FocusScope.of(context).unfocus(); //to unfocus text fields
@@ -180,7 +136,7 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
         },
         style:
             ButtonStyle(minimumSize: MaterialStateProperty.all(Size(150, 50))),
-        child: Text("СОХРАНИТЬ", style: Theme.of(context).textTheme.button));
+        child: Text("СОХРАНИТЬ", style: Theme.of(context).textTheme.button)));
     return new SliverPadding(
         padding: EdgeInsets.symmetric(vertical: 30, horizontal: 2),
         sliver: SliverList(delegate: SliverChildListDelegate(formWidgets)));
@@ -277,5 +233,88 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
     } on SocketException catch (e) {
       logger.e("NewClientPage: caught SocketException", e);
     }
+  }
+
+  Widget createEditWidgetGroup(BuildContext context, InstrumentField field) {
+    var editWidget = field.fieldType.buildEditControl(
+        context, _formController, _instrumentInstance.valuesMap[field.variable],
+        onValidateStatusChanged: (errorMessage) {
+          setState(() {
+            if (isEmpty(errorMessage))
+              _errorVariables.remove(field.variable);
+            else
+              _errorVariables.add(field.variable);
+          });
+        },
+        onChanged: field.isSecondaryId
+            ? (newValues) => _secondaryIdFieldValueOnChangedHandler(
+                field, newValues, context)
+            : (newValues) =>
+                _regularFieldValueOnChangedHandler(field, newValues),
+        onSaved: (value) => _onSavedHandler(field, value));
+    var widgetGroupList = new List<Widget>();
+    if (!isEmpty(field.question))
+      widgetGroupList.add(Padding(
+          padding: const EdgeInsets.only(left: 0, bottom: 6),
+          child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(field.question,
+                  style: Theme.of(context).textTheme.subtitle2))));
+    if (!isEmpty(field.helperText))
+      widgetGroupList.add(Padding(
+          padding: const EdgeInsets.only(left: 14, right: 14, bottom: 6),
+          child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(field.helperText,
+                  style: Theme.of(context).textTheme.caption))));
+    widgetGroupList.add(editWidget);
+    var combinedWidget = new Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+        child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: ShapeDecoration(
+                shape: Border(
+                    left: _errorVariables.contains(field.variable)
+                        ? BorderSide(
+                            width: 3, color: Theme.of(context).errorColor)
+                        : BorderSide.none)),
+            child: Column(
+              children: widgetGroupList,
+            )));
+
+    return isEmpty(field.branchingLogic)
+        ? combinedWidget
+        : Visibility(
+            visible: _branchingLogicEvaluator.calculate(
+                field.branchingLogic, _instrumentInstance),
+            child: combinedWidget);
+  }
+
+  Widget createSectionTitleWidget(BuildContext context, InstrumentField field) {
+    var titleWidget = Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.black.withAlpha(0x0C),
+            border: const Border.symmetric(
+                horizontal: BorderSide(
+              color: Colors.black54,
+              width: 2,
+            )),
+          ),
+          child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Align(
+                  alignment: Alignment.center,
+                  child: Text(field.sectionName,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.headline6))),
+        ));
+    return isEmpty(field.branchingLogic)
+        ? titleWidget
+        : Visibility(
+            visible: _branchingLogicEvaluator.calculate(
+                field.branchingLogic, _instrumentInstance),
+            child: titleWidget);
   }
 }
