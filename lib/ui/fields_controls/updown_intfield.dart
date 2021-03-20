@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../logger.dart';
 import '../../model/field_type.dart';
 import '../../utils.dart';
 import '../my_form_controller.dart';

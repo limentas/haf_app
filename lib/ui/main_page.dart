@@ -12,24 +12,27 @@ import 'client_page.dart';
 import 'new_client_page.dart';
 
 class MainPage extends StatefulWidget {
-  MainPage(this._connection, this._projectInfo, {Key key}) : super(key: key);
+  MainPage(this._connection, this._projectInfo, this._appVersion, {Key key})
+      : super(key: key);
 
   final ServerConnection _connection;
   final ProjectInfo _projectInfo;
+  final String _appVersion;
 
   @override
   _MainPageState createState() {
-    return _MainPageState(_connection, _projectInfo);
+    return _MainPageState(_connection, _projectInfo, _appVersion);
   }
 }
 
 class _MainPageState extends State<MainPage> {
-  _MainPageState(this._connection, this._projectInfo);
+  _MainPageState(this._connection, this._projectInfo, this._appVersion);
 
   final ServerConnection _connection;
   final ProjectInfo _projectInfo;
   final _clientIdTextFieldController =
       TextEditingController(text: ""); //ром17нат1277
+  final String _appVersion;
 
   bool _showBusyIndicator = false;
 
@@ -55,64 +58,75 @@ class _MainPageState extends State<MainPage> {
                   iconSize: 40,
                   onPressed: () => Navigator.pop(context))
             ]),
-        body: SingleChildScrollView(
-            child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 30),
-          child: ElevatedButtonTheme(
-              data: ElevatedButtonThemeData(
-                  style: ButtonStyle(
-                      padding: MaterialStateProperty.all(
-                          EdgeInsets.symmetric(horizontal: 40, vertical: 15)))),
-              child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 60),
-                    ElevatedButton(
-                      child: Text('СКАНИРОВАТЬ КОД',
-                          style: Theme.of(context).textTheme.button),
-                      onPressed: () {},
-                    ),
-                    const SizedBox(height: 50),
-                    TextFormField(
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                      decoration: InputDecoration(
-                          border: OutlineInputBorder(),
-                          labelText: 'Идентификатор участника',
-                          errorMaxLines: 3),
-                      validator: Utils.clientIdValidator,
-                      controller: _clientIdTextFieldController,
-                    ),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      child: Text('НАЙТИ',
-                          style: Theme.of(context).textTheme.button),
-                      onPressed: () {
-                        FocusScope.of(context).unfocus(); //to unfocus id field
-                        findClient(_clientIdTextFieldController.text, context);
-                      },
-                    ),
-                    const SizedBox(height: 50),
-                    ElevatedButton(
-                      child: Text('СОЗДАТЬ НОВОГО',
-                          style: Theme.of(context).textTheme.button),
-                      onPressed: () {
-                        FocusScope.of(context).unfocus(); //to unfocus id field
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  NewClientPage(_connection, _projectInfo),
-                            ));
-                      },
-                    ),
-                    const SizedBox(height: 40),
-                    Visibility(
-                        visible: _showBusyIndicator,
-                        child: SpinKitCircle(
-                            size: 100, color: Theme.of(context).primaryColor)),
-                  ])),
-        )));
+        body: Stack(children: [
+          SingleChildScrollView(
+              child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 30),
+            child: ElevatedButtonTheme(
+                data: ElevatedButtonThemeData(
+                    style: ButtonStyle(
+                        padding: MaterialStateProperty.all(EdgeInsets.symmetric(
+                            horizontal: 40, vertical: 15)))),
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const SizedBox(height: 60),
+                      ElevatedButton(
+                        child: Text('СКАНИРОВАТЬ КОД',
+                            style: Theme.of(context).textTheme.button),
+                        onPressed: () {},
+                      ),
+                      const SizedBox(height: 50),
+                      TextFormField(
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            labelText: 'Идентификатор участника',
+                            errorMaxLines: 3),
+                        validator: Utils.clientIdValidator,
+                        controller: _clientIdTextFieldController,
+                      ),
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        child: Text('НАЙТИ',
+                            style: Theme.of(context).textTheme.button),
+                        onPressed: () {
+                          FocusScope.of(context)
+                              .unfocus(); //to unfocus id field
+                          findClient(
+                              _clientIdTextFieldController.text, context);
+                        },
+                      ),
+                      const SizedBox(height: 50),
+                      ElevatedButton(
+                        child: Text('СОЗДАТЬ НОВОГО',
+                            style: Theme.of(context).textTheme.button),
+                        onPressed: () {
+                          FocusScope.of(context)
+                              .unfocus(); //to unfocus id field
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    NewClientPage(_connection, _projectInfo),
+                              ));
+                        },
+                      ),
+                      const SizedBox(height: 40),
+                      Visibility(
+                          visible: _showBusyIndicator,
+                          child: SpinKitCircle(
+                              size: 100,
+                              color: Theme.of(context).primaryColor)),
+                    ])),
+          )),
+          Container(
+              alignment: Alignment.bottomRight,
+              padding: EdgeInsets.all(10),
+              child:
+                  Text(_appVersion, style: Theme.of(context).textTheme.caption))
+        ]));
   }
 
   Future<void> findClient(String clientId, BuildContext context) async {

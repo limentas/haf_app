@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../logger.dart';
 import '../../model/field_type.dart';
 import '../../model/field_types/switch_field_type.dart';
 import '../../utils.dart';
