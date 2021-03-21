@@ -1,5 +1,6 @@
 import "package:intl/intl.dart";
 
+import '../user_info.dart';
 import 'field_type_enum.dart';
 import 'instrument_field.dart';
 import 'fields_group.dart';
@@ -69,7 +70,11 @@ class InstrumentInfo {
       } else if (field.annotation != null &&
           field.annotation.contains("@USERNAME") &&
           field.fieldTypeEnum == FieldTypeEnum.Text) {
-        valueToInsert = ["username"]; //TODO: username
+        valueToInsert = [UserInfo.userName];
+      } else if (field.annotation != null &&
+          field.annotation.contains("@APPUSERNAME-APP") &&
+          field.fieldTypeEnum == FieldTypeEnum.Text) {
+        valueToInsert = [UserInfo.deviceName];
       } else if (field.annotation != null &&
           field.annotation.contains("@LATITUDE") &&
           field.fieldTypeEnum == FieldTypeEnum.Text) {

@@ -2,6 +2,7 @@ import 'package:haf_spb_app/model/field_type_enum.dart';
 import 'package:haf_spb_app/model/instrument_instance.dart';
 import 'package:haf_spb_app/model/project_info.dart';
 import 'package:petitparser/petitparser.dart';
+import 'package:quiver/strings.dart';
 
 import '../model/client_info.dart';
 import '../logger.dart';
@@ -73,6 +74,7 @@ class BranchingLogicEvaluator {
   }
 
   bool calculate(String expression, InstrumentInstance currentInstance) {
+    if (isEmpty(expression)) return true;
     _currentInstance = currentInstance;
     var result = _branchingLogicParser.parse(expression);
     if (result.isFailure) {

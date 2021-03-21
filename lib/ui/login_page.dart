@@ -7,10 +7,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:haf_spb_app/model/empirical_evidence.dart';
 import 'package:package_info/package_info.dart';
 
 import '../storage.dart';
 import '../location.dart';
+import '../user_info.dart';
 import '../logger.dart';
 import '../model/project_info.dart';
 import '../server_connection.dart';
@@ -29,10 +31,14 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _tokenTextFieldController =
       TextEditingController(text: "--------------------------------");
+  final _userTextFieldController = TextEditingController(text: "");
   final _tokenRegExp = RegExp(r'^(\d|[a-f]|[A-F]){32}$');
   final _tokenStorageKey = "API_TOKEN";
   final _fillCharacter = '-';
+  final _userNameRegExp =
+      RegExp(r'^[А-Я][а-я]*(-[А-Я][а-я]*)? [А-Я][а-я]*(-[А-Я][а-я]*)?$');
   final ServerConnection _connection = new ServerConnection();
+  final _focusNode = new FocusNode();
   String _apiTokenFromStore;
   String _apiTokenFromStoreShadowed;
   String _tokenValidateError;
@@ -42,6 +48,8 @@ class _LoginPageState extends State<LoginPage> {
   String _busyMessage = '';
   String _lastOnChangedText = '';
   String _appVersion = "";
+  String _deviceName = "";
+  String _userNameError;
 
   int get tokenToShowLinesCount => _tokenToShowLinesCount;
   set tokenToShowLinesCount(value) {
@@ -60,6 +68,10 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   ProjectInfo _projectInfo;
+
+  void _focusListener() {
+    setState(() {});
+  }
 
   @override
   void initState() {
@@ -80,14 +92,34 @@ class _LoginPageState extends State<LoginPage> {
         logger.i("There is no stored token");
       }
     });
+
     PackageInfo.fromPlatform().then((value) => setState(() {
           _appVersion = "v${value.version}(${value.buildNumber})";
         }));
+
+    UserInfo.init().then((value) => setState(() {
+          _deviceName = UserInfo.deviceName;
+        }));
+
+    _focusNode.addListener(_focusListener);
+
+    Storage.init().then((val) {
+      final userName = Storage.getDefaultValue(
+          EmpiricalEvidence.fellowWorkerUnifiedVariable);
+      if (userName.isNotEmpty) {
+        UserInfo.userName = userName.first;
+
+        if (UserInfo.userName != null)
+          _userTextFieldController.text = UserInfo.userName;
+      }
+    });
   }
 
   @override
   void dispose() {
+    _focusNode.removeListener(_focusListener);
     _tokenTextFieldController.dispose();
+    _userTextFieldController.dispose();
     super.dispose();
   }
 
@@ -101,108 +133,155 @@ class _LoginPageState extends State<LoginPage> {
         drawer: null,
         body: Stack(children: [
           SingleChildScrollView(
-              child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                SizedBox(height: screenSize.height / 4),
-                Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 30),
-                    child: Row(mainAxisSize: MainAxisSize.min, children: [
-                      Expanded(
-                          child: TextField(
-                              style: TextStyle(
-                                  fontSize: 22,
-                                  letterSpacing: 2,
-                                  fontFamily: "monospace",
-                                  fontFeatures: [FontFeature.tabularFigures()]),
-                              textAlign: TextAlign.center,
-                              maxLines: _usingTokenFromStore
-                                  ? 1
-                                  : tokenToShowLinesCount,
-                              keyboardType: TextInputType.text,
-                              decoration: InputDecoration(
+              child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 30),
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        SizedBox(height: screenSize.height / 4),
+                        TextField(
+                            style: TextStyle(fontSize: 22),
+                            textAlign: TextAlign.left,
+                            maxLines: 1,
+                            keyboardType: TextInputType.text,
+                            decoration: InputDecoration(
                                 border: OutlineInputBorder(),
-                                labelText: 'Введите токен',
-                                errorText: _tokenValidateError,
-                              ),
-                              inputFormatters: _usingTokenFromStore
-                                  ? null
-                                  : [
-                                      TextInputFormatter.withFunction(
-                                          idTextFormat)
-                                    ],
-                              controller: _tokenTextFieldController,
-                              onChanged: (newValue) {
-                                if (newValue != _lastOnChangedText) {
-                                  _lastOnChangedText = newValue;
-                                  setState(() {
-                                    if (_usingTokenFromStore) {
-                                      _usingTokenFromStore = false;
-                                      _tokenTextFieldController
-                                          .text = tokenToShowLinesCount ==
-                                              1
-                                          ? "--------------------------------"
-                                          : "----------------\n----------------";
-                                    }
-                                    _tokenValidateError = null;
-                                  });
-                                }
-                              },
-                              onEditingComplete: () {
-                                submitToken();
-                              })),
-                      SvgIconButton(
-                        iconName: 'resources/icons/restore.svg',
-                        width: 48,
-                        height: 48,
-                        onPressed: _usingTokenFromStore ||
-                                _apiTokenFromStore == null ||
-                                _apiTokenFromStore.isEmpty
-                            ? null
-                            : () {
-                                setState(() {
-                                  _usingTokenFromStore = true;
-                                  _tokenTextFieldController.text =
-                                      _apiTokenFromStoreShadowed;
-                                });
-                              },
-                      )
-                    ])),
-                const SizedBox(height: 50),
-                ElevatedButton(
-                  style: ButtonStyle(
-                      padding: MaterialStateProperty.all(
-                          const EdgeInsets.symmetric(
-                              horizontal: 40, vertical: 15))),
-                  child:
-                      Text('ВОЙТИ', style: Theme.of(context).textTheme.button),
-                  onPressed: () {
-                    submitToken();
-                  },
-                ),
-                SizedBox(height: 40),
-                Visibility(
-                    visible: _showBusyIndicator,
-                    child: SpinKitCircle(
-                        size: 100, color: Theme.of(context).primaryColor)),
-                SizedBox(height: 20),
-                Visibility(
-                    visible: _showBusyIndicator && _busyMessage.isNotEmpty,
-                    child: Text(
-                      _busyMessage,
-                      style: Theme.of(context).textTheme.subtitle1,
-                    ))
-              ])),
+                                labelText: "Фамилия и имя сотрудника",
+                                helperText: "Пример: Иванов Иван",
+                                errorText: _userNameError),
+                            controller: _userTextFieldController,
+                            onChanged: (newValue) {},
+                            onEditingComplete: () {}),
+                        SizedBox(height: 40),
+                        InputDecorator(
+                            isFocused: _focusNode.hasFocus,
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: "Введите токен",
+                              labelStyle: TextStyle(
+                                  letterSpacing: 0,
+                                  fontFamily: "",
+                                  fontFeatures: []),
+                              errorText: _tokenValidateError,
+                            ),
+                            child:
+                                Row(mainAxisSize: MainAxisSize.min, children: [
+                              Expanded(
+                                  child: TextField(
+                                      style: TextStyle(
+                                          fontSize: 22,
+                                          letterSpacing: 2,
+                                          fontFamily: "monospace",
+                                          fontFeatures: [
+                                            FontFeature.tabularFigures()
+                                          ]),
+                                      decoration: null, //InputDecoration(),
+                                      focusNode: _focusNode,
+                                      textAlign: TextAlign.center,
+                                      maxLines: _usingTokenFromStore
+                                          ? 1
+                                          : tokenToShowLinesCount,
+                                      keyboardType: TextInputType.text,
+                                      inputFormatters: _usingTokenFromStore
+                                          ? null
+                                          : [
+                                              TextInputFormatter.withFunction(
+                                                  idTextFormat)
+                                            ],
+                                      controller: _tokenTextFieldController,
+                                      onChanged: (newValue) {
+                                        if (newValue != _lastOnChangedText) {
+                                          _lastOnChangedText = newValue;
+                                          setState(() {
+                                            if (_usingTokenFromStore) {
+                                              _usingTokenFromStore = false;
+                                              _tokenTextFieldController
+                                                  .text = tokenToShowLinesCount ==
+                                                      1
+                                                  ? "--------------------------------"
+                                                  : "----------------\n----------------";
+                                            }
+                                            _tokenValidateError = null;
+                                          });
+                                        }
+                                      },
+                                      onEditingComplete: () {
+                                        submitToken();
+                                      })),
+                              SvgIconButton(
+                                iconName: 'resources/icons/restore.svg',
+                                width: 48,
+                                height: 48,
+                                onPressed: _usingTokenFromStore ||
+                                        _apiTokenFromStore == null ||
+                                        _apiTokenFromStore.isEmpty
+                                    ? null
+                                    : () {
+                                        setState(() {
+                                          _usingTokenFromStore = true;
+                                          _tokenTextFieldController.text =
+                                              _apiTokenFromStoreShadowed;
+                                        });
+                                      },
+                              )
+                            ])),
+                        const SizedBox(height: 50),
+                        ElevatedButton(
+                          style: ButtonStyle(
+                              padding: MaterialStateProperty.all(
+                                  const EdgeInsets.symmetric(
+                                      horizontal: 40, vertical: 15))),
+                          child: Text('ВОЙТИ',
+                              style: Theme.of(context).textTheme.button),
+                          onPressed: () {
+                            submitToken();
+                          },
+                        ),
+                        SizedBox(height: 40),
+                        Visibility(
+                            visible: _showBusyIndicator,
+                            child: SpinKitCircle(
+                                size: 100,
+                                color: Theme.of(context).primaryColor)),
+                        SizedBox(height: 20),
+                        Visibility(
+                            visible:
+                                _showBusyIndicator && _busyMessage.isNotEmpty,
+                            child: Text(
+                              _busyMessage,
+                              style: Theme.of(context).textTheme.subtitle1,
+                            ))
+                      ]))),
           Container(
               alignment: Alignment.bottomRight,
               padding: EdgeInsets.all(10),
-              child:
-                  Text(_appVersion, style: Theme.of(context).textTheme.caption))
+              child: Text(_appVersion,
+                  style: Theme.of(context).textTheme.caption)),
+          Container(
+              alignment: Alignment.bottomLeft,
+              padding: EdgeInsets.all(10),
+              child: Text("Устройство: $_deviceName",
+                  style: Theme.of(context).textTheme.caption))
         ]));
   }
 
   void submitToken() async {
+    if (!_userNameRegExp.hasMatch(_userTextFieldController.text)) {
+      setState(() {
+        _userNameError = "Введите фамилию и имя в формате 'Фамилия Имя'";
+      });
+      return;
+    }
+
+    setState(() {
+      _userNameError = null;
+    });
+
+    UserInfo.userName = _userTextFieldController.text;
+    Storage.setDefaultValue(
+        EmpiricalEvidence.fellowWorkerUnifiedVariable, [UserInfo.userName]);
+
     var token = _usingTokenFromStore
         ? _apiTokenFromStore
         : _tokenTextFieldController.text.replaceAll(RegExp(r'-|\n'), '');
@@ -267,8 +346,6 @@ class _LoginPageState extends State<LoginPage> {
         return;
       }
 
-      await Storage.init();
-
       await locationFuture;
 
       if (Location.inited)
@@ -279,7 +356,7 @@ class _LoginPageState extends State<LoginPage> {
         context,
         MaterialPageRoute(
           builder: (context) =>
-              MainPage(_connection, _projectInfo, _appVersion),
+              MainPage(_connection, _projectInfo, _appVersion, _deviceName),
         ),
       );
     } on SocketException catch (e) {

@@ -85,6 +85,8 @@ class ServerConnection {
   ClientInfo parseClientInfoJson(ProjectInfo projectInfo, String jsonData) {
     try {
       var recordsList = _parseRedcapRecordsArray(jsonData);
+      if (recordsList == null || recordsList.isEmpty) return null;
+
       var result = new ClientInfo(projectInfo, recordsList.first.record);
       for (var record in recordsList) {
         if (record.redcapRepeatInstrument?.isEmpty == false) {

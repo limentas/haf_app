@@ -116,9 +116,9 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
     var formWidgets = new List<Widget>();
     for (var field in _fieldsList) {
       if (isNotEmpty(field.sectionName)) {
-        formWidgets.add(createSectionTitleWidget(context, field));
+        formWidgets.add(_createSectionTitleWidget(context, field));
       }
-      formWidgets.add(createEditWidgetGroup(context, field));
+      formWidgets.add(_createEditWidgetGroup(context, field));
     }
     formWidgets.add(SizedBox(height: 30));
     formWidgets.add(ElevatedButton(
@@ -132,6 +132,7 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
             return;
           }
           _formController.save();
+          _cleanupEditedInstance();
           _saveFunction(context); //This will change current view
         },
         style:
@@ -174,7 +175,7 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
       _connection
           .isSecondaryIdOccupied(
               newValues.first, _projectInfo.secondaryIdFieldName)
-          .then((value) => secondaryIdCheckCompleted(
+          .then((value) => _secondaryIdCheckCompleted(
               newValues.first, value, ++_checkSecondaryIdRequestId, context));
     } on SocketException catch (e) {
       logger.d("isSecondaryIdOccupied threw SocketException", e);
@@ -183,7 +184,7 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
     }
   }
 
-  void secondaryIdCheckCompleted(
+  void _secondaryIdCheckCompleted(
       String secondaryId, bool result, int requestId, BuildContext context) {
     //We have to handle only last request and ignore all previous if we have
     //several requests at the same time
@@ -197,13 +198,13 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
           action: SnackBarAction(
             label: "Перейти",
             onPressed: () {
-              navigateToExistingUser(secondaryId, context);
+              _navigateToExistingUser(secondaryId, context);
             },
           )));
     }
   }
 
-  Future<void> navigateToExistingUser(
+  Future<void> _navigateToExistingUser(
       String secondaryId, BuildContext context) async {
     try {
       var clientInfo =
@@ -235,7 +236,7 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
     }
   }
 
-  Widget createEditWidgetGroup(BuildContext context, InstrumentField field) {
+  Widget _createEditWidgetGroup(BuildContext context, InstrumentField field) {
     var editWidget = field.fieldType.buildEditControl(
         context, _formController, _instrumentInstance.valuesMap[field.variable],
         onValidateStatusChanged: (errorMessage) {
@@ -290,7 +291,8 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
             child: combinedWidget);
   }
 
-  Widget createSectionTitleWidget(BuildContext context, InstrumentField field) {
+  Widget _createSectionTitleWidget(
+      BuildContext context, InstrumentField field) {
     var titleWidget = Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         child: Container(
@@ -316,5 +318,26 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
             visible: _branchingLogicEvaluator.calculate(
                 field.branchingLogic, _instrumentInstance),
             child: titleWidget);
+  }
+
+  ///Will clean all variables values that is hidden by branching logic
+  void _cleanupEditedInstance() {
+    var needToRecheck = false;
+    //It is possible when on value depends on another value,
+    //that depends on another value and we have to clean both of them.
+    //So we should check is there any variable that depends on this hidden variable.
+    //And if so we should recheck all again.
+    do {
+      for (var field in _instrumentInfo.fieldsByVariable.values) {
+        if (!_instrumentInstance.valuesMap.containsKey(field.variable))
+          continue;
+
+        if (!_branchingLogicEvaluator.calculate(
+            field.branchingLogic, _instrumentInstance)) {
+          _instrumentInstance.valuesMap.removeAll(field.variable);
+          if (field.hasDependentVariables) needToRecheck = true;
+        }
+      }
+    } while (needToRecheck);
   }
 }

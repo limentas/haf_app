@@ -7,6 +7,8 @@ import 'instrument_field.dart';
 
 //Class agregates information about specific use of Redcap
 class EmpiricalEvidence {
+  static final fellowWorkerUnifiedVariable = "staff#unified";
+
   //Key - variable name, that could be stored in DB,
   //Value - unified name to store as key in DB
   //(to store one value for similar fields)
@@ -23,9 +25,10 @@ class EmpiricalEvidence {
         "site_other#unified", //Участник посетил другое (consulting_form)
     "site_other_test":
         "site_other#unified", //Участник посетил другое (test_form)
-    "staff_outreach": "staff#unified", //Сотрудник (distribution_form)
-    "staff_cns": "staff#unified", //Сотрудник (consulting_form)
-    "staff_test": "", //Сотрудник (test_form)
+    "staff_outreach":
+        fellowWorkerUnifiedVariable, //Сотрудник (distribution_form)
+    "staff_cns": fellowWorkerUnifiedVariable, //Сотрудник (consulting_form)
+    "staff_test": fellowWorkerUnifiedVariable, //Сотрудник (test_form)
     "district_swr": "district#unified", //Район (distribution_form)
     "district_cns": "district#unified", //Район (consulting_form)
     "district_test": "district#unified", //Район (test_form)
@@ -76,6 +79,7 @@ class EmpiricalEvidence {
   }
 
   static String nameToStoreForField(String variableName) {
+    if (variableName.endsWith("#unified")) return variableName;
     return _storedVariables[variableName];
   }
 }

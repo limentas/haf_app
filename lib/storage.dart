@@ -9,9 +9,12 @@ class Storage {
   static Database _database; //TODO: consider closing the DB
 
   static Multimap<String, String> _defaultValues;
+  static bool _inited = false;
 
   static Future<void> init() async {
+    if (_inited) return;
     _defaultValues = await _loadDefaultValues();
+    _inited = true;
   }
 
   static Iterable<String> getDefaultValue(String varName) {
