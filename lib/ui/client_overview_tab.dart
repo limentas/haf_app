@@ -21,7 +21,11 @@ class ClientOverviewTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var lastVisitInfo = _clientInfo.getLastVisit(_projectInfo);
+    final birthday = _clientInfo.getBirthday(_projectInfo);
+    final lastVisitInfo = _clientInfo.getLastVisit(_projectInfo);
+    final birthdayString = birthday != null
+        ? DateFormat("dd.MM.yyyy").format(birthday)
+        : "нет данных";
     return new SliverToBoxAdapter(
         child: Padding(
             padding: EdgeInsets.all(10),
@@ -42,8 +46,7 @@ class ClientOverviewTab extends StatelessWidget {
                                 child: Table(children: [
                                   TableRow(children: [
                                     Text("Дата рождения:"),
-                                    Text(DateFormat("dd.MM.yyyy").format(
-                                        _clientInfo.getBirthday(_projectInfo)))
+                                    Text(birthdayString)
                                   ]),
                                   TableRow(children: [
                                     Text("Последний раз посетил:"),
