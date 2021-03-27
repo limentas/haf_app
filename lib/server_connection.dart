@@ -128,31 +128,34 @@ class ServerConnection {
     return result;
   }
 
-  Future<int> createNewRecord(InstrumentInfo instrumentInfo, int recordId,
-      InstrumentInstance instance) {
-    return importRecord(instrumentInfo, recordId, null, null, instance);
+  Future<int> createNewRecord(int recordId, InstrumentInstance instance) {
+    return importRecord(recordId, null, null, instance, true);
   }
 
   Future<int> createNewInstance(InstrumentInfo instrumentInfo, int recordId,
       int instanceNumber, InstrumentInstance instance) {
-    return importRecord(instrumentInfo, recordId, instrumentInfo.formNameId,
-        instanceNumber, instance);
+    return importRecord(
+        recordId, instrumentInfo.formNameId, instanceNumber, instance, false);
+  }
+
+  Future<int> editNonRepeatForm(int recordId, InstrumentInstance instance) {
+    return importRecord(recordId, null, null, instance, false);
   }
 
   ///Returns new record id
   Future<int> importRecord(
-      InstrumentInfo instrumentInfo,
       int recordId,
-      String repeatInstumentName,
+      String repeatInstrumentName,
       int instanceNumber,
-      InstrumentInstance instance) async {
+      InstrumentInstance instance,
+      bool createAutoId) async {
     var body = {
       "token": _token,
       "content": "record",
       "format": "json",
       "type": "eav",
       "overwriteBehavior": "normal",
-      "forceAutoNumber": repeatInstumentName == null ? "true" : "false",
+      "forceAutoNumber": createAutoId ? "true" : "false",
       "data": "",
       "dateFormat": "YMD",
       "returnContent": "ids"
@@ -162,7 +165,7 @@ class ServerConnection {
     instance.valuesMap.forEach((key, value) {
       var record = new RedcapRecord(
           record: recordId,
-          redcapRepeatInstrument: repeatInstumentName,
+          redcapRepeatInstrument: repeatInstrumentName,
           redcapRepeatInstance: instanceNumber,
           fieldName: key,
           value: value);
@@ -171,7 +174,7 @@ class ServerConnection {
     body["data"] = jsonEncode(records);
 
     var response = await _post(body, 15);
-    logger.d("createNewRecord response statusCode = ${response.statusCode}");
+    logger.d("importRecord response statusCode = ${response.statusCode}");
     if (response.statusCode == HttpStatus.badRequest) {
       logger.e("Bad request. Error: ${response.body}. Request: $body");
       return null;

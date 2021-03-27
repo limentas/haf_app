@@ -21,7 +21,6 @@ class MainPage extends StatelessWidget {
     return new Scaffold(
         drawer: null,
         appBar: AppBar(
-            title: const Text('Выбор участника'),
             leading: null,
             automaticallyImplyLeading: false,
             centerTitle: true,

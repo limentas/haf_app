@@ -14,7 +14,7 @@ import '../model/instrument_instance.dart';
 class NewClientPage extends StatelessWidget {
   NewClientPage(this._connection, this._projectInfo, {Key key})
       : _instrumentInstance =
-            _projectInfo.initInstrument.createNewNonRepeatingInstance(),
+            _projectInfo.initInstrument.instanceFromNonRepeatingForm(null),
         super(key: key);
 
   final ServerConnection _connection;
@@ -103,8 +103,7 @@ class NewClientPage extends StatelessWidget {
 
   Future<void> saveData(BuildContext context) async {
     try {
-      var recordId = await _connection.createNewRecord(
-          _projectInfo.initInstrument, 1, _instrumentInstance);
+      var recordId = await _connection.createNewRecord(1, _instrumentInstance);
       if (recordId == null) {
         Scaffold.of(context).showSnackBar(SnackBar(
             content: Text(

@@ -1,16 +1,17 @@
 import 'package:quiver/collection.dart';
 
+import 'form_instance_status.dart';
 import 'visit_info.dart';
 import 'instrument_info.dart';
 
 class InstrumentInstance {
   final int number;
-  final valuesMap = new ListMultimap<String,
-      String>(); //key - variable name, value - field value
+  final valuesMap; //key - variable name, value - field value
 
   VisitInfo _visitInfo;
 
-  InstrumentInstance(this.number);
+  InstrumentInstance(this.number, [ListMultimap<String, String> values])
+      : valuesMap = values ?? new ListMultimap<String, String>();
 
   VisitInfo getVisitInfo(InstrumentInfo instrument) {
     if (_visitInfo != null) return _visitInfo;
@@ -23,5 +24,19 @@ class InstrumentInstance {
 
     return VisitInfo(
         instrument.fillingPlaceField.fieldType.toReadableForm(place), date);
+  }
+
+  FormInstanceStatus getInstanceStatus(InstrumentInfo instrument) {
+    var values = valuesMap[instrument.formStatusField.variable];
+    if (values.isEmpty) return FormInstanceStatus.Incomplete;
+    switch (values.first) {
+      case "0":
+        return FormInstanceStatus.Incomplete;
+      case "1":
+        return FormInstanceStatus.Unverified;
+      case "2":
+        return FormInstanceStatus.Complete;
+    }
+    return FormInstanceStatus.Incomplete;
   }
 }

@@ -1,22 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:quiver/collection.dart';
 
 import 'form_instance_details.dart';
 import '../model/instrument_info.dart';
 import '../model/client_info.dart';
 import '../model/project_info.dart';
+import '../model/instrument_instance.dart';
 
 class FormInstanceDetailsPage extends StatelessWidget {
   FormInstanceDetailsPage(this._projectInfo, this._clientInfo,
-      this._instrumentInfo, this._values, this._instanceNumber,
+      this._instrumentInfo, this._instrumentInstance,
       {Key key})
       : super(key: key);
 
   final ProjectInfo _projectInfo;
   final ClientInfo _clientInfo;
   final InstrumentInfo _instrumentInfo;
-  final ListMultimap<String, String> _values;
-  final int _instanceNumber;
+  final InstrumentInstance _instrumentInstance;
 
   @override
   Widget build(BuildContext context) {
@@ -38,8 +37,8 @@ class FormInstanceDetailsPage extends StatelessWidget {
                   handle:
                       NestedScrollView.sliverOverlapAbsorberHandleFor(context),
                   sliver: SliverAppBar(
-                    title:
-                        Text("${_instrumentInfo.formName} - $_instanceNumber"),
+                    title: Text(
+                        "${_instrumentInfo.formName} - ${_instrumentInstance.number}"),
                     centerTitle: true,
                     floating: true,
                     pinned: false,
@@ -73,8 +72,8 @@ class FormInstanceDetailsPage extends StatelessWidget {
                         handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
                             context),
                       ),
-                      FormInstanceDetails(
-                          _projectInfo, _clientInfo, _instrumentInfo, _values),
+                      FormInstanceDetails(_projectInfo, _clientInfo,
+                          _instrumentInfo, _instrumentInstance, false),
                     ],
                   );
                 },

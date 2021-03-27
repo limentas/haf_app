@@ -1,23 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:haf_spb_app/model/instrument_field.dart';
-import 'package:quiver/collection.dart';
 import 'package:quiver/strings.dart';
 
+import '../logger.dart';
 import '../model/client_info.dart';
 import '../model/project_info.dart';
 import '../model/instrument_info.dart';
 import '../model/branching_logic_evaluator.dart';
+import '../model/instrument_field.dart';
+import '../model/instrument_instance.dart';
 
 class FormInstanceDetails extends StatelessWidget {
   FormInstanceDetails(ProjectInfo projectInfo, ClientInfo clientInfo,
-      this._instrumentInfo, this._values,
+      this._instrumentInfo, this._instrumentInstance, this._editable,
       {Key key})
       : _branchingLogicEvaluator =
             BranchingLogicEvaluator(projectInfo, clientInfo),
         super(key: key);
 
   final InstrumentInfo _instrumentInfo;
-  final ListMultimap<String, String> _values;
+  final InstrumentInstance _instrumentInstance;
+  final bool _editable;
 
   final _keyTextStyle = new TextStyle(color: Colors.grey[700], fontSize: 16);
   final _valueTextStyle = new TextStyle(color: Colors.black, fontSize: 18);
@@ -62,7 +64,7 @@ class FormInstanceDetails extends StatelessWidget {
   }
 
   Widget createVariableRow(BuildContext context, InstrumentField field) {
-    var values = _values[field.variable];
+    var values = _instrumentInstance.valuesMap[field.variable];
     var valueText = field.fieldType.toReadableForm(values);
     var row = Padding(
         padding: const EdgeInsets.only(top: 7),
@@ -88,8 +90,8 @@ class FormInstanceDetails extends StatelessWidget {
 
     if (isEmpty(field.branchingLogic)) return row;
 
-    var isVisible =
-        _branchingLogicEvaluator.calculate(field.branchingLogic, null);
+    var isVisible = _branchingLogicEvaluator.calculate(
+        field.branchingLogic, _instrumentInstance);
     if (isVisible) return row;
     return null;
   }

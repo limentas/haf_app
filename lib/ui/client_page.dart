@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
 import 'form_instance_details.dart';
+import 'non_repeat_form_edit.dart';
 import 'client_repeat_form_tab.dart';
 import 'client_overview_tab.dart';
 import '../model/client_info.dart';
 import '../model/project_info.dart';
 import '../model/instrument_info.dart';
+import '../model/instrument_instance.dart';
 import '../server_connection.dart';
 import 'new_form_instance_edit.dart';
 import 'svg_icon_button.dart';
@@ -69,7 +71,15 @@ class _ClientPageState extends State<ClientPage>
               iconWidth: 40,
               onPressed: () =>
                   _createNewInstrumentInstance(context, instrument))
-          : null);
+          : _projectInfo.initInstrument != instrument
+              ? new SvgIconButton(
+                  iconName: 'resources/icons/edit.svg',
+                  width: 54,
+                  height: 54,
+                  iconWidth: 32,
+                  onPressed: () =>
+                      _editNonRepeatInstrument(context, instrument))
+              : null);
     }
 
     _tabController = TabController(vsync: this, length: _tabs.length);
@@ -105,8 +115,8 @@ class _ClientPageState extends State<ClientPage>
               instrument,
               _clientInfo.repeatInstruments[instrument.formNameId].values
                   .toList())
-          : FormInstanceDetails(
-              _projectInfo, _clientInfo, instrument, _clientInfo.valuesMap);
+          : FormInstanceDetails(_projectInfo, _clientInfo, instrument,
+              new InstrumentInstance(-1, _clientInfo.valuesMap), false);
 
       _pages.add(page);
     }
@@ -209,6 +219,17 @@ class _ClientPageState extends State<ClientPage>
         MaterialPageRoute(
           builder: (context) => NewRepeatingFormInstanceEdit(_connection,
               _projectInfo, _clientInfo, instrument, _clientInfo.recordId),
+        ));
+    if (needRefresh != null && needRefresh) _refreshClientInfo();
+  }
+
+  Future<void> _editNonRepeatInstrument(
+      BuildContext context, InstrumentInfo instrument) async {
+    var needRefresh = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => NonRepeatFormEdit(_connection, _projectInfo,
+              _clientInfo, instrument, _clientInfo.recordId),
         ));
     if (needRefresh != null && needRefresh) _refreshClientInfo();
   }

@@ -1,4 +1,6 @@
+import 'package:haf_spb_app/model/client_info.dart';
 import "package:intl/intl.dart";
+import 'package:quiver/collection.dart';
 
 import '../user_info.dart';
 import 'field_type_enum.dart';
@@ -26,19 +28,21 @@ class InstrumentInfo {
   InstrumentInfo(this.oid, this.formNameId, this.formName,
       {this.isRepeating = false, this.customLabel = const []});
 
-  InstrumentInstance createNewNonRepeatingInstance() {
-    var instance = new InstrumentInstance(-1);
-    _fillNewInstance(instance);
+  InstrumentInstance instanceFromNonRepeatingForm(
+      ListMultimap<String, String> values) {
+    var instance = new InstrumentInstance(null);
+    _fillWithDefaultValues(instance);
+    if (values != null) _fillWithExistentValues(instance, values);
     return instance;
   }
 
   InstrumentInstance createNewRepeatingInstance() {
     var instance = new InstrumentInstance(-1);
-    _fillNewInstance(instance);
+    _fillWithDefaultValues(instance);
     return instance;
   }
 
-  void _fillNewInstance(InstrumentInstance instance) {
+  void _fillWithDefaultValues(InstrumentInstance instance) {
     //Initialize fields
     for (var entry in fieldsByVariable.entries) {
       var field = entry.value;
@@ -98,6 +102,17 @@ class InstrumentInfo {
       if (valueToInsert != null && valueToInsert.isNotEmpty) {
         instance.valuesMap.addValues(entry.key, valueToInsert);
         continue;
+      }
+    }
+  }
+
+  void _fillWithExistentValues(
+      InstrumentInstance instance, ListMultimap<String, String> values) {
+    //Initialize fields
+    for (var field in fieldsByVariable.values) {
+      final valuesToAdd = values[field.variable];
+      if (valuesToAdd.isNotEmpty) {
+        instance.valuesMap.addValues(field.variable, valuesToAdd);
       }
     }
   }
