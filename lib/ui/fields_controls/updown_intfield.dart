@@ -109,7 +109,13 @@ class _UpDownIntFieldState extends State<UpDownIntField>
         _errorMessage = validate();
       });
       return _errorMessage == null;
-    }, () => _onSaved([_currentValueText]));
+    }, () {
+      if (_currentValueText != _textController.text) {
+        _currentValueText = _textController.text;
+        _onChanged([_currentValueText]);
+      }
+      _onSaved([_currentValueText]);
+    });
   }
 
   @override
@@ -154,6 +160,15 @@ class _UpDownIntFieldState extends State<UpDownIntField>
                 child: Row(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                  OutlinedButton(
+                      onPressed: () {
+                        FocusScope.of(context).unfocus();
+                        var current = currentValue;
+                        if (current == _minValue) return;
+                        if (current == null) current = 0;
+                        currentValue = current - 100;
+                      },
+                      child: Text("‒100", style: buttonTextStyle)),
                   OutlinedButton(
                       onPressed: () {
                         FocusScope.of(context).unfocus();
@@ -207,6 +222,15 @@ class _UpDownIntFieldState extends State<UpDownIntField>
                         currentValue = current + 10;
                       },
                       child: Text("+10", style: buttonTextStyle)),
+                  OutlinedButton(
+                      onPressed: () {
+                        FocusScope.of(context).unfocus();
+                        var current = currentValue;
+                        if (currentValue == _maxValue) return;
+                        if (current == null) current = 0;
+                        currentValue = current + 100;
+                      },
+                      child: Text("+100", style: buttonTextStyle)),
                 ]))));
   }
 }

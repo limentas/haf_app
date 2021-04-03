@@ -13,8 +13,8 @@ import '../model/instrument_instance.dart';
 
 class NewClientPage extends StatelessWidget {
   NewClientPage(this._connection, this._projectInfo, {Key key})
-      : _instrumentInstance =
-            _projectInfo.initInstrument.instanceFromNonRepeatingForm(null),
+      : _instrumentInstance = _projectInfo.initInstrument
+            .instanceFromNonRepeatingForm(null, null),
         super(key: key);
 
   final ServerConnection _connection;

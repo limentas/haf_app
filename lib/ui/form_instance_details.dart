@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:quiver/strings.dart';
 
-import '../logger.dart';
 import '../model/client_info.dart';
 import '../model/project_info.dart';
 import '../model/instrument_info.dart';
-import '../model/branching_logic_evaluator.dart';
+import '../model/evaluators/branching_logic_evaluator.dart';
 import '../model/instrument_field.dart';
 import '../model/instrument_instance.dart';
 

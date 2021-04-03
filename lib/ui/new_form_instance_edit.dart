@@ -14,7 +14,8 @@ class NewRepeatingFormInstanceEdit extends StatelessWidget {
   NewRepeatingFormInstanceEdit(this._connection, this._projectInfo,
       this._clientInfo, this._instrumentInfo, this._recordId,
       {Key key})
-      : _instrumentInstance = _instrumentInfo.createNewRepeatingInstance(),
+      : _instrumentInstance =
+            _instrumentInfo.createNewRepeatingInstance(_clientInfo),
         super(key: key);
 
   final ServerConnection _connection;

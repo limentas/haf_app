@@ -1,15 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:haf_spb_app/model/expressions_evaluator.dart';
+import 'package:haf_spb_app/model/evaluators/expressions_evaluator.dart';
 import 'package:haf_spb_app/model/instrument_instance.dart';
 
 void main() {
   ExpressionsEvaluator eval;
   InstrumentInstance currentInstance;
   setUp(() {
-    eval = ExpressionsEvaluator();
+    eval = ExpressionsEvaluator(null, null);
     currentInstance = new InstrumentInstance(1);
   });
   test('Test addition', () {
+    expect(eval.calcBranchingLogicValue("1", currentInstance), "1");
     expect(eval.calcBranchingLogicValue("1 + 1", currentInstance), "2");
     expect(eval.calcBranchingLogicValue("'2' + \"2\"", currentInstance), "4");
     expect(eval.calcBranchingLogicValue("32 + \"23\"", currentInstance), "55");

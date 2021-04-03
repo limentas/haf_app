@@ -14,8 +14,8 @@ class NonRepeatFormEdit extends StatelessWidget {
   NonRepeatFormEdit(this._connection, this._projectInfo, this._clientInfo,
       this._instrumentInfo, this._recordId,
       {Key key})
-      : _instrumentInstance =
-            _instrumentInfo.instanceFromNonRepeatingForm(_clientInfo.valuesMap),
+      : _instrumentInstance = _instrumentInfo.instanceFromNonRepeatingForm(
+            _clientInfo, _clientInfo.valuesMap),
         super(key: key);
 
   final ServerConnection _connection;

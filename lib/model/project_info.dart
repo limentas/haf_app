@@ -104,7 +104,7 @@ class ProjectInfo {
         String formName = form.getAttribute("Name");
 
         var repeatingInstrument = repeatingInstruments[formNameId];
-        var instrument = InstrumentInfo(oid, formNameId, formName,
+        var instrument = InstrumentInfo(oid, formNameId, formName, project,
             isRepeating: repeatingInstrument != null,
             customLabel: repeatingInstrument);
         project.instrumentsByOid[oid] = instrument;

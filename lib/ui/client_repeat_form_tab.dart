@@ -100,7 +100,7 @@ class ClientRepeatFormTab extends StatelessWidget {
                     Align(
                         alignment: Alignment.bottomCenter,
                         child: Container(
-                          height: 7,
+                          height: 6,
                           decoration: BoxDecoration(
                               color: status == FormInstanceStatus.Complete
                                   ? Colors.green

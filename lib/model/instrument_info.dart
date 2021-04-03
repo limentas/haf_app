@@ -1,8 +1,8 @@
-import 'package:haf_spb_app/model/client_info.dart';
 import "package:intl/intl.dart";
 import 'package:quiver/collection.dart';
 
 import '../user_info.dart';
+import 'evaluators/piping_evaluator.dart';
 import 'field_type_enum.dart';
 import 'instrument_field.dart';
 import 'fields_group.dart';
@@ -11,6 +11,8 @@ import 'empirical_evidence.dart';
 import '../location.dart';
 import '../constants.dart';
 import '../storage.dart';
+import '../model/project_info.dart';
+import '../model/client_info.dart';
 
 class InstrumentInfo {
   final String oid;
@@ -21,35 +23,40 @@ class InstrumentInfo {
   final fieldGroups = new Map<String, FieldsGroup>(); //Key - OID
   final fieldsByVariable =
       new Map<String, InstrumentField>(); //Key - variable name
+  final ProjectInfo projectInfo;
   InstrumentField formStatusField; //Form status auto variable
   InstrumentField fillingDateField; //date of form filling
   InstrumentField fillingPlaceField; //place of form filling
 
-  InstrumentInfo(this.oid, this.formNameId, this.formName,
+  InstrumentInfo(this.oid, this.formNameId, this.formName, this.projectInfo,
       {this.isRepeating = false, this.customLabel = const []});
 
   InstrumentInstance instanceFromNonRepeatingForm(
-      ListMultimap<String, String> values) {
-    var instance = new InstrumentInstance(null);
-    _fillWithDefaultValues(instance);
+      ClientInfo info, ListMultimap<String, String> values) {
+    final instance = new InstrumentInstance(null);
+    _fillWithDefaultValues(info, instance);
     if (values != null) _fillWithExistentValues(instance, values);
     return instance;
   }
 
-  InstrumentInstance createNewRepeatingInstance() {
-    var instance = new InstrumentInstance(-1);
-    _fillWithDefaultValues(instance);
+  InstrumentInstance createNewRepeatingInstance(ClientInfo info) {
+    final instanceNumber = info.getNextInstrumentInstanceNumber(formNameId);
+    final instance = new InstrumentInstance(instanceNumber);
+    _fillWithDefaultValues(info, instance);
     return instance;
   }
 
-  void _fillWithDefaultValues(InstrumentInstance instance) {
+  void _fillWithDefaultValues(ClientInfo info, InstrumentInstance instance) {
+    var evaluator = new PipingEvaluator(projectInfo, info);
     //Initialize fields
     for (var entry in fieldsByVariable.entries) {
-      var field = entry.value;
+      final field = entry.value;
       //Checking for @DEFAULT action tag
       if (field.defaultValue != null) {
-        var defaultValues =
-            field.fieldType.parseDefaultValue(field.defaultValue);
+        var valueWithoutSmartVars =
+            evaluator.calcPipingValue(field.defaultValue, instance);
+        final defaultValues =
+            field.fieldType.parseDefaultValue(valueWithoutSmartVars);
         if (defaultValues != null && defaultValues.isNotEmpty) {
           instance.valuesMap.addValues(entry.key, defaultValues);
         }

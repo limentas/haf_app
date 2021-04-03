@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:haf_spb_app/model/branching_logic_evaluator.dart';
+import 'package:haf_spb_app/model/evaluators/branching_logic_evaluator.dart';
 import 'package:haf_spb_app/model/client_info.dart';
 import 'package:haf_spb_app/model/instrument_instance.dart';
 import 'package:haf_spb_app/model/project_info.dart';
@@ -36,9 +36,9 @@ void main() {
 
     expect(instrument, isNotNull);
     expect(eval.calculate("[text_field2] = 'text3'", currentInstance), true);
-    expect(eval.calculate("[text_field2] != 'text3'", currentInstance), false);
+    expect(eval.calculate("[text_field2] <> 'text3'", currentInstance), false);
     expect(eval.calculate("[text_field2] = 'text2'", currentInstance), false);
-    expect(eval.calculate("[text_field2] != 'text2'", currentInstance), true);
+    expect(eval.calculate("[text_field2] <> 'text2'", currentInstance), true);
     expect(
         eval.calculate(
             "[text_field2][current-instance] = 'text3'", currentInstance),

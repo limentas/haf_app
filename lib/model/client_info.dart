@@ -18,7 +18,7 @@ class ClientInfo {
   final valuesMap = new ListMultimap<String,
       String>(); //key - variable name, value - field value
   final repeatInstruments = new Map<
-      String, //key - instrument's name id
+      String, //key - instrument's name id (formNameId)
       Map<int, InstrumentInstance>>(); //key - instance number
 
   VisitInfo _lastVisit;
@@ -146,5 +146,12 @@ class ClientInfo {
       _instancesStatus[instrumentNameId] = result;
     }
     return result;
+  }
+
+  int getNextInstrumentInstanceNumber(String instrumentName) {
+    final instrument = repeatInstruments[instrumentName];
+    if (instrument == null) return 1;
+    final maxInstanceNumber = instrument.keys.reduce((a, b) => a > b ? a : b);
+    return maxInstanceNumber + 1;
   }
 }
