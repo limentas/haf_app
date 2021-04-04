@@ -5,12 +5,18 @@ import 'logger.dart';
 class UserInfo {
   static String _deviceName;
   static String _userName;
+  static String _tokenHash;
 
   static String get deviceName => _deviceName;
 
   static String get userName => _userName;
   static set userName(value) {
     _userName = value;
+  }
+
+  static String get tokenHash => _tokenHash;
+  static set tokenHash(value) {
+    _tokenHash = value;
   }
 
   static Future<void> init() async {

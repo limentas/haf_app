@@ -6,7 +6,8 @@ import 'instrument_info.dart';
 
 class InstrumentInstance {
   final int number;
-  final valuesMap; //key - variable name, value - field value
+  //key - variable name, value - field value
+  final ListMultimap<String, String> valuesMap;
 
   VisitInfo _visitInfo;
 

@@ -331,6 +331,8 @@ class _LoginPageState extends State<LoginPage> {
 
       var locationFuture = Location.init();
 
+      UserInfo.tokenHash = _apiTokenFromStore;
+
       setState(() {
         _showBusyIndicator = true;
         _busyMessage = "Получаем данные...";

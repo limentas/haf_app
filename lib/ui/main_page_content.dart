@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:haf_spb_app/ui/forms_history/forms_history_page.dart';
 
 import '../logger.dart';
 import '../utils.dart';
@@ -99,6 +100,20 @@ class _MainPageContentState extends State<MainPageContent> {
                           MaterialPageRoute(
                             builder: (context) =>
                                 NewClientPage(_connection, _projectInfo),
+                          ));
+                    },
+                  ),
+                  const SizedBox(height: 50),
+                  ElevatedButton(
+                    child: Text('ЖУРНАЛ ВНЕСЕННЫХ ИЗМЕНЕНИЙ',
+                        style: Theme.of(context).textTheme.button),
+                    onPressed: () {
+                      FocusScope.of(context).unfocus(); //to unfocus id field
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                FormsHistoryPage(_connection, _projectInfo),
                           ));
                     },
                   ),
