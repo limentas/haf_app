@@ -1,21 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:haf_spb_app/model/saved_form.dart';
 import 'package:haf_spb_app/ui/forms_history/last_sent_forms_tab.dart';
 
-import '../../model/instrument_instance.dart';
 import '../../model/project_info.dart';
 import '../../server_connection.dart';
 import 'saved_forms_tab.dart';
 
 class FormsHistoryPage extends StatelessWidget {
   FormsHistoryPage(this._connection, this._projectInfo, {Key key})
-      : _instrumentInstance = _projectInfo.initInstrument
-            .instanceFromNonRepeatingForm(null, null),
-        super(key: key);
+      : super(key: key);
 
   final ServerConnection _connection;
   final ProjectInfo _projectInfo;
-  final InstrumentInstance _instrumentInstance;
 
   @override
   Widget build(BuildContext context) {

@@ -2,15 +2,19 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../user_info.dart';
 import '../logger.dart';
 import '../model/instrument_instance.dart';
 import '../model/instrument_info.dart';
 import '../model/client_info.dart';
 import '../model/project_info.dart';
+import '../model/saved_form.dart';
+import '../model/send_form_mixin.dart';
 import '../server_connection.dart';
+import '../storage.dart';
 import 'form_instance_edit.dart';
 
-class NewRepeatingFormInstanceEdit extends StatelessWidget {
+class NewRepeatingFormInstanceEdit extends StatelessWidget with SendFormMixin {
   NewRepeatingFormInstanceEdit(this._connection, this._projectInfo,
       this._clientInfo, this._instrumentInfo, this._recordId,
       {Key key})
@@ -90,7 +94,8 @@ class NewRepeatingFormInstanceEdit extends StatelessWidget {
                               _clientInfo,
                               _instrumentInfo,
                               _instrumentInstance,
-                              saveData),
+                              _saveData,
+                              _sendData),
                         ],
                       ));
                 },
@@ -98,21 +103,26 @@ class NewRepeatingFormInstanceEdit extends StatelessWidget {
             )));
   }
 
-  Future<void> saveData(BuildContext context) async {
-    try {
-      var instanceNumber = await _connection.retreiveNextInstanceNumber(
-          _recordId, _instrumentInfo.formNameId);
-      if (instanceNumber == null) {
-        Scaffold.of(context).showSnackBar(SnackBar(
-            content:
-                Text('Ошибка добавления данных - свяжитесь с разработчиком')));
-        return;
-      }
-      logger.d("Next form instance number: $instanceNumber");
-      var recordId = await _connection.createNewInstance(
-          _instrumentInfo, _recordId, instanceNumber, _instrumentInstance);
+  void _saveData(BuildContext context) {
+    final savedForm = new SavedForm(
+        tokenHash: UserInfo.tokenHash,
+        lastEditTime: DateTime.now(),
+        formName: _instrumentInfo.formNameId,
+        secondaryId: _clientInfo.secondaryId,
+        instrumentInstance: _instrumentInstance);
+    Storage.addSavedForm(savedForm);
 
-      if (recordId == null) {
+    //Return to the previous view.
+    //Result is sign: do we need to refresh current client's info
+    Navigator.pop(context, true);
+  }
+
+  Future<void> _sendData(BuildContext context) async {
+    try {
+      var result = await sendFormAndAddToHistory(_connection, _clientInfo,
+          _instrumentInfo, _recordId, _instrumentInstance);
+
+      if (!result) {
         Scaffold.of(context).showSnackBar(SnackBar(
             content:
                 Text('Ошибка добавления данных - свяжитесь с разработчиком')));

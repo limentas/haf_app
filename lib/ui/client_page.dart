@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
+import '../logger.dart';
 import 'form_instance_details.dart';
 import 'non_repeat_form_edit.dart';
 import 'client_repeat_form_tab.dart';
@@ -205,11 +208,15 @@ class _ClientPageState extends State<ClientPage>
   }
 
   Future<void> _refreshClientInfo() async {
-    var clientInfo = await _connection.retreiveClientInfoByRecordId(
-        _projectInfo, _clientInfo.recordId);
-    setState(() {
-      _clientInfo = clientInfo;
-    });
+    try {
+      var clientInfo = await _connection.retreiveClientInfoByRecordId(
+          _projectInfo, _clientInfo.recordId);
+      setState(() {
+        _clientInfo = clientInfo;
+      });
+    } on SocketException catch (e) {
+      logger.e("MainPage: caught SocketException", e);
+    }
   }
 
   Future<void> _createNewInstrumentInstance(

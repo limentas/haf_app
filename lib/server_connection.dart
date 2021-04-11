@@ -133,7 +133,15 @@ class ServerConnection {
   }
 
   Future<int> createNewInstance(InstrumentInfo instrumentInfo, int recordId,
-      int instanceNumber, InstrumentInstance instance) {
+      InstrumentInstance instance) async {
+    var instanceNumber =
+        await retreiveNextInstanceNumber(recordId, instrumentInfo.formNameId);
+    if (instanceNumber == null) {
+      logger.w(
+          "Couldn't retreive next instance number for form ${instrumentInfo.formNameId}");
+      return null;
+    }
+    logger.d("Next form instance number: $instanceNumber");
     return importRecord(
         recordId, instrumentInfo.formNameId, instanceNumber, instance, false);
   }

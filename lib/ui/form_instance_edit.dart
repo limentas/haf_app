@@ -19,8 +19,14 @@ import '../storage.dart';
 import 'client_page.dart';
 
 class FormInstanceEdit extends StatefulWidget {
-  FormInstanceEdit(this._connection, this._projectInfo, this._clientInfo,
-      this._instrumentInfo, this._instrumentInstance, this._saveFunction,
+  FormInstanceEdit(
+      this._connection,
+      this._projectInfo,
+      this._clientInfo,
+      this._instrumentInfo,
+      this._instrumentInstance,
+      this._saveFunction,
+      this._sendFunction,
       {Key key})
       : super(key: key);
 
@@ -29,13 +35,13 @@ class FormInstanceEdit extends StatefulWidget {
   final ClientInfo _clientInfo;
   final InstrumentInfo _instrumentInfo;
   final InstrumentInstance _instrumentInstance;
-  final void Function(BuildContext)
-      _saveFunction; //Returns true in case of success
+  final void Function(BuildContext) _saveFunction;
+  final void Function(BuildContext) _sendFunction;
 
   @override
   _FormInstanceEditState createState() {
     return _FormInstanceEditState(_connection, _projectInfo, _clientInfo,
-        _instrumentInfo, _instrumentInstance, _saveFunction);
+        _instrumentInfo, _instrumentInstance, _saveFunction, _sendFunction);
   }
 }
 
@@ -46,7 +52,8 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
       ClientInfo clientInfo,
       this._instrumentInfo,
       this._instrumentInstance,
-      this._saveFunction)
+      this._saveFunction,
+      this._sendFunction)
       : _branchingLogicEvaluator =
             BranchingLogicEvaluator(_projectInfo, clientInfo);
 
@@ -55,6 +62,7 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
   final InstrumentInfo _instrumentInfo;
   final InstrumentInstance _instrumentInstance;
   final void Function(BuildContext) _saveFunction;
+  final void Function(BuildContext) _sendFunction;
   final _fieldsList = new List<InstrumentField>();
   final _formController = new MyFormController();
   final BranchingLogicEvaluator _branchingLogicEvaluator;
@@ -121,23 +129,34 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
       formWidgets.add(_createEditWidgetGroup(context, field));
     }
     formWidgets.add(SizedBox(height: 30));
-    formWidgets.add(ElevatedButton(
-        //Save button
-        onPressed: () {
-          FocusScope.of(context).unfocus(); //to unfocus text fields
-          if (!_formController.validate()) {
-            Scaffold.of(context).showSnackBar(SnackBar(
-                content: Text(
-                    'Ошибка ввода данных - ошибочные поля отмечены красным')));
-            return;
-          }
-          _formController.save();
-          _cleanupEditedInstance();
-          _saveFunction(context); //This will change current view
-        },
-        style:
-            ButtonStyle(minimumSize: MaterialStateProperty.all(Size(150, 50))),
-        child: Text("СОХРАНИТЬ", style: Theme.of(context).textTheme.button)));
+    formWidgets.add(_createBottomButton("ПРОВЕРИТЬ", () {
+      FocusScope.of(context).unfocus(); //to unfocus text fields
+      if (!_formController.validate()) {
+        Scaffold.of(context).showSnackBar(SnackBar(
+            content:
+                Text('Ошибка ввода данных - ошибочные поля отмечены красным')));
+      }
+    }));
+    if (_saveFunction != null) {
+      formWidgets
+          .add(_createBottomButton("СОХРАНИТЬ (чтобы отправить позже)", () {
+        FocusScope.of(context).unfocus(); //to unfocus text fields
+        _saveFunction(context);
+      }));
+    }
+    formWidgets.add(_createBottomButton("ОТПРАВИТЬ", () {
+      FocusScope.of(context).unfocus(); //to unfocus text fields
+      if (!_formController.validate()) {
+        Scaffold.of(context).showSnackBar(SnackBar(
+            content:
+                Text('Ошибка ввода данных - ошибочные поля отмечены красным')));
+        return;
+      }
+      _formController.save();
+      _cleanupEditedInstance();
+      _sendFunction(context); //This will change current view
+    }));
+
     return new SliverPadding(
         padding: EdgeInsets.symmetric(vertical: 30, horizontal: 2),
         sliver: SliverList(delegate: SliverChildListDelegate(formWidgets)));
@@ -339,5 +358,15 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
         }
       }
     } while (needToRecheck);
+  }
+
+  Widget _createBottomButton(String text, void Function() onPressed) {
+    return Padding(
+        padding: EdgeInsets.only(bottom: 25),
+        child: ElevatedButton(
+            onPressed: onPressed,
+            style: ButtonStyle(
+                minimumSize: MaterialStateProperty.all(Size(150, 50))),
+            child: Text(text, style: Theme.of(context).textTheme.button)));
   }
 }

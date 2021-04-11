@@ -7,12 +7,13 @@ class SavedForm {
   String formName;
   String secondaryId;
 
-  final InstrumentInstance instance = new InstrumentInstance(null);
+  InstrumentInstance instrumentInstance;
 
   SavedForm(
       {this.tokenHash,
       this.id,
       this.lastEditTime,
       this.formName,
-      this.secondaryId});
+      this.secondaryId,
+      this.instrumentInstance});
 }

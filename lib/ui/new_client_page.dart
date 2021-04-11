@@ -86,7 +86,8 @@ class NewClientPage extends StatelessWidget {
                               null,
                               _projectInfo.initInstrument,
                               _instrumentInstance,
-                              saveData),
+                              null,
+                              sendData),
                           SliverOverlapInjector(
                             // This is the flip side of the SliverOverlapAbsorber
                             // above.
@@ -101,7 +102,7 @@ class NewClientPage extends StatelessWidget {
             )));
   }
 
-  Future<void> saveData(BuildContext context) async {
+  Future<void> sendData(BuildContext context) async {
     try {
       var recordId = await _connection.createNewRecord(1, _instrumentInstance);
       if (recordId == null) {

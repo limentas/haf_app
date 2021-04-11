@@ -19,7 +19,8 @@ import 'text_validation_type.dart';
 class ProjectInfo {
   final String name;
   final instrumentsByOid = new Map<String, InstrumentInfo>(); //Key - OID
-  final instrumentsByName = new Map<String, InstrumentInfo>(); //Key - Name
+  final instrumentsByName =
+      new Map<String, InstrumentInfo>(); //Key - Form name ID
   final repeatInstruments = new List<InstrumentInfo>();
   final fieldsByVariable =
       new Map<String, InstrumentField>(); //Key - field Name
