@@ -3,17 +3,18 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:haf_spb_app/model/client_info.dart';
-import 'package:haf_spb_app/model/instrument_info.dart';
 import "package:intl/intl.dart";
 
 import '../../logger.dart';
 import '../../model/saved_form.dart';
 import '../../model/send_form_mixin.dart';
+import '../../model/client_info.dart';
+import '../../model/instrument_info.dart';
 import '../../server_connection.dart';
 import '../../model/project_info.dart';
 import '../../storage.dart';
-import '../form_instance_edit.dart';
+import '../client_page.dart';
+import '../form_instance_edit.scaffold.dart';
 
 class SavedFormsTab extends StatefulWidget {
   SavedFormsTab(this._connection, this._projectInfo, {Key key})
@@ -128,12 +129,13 @@ class _SavedFormsTabState extends State<SavedFormsTab> with SendFormMixin {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => FormInstanceEdit(
+          builder: (context) => FormInstanceEditScaffold(
               _connection,
               _projectInfo,
               clientInfo,
               instrumentInfo,
               savedForm.instrumentInstance,
+              "Редактирование ${instrumentInfo.formName}",
               (context) => _saveAgain(context, savedForm),
               (context) => _sendSavedForm(
                   context, savedForm, instrumentInfo, clientInfo)),
@@ -146,6 +148,9 @@ class _SavedFormsTabState extends State<SavedFormsTab> with SendFormMixin {
 
   void _saveAgain(BuildContext context, SavedForm savedForm) async {
     await Storage.updateSavedFormVars(savedForm);
+    setState(() {});
+
+    Navigator.pop(context);
   }
 
   void _sendSavedForm(BuildContext context, SavedForm savedForm,
@@ -162,6 +167,16 @@ class _SavedFormsTabState extends State<SavedFormsTab> with SendFormMixin {
       }
 
       Storage.removeSavedForm(savedForm);
+
+      //Navigating to client info form where previous form is main page
+      Navigator.pop(context);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ClientPage(
+              _connection, _projectInfo, clientInfo.secondaryId, clientInfo),
+        ),
+      );
     } on TimeoutException catch (e) {
       logger.e("TimeoutException during creating new client", e);
       Scaffold.of(context).showSnackBar(SnackBar(

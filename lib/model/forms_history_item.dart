@@ -1,4 +1,5 @@
 class FormsHistoryItem {
+  int id = -1;
   final String tokenHash;
   DateTime lastEditTime;
   String formName;
@@ -6,7 +7,8 @@ class FormsHistoryItem {
   int instanceNumber;
 
   FormsHistoryItem(
-      {this.tokenHash,
+      {this.id,
+      this.tokenHash,
       this.lastEditTime,
       this.formName,
       this.secondaryId,

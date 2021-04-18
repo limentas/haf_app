@@ -151,6 +151,35 @@ class Storage {
     }
   }
 
+  static void removeHistoryItem(FormsHistoryItem historyItem) {
+    try {
+      _database.delete(_forms_history_table,
+          where: "\$id = ?", whereArgs: [historyItem.id]);
+      _formsHistory.removeWhere((element) => element.id == historyItem.id);
+    } on Exception catch (e) {
+      logger.e("Storage::removeHistoryItem exception ", e);
+    }
+  }
+
+  static void updateHistoryItem(FormsHistoryItem historyItem) {
+    historyItem.lastEditTime = DateTime.now();
+
+    try {
+      _database.update(
+          _forms_history_table,
+          {
+            "last_edit_time":
+                historyItem.lastEditTime.millisecondsSinceEpoch ~/ 1000,
+          },
+          where: "\$id = ?",
+          whereArgs: [historyItem.id]);
+      _formsHistory.removeWhere((element) => element.id == historyItem.id);
+      _formsHistory.add(historyItem);
+    } on Exception catch (e) {
+      logger.e("Storage::updateHistoryItem exception ", e);
+    }
+  }
+
   static Future<Multimap<String, String>> _loadDefaultValues() async {
     await _openDatabase();
 
@@ -208,6 +237,7 @@ class Storage {
       return List.generate(itemsMap.length, (i) {
         var item = itemsMap[i];
         return FormsHistoryItem(
+            id: item["id"],
             tokenHash: item["api_token"],
             lastEditTime:
                 DateTime.fromMillisecondsSinceEpoch(item["last_edit_time"]),
@@ -222,8 +252,6 @@ class Storage {
     return null;
   }
 
-  //TODO: clean database on init: remove outdated history items
-
   static Future<void> _openDatabase() async {
     if (_database != null) return;
 
@@ -237,6 +265,7 @@ class Storage {
           }
           if (oldVersion < 2 && newVersion >= 2) {
             await db.execute("CREATE TABLE $_forms_history_table("
+                "id INTEGER PRIMARY KEY, "
                 "api_token TEXT, "
                 "last_edit_time INTEGER, "
                 "form_name TEXT, "
@@ -260,6 +289,22 @@ class Storage {
       );
     } on Exception catch (e) {
       logger.e("Storage::_openDatabase exception ", e);
+    }
+
+    await _cleanDatabase();
+  }
+
+  static Future<void> _cleanDatabase() async {
+    if (_database == null) return;
+
+    var now = DateTime.now();
+    var lastEditDateTime = DateTime(now.year, now.month, now.day);
+    try {
+      _database.delete(_forms_history_table,
+          where: "\$last_edit_time < ?",
+          whereArgs: [lastEditDateTime.millisecondsSinceEpoch ~/ 1000]);
+    } on Exception catch (e) {
+      logger.e("Storage::_cleanDatabase exception ", e);
     }
   }
 }

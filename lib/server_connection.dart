@@ -60,7 +60,7 @@ class ServerConnection {
     }
     if (response.statusCode != HttpStatus.ok) return null;
 
-    return parseClientInfoJson(projectInfo, response.body);
+    return _parseClientInfoJson(projectInfo, response.body);
   }
 
   Future<ClientInfo> retreiveClientInfoByRecordId(
@@ -79,10 +79,10 @@ class ServerConnection {
     }
     if (response.statusCode != HttpStatus.ok) return null;
 
-    return parseClientInfoJson(projectInfo, response.body);
+    return _parseClientInfoJson(projectInfo, response.body);
   }
 
-  ClientInfo parseClientInfoJson(ProjectInfo projectInfo, String jsonData) {
+  ClientInfo _parseClientInfoJson(ProjectInfo projectInfo, String jsonData) {
     try {
       var recordsList = _parseRedcapRecordsArray(jsonData);
       if (recordsList == null || recordsList.isEmpty) return null;
@@ -148,6 +148,13 @@ class ServerConnection {
 
   Future<int> editNonRepeatForm(int recordId, InstrumentInstance instance) {
     return importRecord(recordId, null, null, instance, false);
+  }
+
+  Future<bool> editRepeatInstanceForm(InstrumentInfo instrumentInfo,
+      int recordId, InstrumentInstance instance) async {
+    var id = importRecord(
+        recordId, instrumentInfo.formNameId, instance.number, instance, false);
+    return id != null;
   }
 
   ///Returns new record id
