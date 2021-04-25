@@ -110,10 +110,7 @@ class _UpDownIntFieldState extends State<UpDownIntField>
       });
       return _errorMessage == null;
     }, () {
-      if (_currentValueText != _textController.text) {
-        _currentValueText = _textController.text;
-        _onChanged([_currentValueText]);
-      }
+      _checkNewValue();
       _onSaved([_currentValueText]);
     });
   }
@@ -126,15 +123,25 @@ class _UpDownIntFieldState extends State<UpDownIntField>
   }
 
   String validate() {
+    _checkNewValue();
+
     String result;
     if (_isMandatory) result = Utils.checkMandatory(_currentValueText);
+
     //Notify for the first time or when status changed
     if (!_validateStatusWasNotified || _lastNotifiedValidateStatus != result) {
       _onValidateStatusChanged(result);
       _lastNotifiedValidateStatus = result;
       _validateStatusWasNotified = true;
     }
+
     return result;
+  }
+
+  void _checkNewValue() {
+    if (_textController.text == _currentValueText) return;
+    var newValueInt = int.tryParse(_textController.text);
+    if (newValueInt != null) currentValue = newValueInt;
   }
 
   @override
@@ -194,11 +201,9 @@ class _UpDownIntFieldState extends State<UpDownIntField>
                     textAlign: TextAlign.center,
                     style: Style.fieldRegularTextStyle,
                     controller: _textController,
-                    onSubmitted: (newValue) {
-                      if (newValue == _currentValueText) return;
-                      var newValueInt = int.tryParse(_textController.text);
-                      if (newValueInt != null) currentValue = newValueInt;
-                    },
+                    onSubmitted: (value) => _checkNewValue,
+                    onEditingComplete: _checkNewValue,
+                    onChanged: (value) => _checkNewValue,
                     inputFormatters: <TextInputFormatter>[
                       FilteringTextInputFormatter.allow(RegExp(r'^-|\d\d*')),
                     ],

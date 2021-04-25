@@ -14,7 +14,7 @@ import '../../server_connection.dart';
 import '../../model/project_info.dart';
 import '../../storage.dart';
 import '../client_page.dart';
-import '../form_instance_edit.scaffold.dart';
+import '../form_instance_edit_scaffold.dart';
 
 class SavedFormsTab extends StatefulWidget {
   SavedFormsTab(this._connection, this._projectInfo, {Key key})
@@ -168,13 +168,21 @@ class _SavedFormsTabState extends State<SavedFormsTab> with SendFormMixin {
 
       Storage.removeSavedForm(savedForm);
 
+      var updatedClientInfo = await _connection.retreiveClientInfo(
+          _projectInfo, savedForm.secondaryId);
+
+      if (updatedClientInfo == null) {
+        logger.w("Client with a such secondId doesn't exist anymore");
+        return;
+      }
+
       //Navigating to client info form where previous form is main page
       Navigator.pop(context);
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => ClientPage(
-              _connection, _projectInfo, clientInfo.secondaryId, clientInfo),
+          builder: (context) => ClientPage(_connection, _projectInfo,
+              updatedClientInfo.secondaryId, updatedClientInfo),
         ),
       );
     } on TimeoutException catch (e) {

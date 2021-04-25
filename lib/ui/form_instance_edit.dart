@@ -129,14 +129,6 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
       formWidgets.add(_createEditWidgetGroup(context, field));
     }
     formWidgets.add(SizedBox(height: 30));
-    formWidgets.add(_createBottomButton("ПРОВЕРИТЬ", () {
-      FocusScope.of(context).unfocus(); //to unfocus text fields
-      if (!_formController.validate()) {
-        Scaffold.of(context).showSnackBar(SnackBar(
-            content:
-                Text('Ошибка ввода данных - ошибочные поля отмечены красным')));
-      }
-    }));
     if (_saveFunction != null) {
       formWidgets
           .add(_createBottomButton("СОХРАНИТЬ (чтобы отправить позже)", () {

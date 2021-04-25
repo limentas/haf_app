@@ -150,7 +150,7 @@ class ClientInfo {
 
   int getNextInstrumentInstanceNumber(String instrumentName) {
     final instrument = repeatInstruments[instrumentName];
-    if (instrument == null) return 1;
+    if (instrument == null || instrument.isEmpty) return 1;
     final maxInstanceNumber = instrument.keys.reduce((a, b) => a > b ? a : b);
     return maxInstanceNumber + 1;
   }

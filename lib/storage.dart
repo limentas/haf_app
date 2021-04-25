@@ -90,7 +90,7 @@ class Storage {
   static void removeSavedForm(SavedForm savedForm) async {
     try {
       await _database.delete(_saved_forms_references_table,
-          where: "\$id = ?", whereArgs: [savedForm.id]);
+          where: "id = ?", whereArgs: [savedForm.id]);
 
       _savedForms.removeWhere((element) => element.id == savedForm.id);
     } on Exception catch (e) {
@@ -110,11 +110,11 @@ class Storage {
             "last_edit_time":
                 savedForm.lastEditTime.millisecondsSinceEpoch ~/ 1000,
           },
-          where: "\$id = ?",
+          where: "id = ?",
           whereArgs: [savedForm.id]);
 
       batch.delete(_saved_forms_table,
-          where: "\$reference_id = ?", whereArgs: [savedForm.id]);
+          where: "reference_id = ?", whereArgs: [savedForm.id]);
 
       savedForm.instrumentInstance.valuesMap.forEach((key, value) {
         batch.insert(_saved_forms_table,
@@ -154,7 +154,7 @@ class Storage {
   static void removeHistoryItem(FormsHistoryItem historyItem) {
     try {
       _database.delete(_forms_history_table,
-          where: "\$id = ?", whereArgs: [historyItem.id]);
+          where: "id = ?", whereArgs: [historyItem.id]);
       _formsHistory.removeWhere((element) => element.id == historyItem.id);
     } on Exception catch (e) {
       logger.e("Storage::removeHistoryItem exception ", e);
@@ -171,7 +171,7 @@ class Storage {
             "last_edit_time":
                 historyItem.lastEditTime.millisecondsSinceEpoch ~/ 1000,
           },
-          where: "\$id = ?",
+          where: "id = ?",
           whereArgs: [historyItem.id]);
       _formsHistory.removeWhere((element) => element.id == historyItem.id);
       _formsHistory.add(historyItem);
@@ -212,7 +212,7 @@ class Storage {
             secondaryId: savedFormItem["secondary_id"]);
 
         var items = await _database.query(_saved_forms_table,
-            where: "\$reference_id = ?", whereArgs: [savedForm.id]);
+            where: "reference_id = ?", whereArgs: [savedForm.id]);
         for (var item in items) {
           savedForm.instrumentInstance.valuesMap
               .add(item["variable"], item["value"]);
@@ -239,8 +239,8 @@ class Storage {
         return FormsHistoryItem(
             id: item["id"],
             tokenHash: item["api_token"],
-            lastEditTime:
-                DateTime.fromMillisecondsSinceEpoch(item["last_edit_time"]),
+            lastEditTime: DateTime.fromMillisecondsSinceEpoch(
+                item["last_edit_time"] * 1000),
             formName: item["form_name"],
             secondaryId: item["secondary_id"],
             instanceNumber: item["instance_number"]);
@@ -287,11 +287,11 @@ class Storage {
         },
         version: 2,
       );
+
+      await _cleanDatabase();
     } on Exception catch (e) {
       logger.e("Storage::_openDatabase exception ", e);
     }
-
-    await _cleanDatabase();
   }
 
   static Future<void> _cleanDatabase() async {
@@ -300,9 +300,10 @@ class Storage {
     var now = DateTime.now();
     var lastEditDateTime = DateTime(now.year, now.month, now.day);
     try {
-      _database.delete(_forms_history_table,
-          where: "\$last_edit_time < ?",
+      var deletedItems = await _database.delete(_forms_history_table,
+          where: "last_edit_time < ?",
           whereArgs: [lastEditDateTime.millisecondsSinceEpoch ~/ 1000]);
+      logger.d("Deleted $deletedItems items from history database");
     } on Exception catch (e) {
       logger.e("Storage::_cleanDatabase exception ", e);
     }

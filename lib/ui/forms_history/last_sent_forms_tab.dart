@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -14,7 +15,7 @@ import '../../model/client_info.dart';
 import '../../model/instrument_info.dart';
 import '../../storage.dart';
 import '../client_page.dart';
-import '../form_instance_edit.scaffold.dart';
+import '../form_instance_edit_scaffold.dart';
 
 class LastSentFormsTab extends StatefulWidget {
   LastSentFormsTab(this._connection, this._projectInfo, {Key key})
@@ -34,7 +35,7 @@ class _LastSentFormsTabState extends State<LastSentFormsTab> {
 
   final ServerConnection _connection;
   final ProjectInfo _projectInfo;
-  Iterable<FormsHistoryItem> _formsHistory;
+  SplayTreeSet<FormsHistoryItem> _formsHistory;
 
   final _titleTextStyle = new TextStyle(color: Colors.grey[700], fontSize: 16);
   final _valueTextStyle = new TextStyle(color: Colors.black, fontSize: 18);
@@ -43,13 +44,17 @@ class _LastSentFormsTabState extends State<LastSentFormsTab> {
   void initState() {
     super.initState();
 
-    _formsHistory = Storage.getFormsHistory();
+    //Will sort elements in order from latest to earliest
+    _formsHistory = SplayTreeSet.of(Storage.getFormsHistory(), (left, right) {
+      return -left.lastEditTime.compareTo(right.lastEditTime);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return SliverFixedExtentList(
       delegate: SliverChildListDelegate.fixed(_formsHistory
+          .toList()
           .map((savedForm) => Card(
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
@@ -142,8 +147,6 @@ class _LastSentFormsTabState extends State<LastSentFormsTab> {
         return;
       }
 
-      Storage.updateHistoryItem(historyItem);
-
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -155,8 +158,8 @@ class _LastSentFormsTabState extends State<LastSentFormsTab> {
               instrumentInstance,
               "Редактирование ${instrumentInfo.formName}",
               null, //save button should be invisible
-              (context) => _sendUpdatedForm(
-                  context, instrumentInfo, clientInfo, instrumentInstance)),
+              (context) => _sendUpdatedForm(context, instrumentInfo, clientInfo,
+                  instrumentInstance, historyItem)),
         ),
       );
     } on SocketException catch (e) {
@@ -164,8 +167,12 @@ class _LastSentFormsTabState extends State<LastSentFormsTab> {
     }
   }
 
-  void _sendUpdatedForm(BuildContext context, InstrumentInfo instrumentInfo,
-      ClientInfo clientInfo, InstrumentInstance instrumentInstance) async {
+  void _sendUpdatedForm(
+      BuildContext context,
+      InstrumentInfo instrumentInfo,
+      ClientInfo clientInfo,
+      InstrumentInstance instrumentInstance,
+      FormsHistoryItem historyItem) async {
     try {
       var result = await _connection.editRepeatInstanceForm(
           instrumentInfo, clientInfo.recordId, instrumentInstance);
@@ -176,6 +183,8 @@ class _LastSentFormsTabState extends State<LastSentFormsTab> {
                 Text('Ошибка добавления данных - свяжитесь с разработчиком')));
         return;
       }
+
+      Storage.updateHistoryItem(historyItem);
 
       //Navigating to client info form where previous form is main page
       Navigator.pop(context);
