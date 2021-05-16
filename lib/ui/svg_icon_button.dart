@@ -27,6 +27,7 @@ class SvgIconButton extends StatelessWidget {
         child: RaisedButton(
             materialTapTargetSize: MaterialTapTargetSize.padded,
             child: SvgPicture.asset(
+              //TODO: replace to standard icons
               iconName,
               width: iconWidth,
             ),

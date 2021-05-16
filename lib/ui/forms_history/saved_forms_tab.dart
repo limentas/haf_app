@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import "package:intl/intl.dart";
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 import '../../logger.dart';
 import '../../model/saved_form.dart';
@@ -13,6 +13,7 @@ import '../../model/instrument_info.dart';
 import '../../server_connection.dart';
 import '../../model/project_info.dart';
 import '../../storage.dart';
+import '../busy_indicator_dialog.dart';
 import '../client_page.dart';
 import '../form_instance_edit_scaffold.dart';
 
@@ -50,10 +51,26 @@ class _SavedFormsTabState extends State<SavedFormsTab> with SendFormMixin {
   Widget build(BuildContext context) {
     return SliverFixedExtentList(
       delegate: SliverChildListDelegate.fixed(_savedForms
-          .map((savedForm) => Dismissible(
-              //TODO: replace with something less error-prone
-              key: ValueKey<int>(1),
-              direction: DismissDirection.startToEnd,
+          .map((savedForm) => Slidable(
+              actionPane: SlidableDrawerActionPane(),
+              actions: [
+                SlideAction(
+                  child: Card(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      child: Container(
+                          constraints: BoxConstraints.expand(),
+                          child: Icon(Icons.delete,
+                              color: Colors.red[900], size: 40))),
+                  onTap: () {
+                    setState(() {
+                      Storage.removeSavedForm(savedForm);
+                      _savedForms = Storage.getSavedForms();
+                    });
+                  },
+                )
+              ],
+              actionExtentRatio: 0.2,
               child: Card(
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
@@ -83,8 +100,8 @@ class _SavedFormsTabState extends State<SavedFormsTab> with SendFormMixin {
                             IconButton(
                               onPressed: () =>
                                   _editSavedForm(context, savedForm),
-                              icon: SvgPicture.asset('resources/icons/edit.svg',
-                                  width: 40),
+                              iconSize: 40,
+                              icon: Icon(Icons.edit),
                             )
                           ])))))
           .toList()),
@@ -118,6 +135,8 @@ class _SavedFormsTabState extends State<SavedFormsTab> with SendFormMixin {
     }
 
     try {
+      BusyIndicatorDialog.show(context);
+
       var clientInfo = await _connection.retreiveClientInfo(
           _projectInfo, savedForm.secondaryId);
 
@@ -126,7 +145,8 @@ class _SavedFormsTabState extends State<SavedFormsTab> with SendFormMixin {
         return;
       }
 
-      Navigator.push(
+      BusyIndicatorDialog.close(context);
+      await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => FormInstanceEditScaffold(
@@ -143,6 +163,8 @@ class _SavedFormsTabState extends State<SavedFormsTab> with SendFormMixin {
       );
     } on SocketException catch (e) {
       logger.e("_SavedFormsTabState: caught SocketException", e);
+    } finally {
+      BusyIndicatorDialog.close(context);
     }
   }
 

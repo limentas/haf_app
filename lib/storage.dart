@@ -3,6 +3,7 @@ import 'package:quiver/collection.dart';
 import 'package:sqflite/sqflite.dart';
 import 'logger.dart';
 import 'model/empirical_evidence.dart';
+import 'model/instrument_instance.dart';
 import 'model/saved_form.dart';
 import 'model/forms_history_item.dart';
 
@@ -57,6 +58,10 @@ class Storage {
     }
 
     await batch.commit();
+  }
+
+  static bool hasSavedForms() {
+    return _savedForms.isNotEmpty;
   }
 
   static Iterable<SavedForm> getSavedForms() {
@@ -209,7 +214,8 @@ class Storage {
             lastEditTime: DateTime.fromMillisecondsSinceEpoch(
                 savedFormItem["last_edit_time"] * 1000),
             formName: savedFormItem["form_name"],
-            secondaryId: savedFormItem["secondary_id"]);
+            secondaryId: savedFormItem["secondary_id"],
+            instrumentInstance: new InstrumentInstance(-1));
 
         var items = await _database.query(_saved_forms_table,
             where: "reference_id = ?", whereArgs: [savedForm.id]);

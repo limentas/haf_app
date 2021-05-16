@@ -334,7 +334,7 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
   ///Will clean all variables values that is hidden by branching logic
   void _cleanupEditedInstance() {
     var needToRecheck = false;
-    //It is possible when on value depends on another value,
+    //It is possible when one value depends on another value,
     //that depends on another value and we have to clean both of them.
     //So we should check is there any variable that depends on this hidden variable.
     //And if so we should recheck all again.
