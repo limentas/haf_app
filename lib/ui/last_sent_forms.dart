@@ -7,31 +7,32 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haf_spb_app/model/instrument_instance.dart';
 import "package:intl/intl.dart";
 
-import '../../logger.dart';
-import '../../server_connection.dart';
-import '../../model/project_info.dart';
-import '../../model/forms_history_item.dart';
-import '../../model/client_info.dart';
-import '../../model/instrument_info.dart';
-import '../../storage.dart';
-import '../client_page.dart';
-import '../form_instance_edit_scaffold.dart';
+import '../logger.dart';
+import '../server_connection.dart';
+import '../model/project_info.dart';
+import '../model/forms_history_item.dart';
+import '../model/client_info.dart';
+import '../model/instrument_info.dart';
+import '../storage.dart';
+import 'client_page.dart';
+import 'form_instance_edit_scaffold.dart';
+import 'non_repeat_form_edit.dart';
 
-class LastSentFormsTab extends StatefulWidget {
-  LastSentFormsTab(this._connection, this._projectInfo, {Key key})
+class LastSentForms extends StatefulWidget {
+  LastSentForms(this._connection, this._projectInfo, {Key key})
       : super(key: key);
 
   final ServerConnection _connection;
   final ProjectInfo _projectInfo;
 
   @override
-  _LastSentFormsTabState createState() {
-    return _LastSentFormsTabState(_connection, _projectInfo);
+  _LastSentFormsState createState() {
+    return _LastSentFormsState(_connection, _projectInfo);
   }
 }
 
-class _LastSentFormsTabState extends State<LastSentFormsTab> {
-  _LastSentFormsTabState(this._connection, this._projectInfo);
+class _LastSentFormsState extends State<LastSentForms> {
+  _LastSentFormsState(this._connection, this._projectInfo);
 
   final ServerConnection _connection;
   final ProjectInfo _projectInfo;
@@ -129,39 +130,50 @@ class _LastSentFormsTabState extends State<LastSentFormsTab> {
         return;
       }
 
-      var instances = clientInfo.repeatInstruments[instrumentInfo.formNameId];
-      if (instances == null) {
-        logger.w("There are no instances of this instrument for this client");
-        Scaffold.of(context).showSnackBar(
-            SnackBar(content: Text("Не найден экземпляр формы в базе")));
-        Storage.removeHistoryItem(historyItem);
-        return;
-      }
+      if (instrumentInfo.isRepeating) {
+        var instances = clientInfo.repeatInstruments[instrumentInfo.formNameId];
+        if (instances == null) {
+          logger.w("There are no instances of this instrument for this client");
+          Scaffold.of(context).showSnackBar(
+              SnackBar(content: Text("Не найден экземпляр формы в базе")));
+          Storage.removeHistoryItem(historyItem);
+          return;
+        }
 
-      var instrumentInstance = instances[historyItem.instanceNumber];
-      if (instrumentInstance == null) {
-        logger.w("Client with a such secondId doesn't exist anymore");
-        Scaffold.of(context).showSnackBar(
-            SnackBar(content: Text("Не найден экземпляр формы в базе")));
-        Storage.removeHistoryItem(historyItem);
-        return;
-      }
+        var instrumentInstance = instances[historyItem.instanceNumber];
+        if (instrumentInstance == null) {
+          logger.w("Client with a such secondId doesn't exist anymore");
+          Scaffold.of(context).showSnackBar(
+              SnackBar(content: Text("Не найден экземпляр формы в базе")));
+          Storage.removeHistoryItem(historyItem);
+          return;
+        }
 
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => FormInstanceEditScaffold(
-              _connection,
-              _projectInfo,
-              clientInfo,
-              instrumentInfo,
-              instrumentInstance,
-              "Редактирование ${instrumentInfo.formName}",
-              null, //save button should be invisible
-              (context) => _sendUpdatedForm(context, instrumentInfo, clientInfo,
-                  instrumentInstance, historyItem)),
-        ),
-      );
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => FormInstanceEditScaffold(
+                _connection,
+                _projectInfo,
+                clientInfo,
+                instrumentInfo,
+                instrumentInstance,
+                "Редактирование ${instrumentInfo.formName}",
+                (context) => _sendUpdatedForm(context, instrumentInfo,
+                    clientInfo, instrumentInstance, historyItem)),
+          ),
+        );
+      } else {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => NonRepeatFormEdit(
+                    _connection,
+                    _projectInfo,
+                    clientInfo,
+                    instrumentInfo,
+                    clientInfo.recordId)));
+      }
     } on SocketException catch (e) {
       logger.e("_SavedFormsTabState: caught SocketException", e);
     }

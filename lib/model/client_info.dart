@@ -1,5 +1,8 @@
 import 'package:quiver/collection.dart';
+import "package:intl/intl.dart";
 
+import '../constants.dart';
+import '../logger.dart';
 import 'form_instances_status.dart';
 import 'visit_info.dart';
 import 'project_info.dart';
@@ -43,6 +46,21 @@ class ClientInfo {
     if (secondaryId == null || secondaryId.isEmpty) return null;
     _secondaryId = secondaryId.first;
     return _secondaryId;
+  }
+
+  DateTime _creationDateTime;
+
+  DateTime get creationDateTime {
+    if (_creationDateTime != null) return _creationDateTime;
+    var creationDateTime = valuesMap[EmpiricalEvidence.clientCreationDateTime];
+    if (creationDateTime == null || creationDateTime.isEmpty) return null;
+    try {
+      _creationDateTime = DateFormat(Constants.defaultDateTimeFormat)
+          .parse(creationDateTime.first);
+    } on FormatException catch (e) {
+      logger.e("Creation DateTime format exception", e);
+    }
+    return _creationDateTime;
   }
 
   VisitInfo getLastVisit(ProjectInfo projectInfo) {

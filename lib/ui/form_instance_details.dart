@@ -10,7 +10,7 @@ import '../model/instrument_instance.dart';
 
 class FormInstanceDetails extends StatelessWidget {
   FormInstanceDetails(ProjectInfo projectInfo, ClientInfo clientInfo,
-      this._instrumentInfo, this._instrumentInstance, this._editable,
+      this._instrumentInfo, this._instrumentInstance,
       {Key key})
       : _branchingLogicEvaluator =
             BranchingLogicEvaluator(projectInfo, clientInfo),
@@ -18,7 +18,6 @@ class FormInstanceDetails extends StatelessWidget {
 
   final InstrumentInfo _instrumentInfo;
   final InstrumentInstance _instrumentInstance;
-  final bool _editable;
 
   final _keyTextStyle = new TextStyle(color: Colors.grey[700], fontSize: 16);
   final _valueTextStyle = new TextStyle(color: Colors.black, fontSize: 18);

@@ -73,7 +73,7 @@ class FormInstanceDetailsPage extends StatelessWidget {
                             context),
                       ),
                       FormInstanceDetails(_projectInfo, _clientInfo,
-                          _instrumentInfo, _instrumentInstance, false),
+                          _instrumentInfo, _instrumentInstance),
                     ],
                   );
                 },

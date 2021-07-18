@@ -2,16 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../user_info.dart';
 import '../logger.dart';
 import '../model/instrument_instance.dart';
 import '../model/instrument_info.dart';
 import '../model/client_info.dart';
 import '../model/project_info.dart';
-import '../model/saved_form.dart';
 import '../model/send_form_mixin.dart';
 import '../server_connection.dart';
-import '../storage.dart';
 import 'form_instance_edit.dart';
 
 class NewRepeatingFormInstanceEdit extends StatelessWidget with SendFormMixin {
@@ -94,27 +91,12 @@ class NewRepeatingFormInstanceEdit extends StatelessWidget with SendFormMixin {
                               _clientInfo,
                               _instrumentInfo,
                               _instrumentInstance,
-                              _saveData,
                               _sendData),
                         ],
                       ));
                 },
               ),
             )));
-  }
-
-  void _saveData(BuildContext context) {
-    final savedForm = new SavedForm(
-        tokenHash: UserInfo.tokenHash,
-        lastEditTime: DateTime.now(),
-        formName: _instrumentInfo.formNameId,
-        secondaryId: _clientInfo.secondaryId,
-        instrumentInstance: _instrumentInstance);
-    Storage.addSavedForm(savedForm);
-
-    //Return to the previous view.
-    //Result is sign: do we need to refresh current client's info
-    Navigator.pop(context, true);
   }
 
   Future<void> _sendData(BuildContext context) async {

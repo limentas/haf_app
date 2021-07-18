@@ -41,9 +41,27 @@ class EmpiricalEvidence {
     "institution_swr": "institution#unified", //Учреждение (distribution_form)
     "institution_cns": "institution#unified", //Учреждение (consulting_form)
     "institution_test": "institution#unified", //Учреждение (test_form)
+    "org_initial":
+        "organisation#unified", //Участник посетил организацию (initial_form)
+    "org_swr":
+        "organisation#unified", //Участник посетил организацию (distribution_form)
+    "org_cns":
+        "organisation#unified", //Участник посетил организацию (consulting_form)
+    "org_test":
+        "organisation#unified", //Участник посетил организацию (test_form)
+    "org_other_initial":
+        "organisation_other#unified", //Участник посетил организацию другое (initial_form)
+    "org_other_swr":
+        "organisation_other#unified", //Участник посетил организацию другое (distribution_form)
+    "org_other_cns":
+        "organisation_other#unified", //Участник посетил организацию другое (consulting_form)
+    "org_other_test":
+        "organisation_other#unified", //Участник посетил организацию другое (test_form)
   });
 
   static String secondaryId;
+
+  static const String clientCreationDateTime = "user_initial_date";
 
   static bool isFieldSecondaryId(InstrumentField field) {
     return field.variable == secondaryId;

@@ -76,10 +76,8 @@ class ProjectInfo {
             case "redcap:CustomLabel":
               customLabels = attr.value.isEmpty
                   ? []
-                  : attr.value
-                      .split(", ")
-                      .map((e) =>
-                          e.length < 2 ? "" : e.substring(1, e.length - 1))
+                  : SmartVariablesDependenciesExtractor.getVariablesDependOn(
+                          attr.value)
                       .toList();
               break;
           }

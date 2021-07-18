@@ -15,8 +15,17 @@ class CheckboxesFieldType extends FieldType {
             Utils.parseCheckboxesChoises(codeLists.first.checkboxesChoices);
 
   @override
-  String toReadableForm(Iterable<String> value) =>
-      value.map((value) => codeMap[value]).join(', ');
+  String toReadableForm(Iterable<String> value) {
+    if (value.isEmpty) return "";
+    var res = "";
+    for (var code in value) {
+      var val = codeMap[code];
+      if (val == null) continue;
+      if (res.isNotEmpty) res += ", ";
+      res += val;
+    }
+    return res;
+  }
 
   @override
   Iterable<String> parseDefaultValue(String defaultValue) {

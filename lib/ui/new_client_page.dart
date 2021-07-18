@@ -5,11 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:quiver/strings.dart';
 
 import '../logger.dart';
+import '../storage.dart';
+import '../user_info.dart';
 import 'client_page.dart';
 import 'form_instance_edit.dart';
 import '../server_connection.dart';
 import '../model/project_info.dart';
 import '../model/instrument_instance.dart';
+import '../model/forms_history_item.dart';
 
 class NewClientPage extends StatelessWidget {
   NewClientPage(this._connection, this._projectInfo, {Key key})
@@ -86,7 +89,6 @@ class NewClientPage extends StatelessWidget {
                               null,
                               _projectInfo.initInstrument,
                               _instrumentInstance,
-                              null,
                               sendData),
                           SliverOverlapInjector(
                             // This is the flip side of the SliverOverlapAbsorber
@@ -111,6 +113,26 @@ class NewClientPage extends StatelessWidget {
                 'Ошибка добавления нового пользователя - свяжитесь с разработчиком')));
         return;
       }
+
+      var secondaryId =
+          _instrumentInstance.valuesMap[_projectInfo.secondaryIdFieldName];
+
+      if (secondaryId.isEmpty) {
+        logger.e("Couldn't get secondary id for the new created client");
+        Scaffold.of(context).showSnackBar(SnackBar(
+            content: Text(
+                'Ошибка добавления нового пользователя - свяжитесь с разработчиком')));
+        return;
+      }
+
+      var historyItem = new FormsHistoryItem(
+          tokenHash: UserInfo.tokenHash,
+          createTime: DateTime.now(),
+          lastEditTime: DateTime.now(),
+          formName: _projectInfo.initInstrument.formNameId,
+          secondaryId: secondaryId.first,
+          instanceNumber: _instrumentInstance.number);
+      Storage.addFormsHistoryItem(historyItem);
 
       await navigateToNewUser(recordId, context);
     } on TimeoutException catch (e) {

@@ -3,20 +3,15 @@ import 'package:quiver/collection.dart';
 import 'package:sqflite/sqflite.dart';
 import 'logger.dart';
 import 'model/empirical_evidence.dart';
-import 'model/instrument_instance.dart';
-import 'model/saved_form.dart';
 import 'model/forms_history_item.dart';
 
 class Storage {
   static const _default_values_table = "default_values";
-  static const _saved_forms_references_table = "saved_forms_references";
-  static const _saved_forms_table = "saved_forms";
   static const _forms_history_table = "forms_history";
 
   static Database _database; //TODO: consider closing the DB
 
   static Multimap<String, String> _defaultValues;
-  static List<SavedForm> _savedForms;
   static List<FormsHistoryItem> _formsHistory;
   static bool _inited = false;
 
@@ -24,7 +19,6 @@ class Storage {
     if (_inited) return;
     try {
       _defaultValues = await _loadDefaultValues();
-      _savedForms = await _loadSavedForms();
       _formsHistory = await _loadFormsHistory();
       _inited = true;
     } on DatabaseException catch (e) {
@@ -60,93 +54,31 @@ class Storage {
     await batch.commit();
   }
 
-  static bool hasSavedForms() {
-    return _savedForms.isNotEmpty;
-  }
-
-  static Iterable<SavedForm> getSavedForms() {
-    return _savedForms;
-  }
-
-  static void addSavedForm(SavedForm savedForm) async {
-    try {
-      var id = await _database.insert(_saved_forms_references_table, {
-        "api_token": savedForm.tokenHash,
-        "last_edit_time": savedForm.lastEditTime.millisecondsSinceEpoch ~/ 1000,
-        "form_name": savedForm.formName,
-        "secondary_id": savedForm.secondaryId
-      });
-
-      savedForm.id = id;
-      var batch = _database.batch();
-      savedForm.instrumentInstance.valuesMap.forEach((key, value) {
-        batch.insert(_saved_forms_table,
-            {"reference_id": id, "variable": key, "value": value});
-      });
-
-      batch.commit(noResult: true);
-
-      _savedForms.add(savedForm);
-    } on Exception catch (e) {
-      logger.e("Storage::addSavedForm exception ", e);
-    }
-  }
-
-  static void removeSavedForm(SavedForm savedForm) async {
-    try {
-      await _database.delete(_saved_forms_references_table,
-          where: "id = ?", whereArgs: [savedForm.id]);
-
-      _savedForms.removeWhere((element) => element.id == savedForm.id);
-    } on Exception catch (e) {
-      logger.e("Storage::removeSavedForm exception ", e);
-    }
-  }
-
-  static Future<void> updateSavedFormVars(SavedForm savedForm) async {
-    try {
-      savedForm.lastEditTime = DateTime.now();
-
-      var batch = _database.batch();
-
-      batch.update(
-          _saved_forms_references_table,
-          {
-            "last_edit_time":
-                savedForm.lastEditTime.millisecondsSinceEpoch ~/ 1000,
-          },
-          where: "id = ?",
-          whereArgs: [savedForm.id]);
-
-      batch.delete(_saved_forms_table,
-          where: "reference_id = ?", whereArgs: [savedForm.id]);
-
-      savedForm.instrumentInstance.valuesMap.forEach((key, value) {
-        batch.insert(_saved_forms_table,
-            {"reference_id": savedForm.id, "variable": key, "value": value});
-      });
-
-      batch.commit(noResult: true);
-
-      _savedForms.removeWhere((form) => form.id == savedForm.id);
-      _savedForms.add(savedForm);
-    } on Exception catch (e) {
-      logger.e("Storage::removeSavedForm exception ", e);
-    }
-  }
-
   static Iterable<FormsHistoryItem> getFormsHistory() {
     return _formsHistory;
   }
 
   static void addFormsHistoryItem(FormsHistoryItem historyItem) {
+    var existentItem = _formsHistory.firstWhere(
+        (element) =>
+            element.secondaryId == historyItem.secondaryId &&
+            element.formName == historyItem.formName &&
+            element.instanceNumber == historyItem.instanceNumber,
+        orElse: () => null);
+    if (existentItem != null) {
+      updateHistoryItem(existentItem);
+      return;
+    }
+
+    //This is a new item
     _formsHistory.add(historyItem);
 
     try {
+      var dbTime = historyItem.lastEditTime.millisecondsSinceEpoch ~/ 1000;
       _database.insert(_forms_history_table, {
         "api_token": historyItem.tokenHash,
-        "last_edit_time":
-            historyItem.lastEditTime.millisecondsSinceEpoch ~/ 1000,
+        "create_time": dbTime,
+        "last_edit_time": dbTime,
         "form_name": historyItem.formName,
         "secondary_id": historyItem.secondaryId,
         "instance_number": historyItem.instanceNumber
@@ -185,6 +117,18 @@ class Storage {
     }
   }
 
+  static FormsHistoryItem findHistoryItem(
+      String secondaryId, String formName, int instanceNumber) {
+    var item = _formsHistory.firstWhere(
+        (element) =>
+            element.secondaryId == secondaryId &&
+            element.formName == formName &&
+            element.instanceNumber == instanceNumber,
+        orElse: () => null);
+    logger.d("find item $secondaryId $formName $instanceNumber $item");
+    return item;
+  }
+
   static Future<Multimap<String, String>> _loadDefaultValues() async {
     await _openDatabase();
 
@@ -194,42 +138,6 @@ class Storage {
           key: (item) => item["var_name"], value: (item) => item["value"]);
     } on Exception catch (e) {
       logger.e("Storage::_loadDefaultValues exception ", e);
-    }
-
-    return null;
-  }
-
-  static Future<Iterable<SavedForm>> _loadSavedForms() async {
-    await _openDatabase();
-
-    try {
-      var formsReferences =
-          await _database.query(_saved_forms_references_table);
-
-      var savedForms = new List<SavedForm>();
-      for (var savedFormItem in formsReferences) {
-        var savedForm = new SavedForm(
-            id: savedFormItem["id"],
-            tokenHash: savedFormItem["api_token"],
-            lastEditTime: DateTime.fromMillisecondsSinceEpoch(
-                savedFormItem["last_edit_time"] * 1000),
-            formName: savedFormItem["form_name"],
-            secondaryId: savedFormItem["secondary_id"],
-            instrumentInstance: new InstrumentInstance(-1));
-
-        var items = await _database.query(_saved_forms_table,
-            where: "reference_id = ?", whereArgs: [savedForm.id]);
-        for (var item in items) {
-          savedForm.instrumentInstance.valuesMap
-              .add(item["variable"], item["value"]);
-        }
-
-        savedForms.add(savedForm);
-      }
-
-      return savedForms;
-    } on Exception catch (e) {
-      logger.e("Storage::_loadSavedForms exception ", e);
     }
 
     return null;
@@ -245,6 +153,8 @@ class Storage {
         return FormsHistoryItem(
             id: item["id"],
             tokenHash: item["api_token"],
+            createTime:
+                DateTime.fromMillisecondsSinceEpoch(item["create_time"] * 1000),
             lastEditTime: DateTime.fromMillisecondsSinceEpoch(
                 item["last_edit_time"] * 1000),
             formName: item["form_name"],
@@ -277,21 +187,16 @@ class Storage {
                 "form_name TEXT, "
                 "secondary_id TEXT, "
                 "instance_number INTEGER)");
-            await db.execute("CREATE TABLE $_saved_forms_references_table("
-                "id INTEGER PRIMARY KEY, "
-                "api_token TEXT, "
-                "last_edit_time INTEGER, "
-                "form_name TEXT, "
-                "secondary_id TEXT)");
-            await db.execute("CREATE TABLE $_saved_forms_table("
-                "reference_id INTEGER NOT NULL, "
-                "variable TEXT, "
-                "value TEXT, "
-                "FOREIGN KEY(reference_id) "
-                "REFERENCES $_saved_forms_references_table(id))");
+          }
+          if (oldVersion < 3 && newVersion >= 3) {
+            await db.execute("ALTER TABLE $_forms_history_table "
+                "ADD create_time INTEGER");
+            //Updating existent records
+            await db.execute("UPDATE $_forms_history_table "
+                "SET create_time = last_edit_time");
           }
         },
-        version: 2,
+        version: 3,
       );
 
       await _cleanDatabase();
@@ -307,7 +212,7 @@ class Storage {
     var lastEditDateTime = DateTime(now.year, now.month, now.day);
     try {
       var deletedItems = await _database.delete(_forms_history_table,
-          where: "last_edit_time < ?",
+          where: "create_time < ?",
           whereArgs: [lastEditDateTime.millisecondsSinceEpoch ~/ 1000]);
       logger.d("Deleted $deletedItems items from history database");
     } on Exception catch (e) {

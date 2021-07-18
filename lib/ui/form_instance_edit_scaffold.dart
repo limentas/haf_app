@@ -16,7 +16,6 @@ class FormInstanceEditScaffold extends StatelessWidget with SendFormMixin {
       this._instrumentInfo,
       this._instrumentInstance,
       this._titleText,
-      this._saveFunction,
       this._sendFunction,
       {Key key})
       : super(key: key);
@@ -27,7 +26,6 @@ class FormInstanceEditScaffold extends StatelessWidget with SendFormMixin {
   final InstrumentInfo _instrumentInfo;
   final InstrumentInstance _instrumentInstance;
   final String _titleText;
-  final void Function(BuildContext) _saveFunction;
   final void Function(BuildContext) _sendFunction;
 
   @override
@@ -95,7 +93,6 @@ class FormInstanceEditScaffold extends StatelessWidget with SendFormMixin {
                               _clientInfo,
                               _instrumentInfo,
                               _instrumentInstance,
-                              _saveFunction,
                               _sendFunction),
                         ],
                       ));

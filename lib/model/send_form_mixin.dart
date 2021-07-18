@@ -38,6 +38,7 @@ mixin SendFormMixin {
 
     var historyItem = new FormsHistoryItem(
         tokenHash: UserInfo.tokenHash,
+        createTime: DateTime.now(),
         lastEditTime: DateTime.now(),
         formName: instrumentInfo.formNameId,
         secondaryId: clientInfo.secondaryId,

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import '../logger.dart';
+import '../storage.dart';
 import 'form_instance_details.dart';
 import 'non_repeat_form_edit.dart';
 import 'client_repeat_form_tab.dart';
@@ -66,23 +67,49 @@ class _ClientPageState extends State<ClientPage>
       ));
       _tabIndexer[instrument.formNameId] = _tabs.length;
       _tabs.add(tab);
-      _floatingButtons.add(instrument.isRepeating
-          ? new SvgIconButton(
-              iconName: 'resources/icons/plus.svg',
+      // Add or edit button
+      Widget floatingButton;
+      if (instrument.isRepeating) {
+        floatingButton = new SvgIconButton(
+            iconName: 'resources/icons/plus.svg',
+            width: 54,
+            height: 54,
+            iconWidth: 40,
+            onPressed: () => _createNewInstrumentInstance(context, instrument));
+      } else {
+        var now = DateTime.now();
+        var historyItem = Storage.findHistoryItem(
+            _clientInfo.secondaryId, instrument.formNameId, null);
+        var isEditable = false;
+        if (historyItem != null &&
+            historyItem.createTime.day == now.day &&
+            historyItem.createTime.month == now.month &&
+            historyItem.createTime.year == now.year) {
+          isEditable = true;
+        } else {
+          //Checking if this form is empty
+          var instrumentIsEmpty = true;
+          for (var variable in instrument.fieldsByVariable.keys)
+            if (_clientInfo.valuesMap.containsKey(variable)) {
+              instrumentIsEmpty = false;
+              break;
+            }
+          if (instrumentIsEmpty) {
+            isEditable = true;
+          }
+        }
+
+        if (isEditable) {
+          floatingButton = new SvgIconButton(
+              iconName: 'resources/icons/edit.svg',
               width: 54,
               height: 54,
-              iconWidth: 40,
-              onPressed: () =>
-                  _createNewInstrumentInstance(context, instrument))
-          : _projectInfo.initInstrument != instrument
-              ? new SvgIconButton(
-                  iconName: 'resources/icons/edit.svg',
-                  width: 54,
-                  height: 54,
-                  iconWidth: 32,
-                  onPressed: () =>
-                      _editNonRepeatInstrument(context, instrument))
-              : null);
+              iconWidth: 32,
+              onPressed: () => _editNonRepeatInstrument(context, instrument));
+        }
+      }
+
+      _floatingButtons.add(floatingButton);
     }
 
     _tabController = TabController(vsync: this, length: _tabs.length);
@@ -119,7 +146,7 @@ class _ClientPageState extends State<ClientPage>
               _clientInfo.repeatInstruments[instrument.formNameId].values
                   .toList())
           : FormInstanceDetails(_projectInfo, _clientInfo, instrument,
-              new InstrumentInstance(-1, _clientInfo.valuesMap), false);
+              new InstrumentInstance(-1, _clientInfo.valuesMap));
 
       _pages.add(page);
     }

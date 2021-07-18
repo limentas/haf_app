@@ -4,13 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 import '../logger.dart';
-import '../storage.dart';
 import '../utils.dart';
 import '../server_connection.dart';
 import '../user_info.dart';
 import '../model/project_info.dart';
-import 'forms_history/forms_history_page.dart';
 import 'client_page.dart';
+import 'forms_history_page.dart';
 import 'new_client_page.dart';
 
 class MainPageContent extends StatefulWidget {
@@ -43,14 +42,6 @@ class _MainPageContentState extends State<MainPageContent> {
   final String _deviceName;
 
   bool _showBusyIndicator = false;
-  bool _hasSavedForms = false;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _hasSavedForms = Storage.hasSavedForms();
-  }
 
   @override
   void dispose() {
@@ -114,18 +105,11 @@ class _MainPageContentState extends State<MainPageContent> {
                   ),
                   const SizedBox(height: 50),
                   ElevatedButton(
-                    child: Stack(alignment: Alignment.center, children: [
-                      Align(
-                          alignment: Alignment.center,
-                          child: Text('ЖУРНАЛ ВНЕСЕННЫХ ИЗМЕНЕНИЙ',
-                              textAlign: TextAlign.center,
-                              style: Theme.of(context).textTheme.button)),
-                      Visibility(
-                          visible: _hasSavedForms,
-                          child: Align(
-                              alignment: Alignment.centerRight,
-                              child: Icon(Icons.error_outline)))
-                    ]),
+                    child: Align(
+                        alignment: Alignment.center,
+                        child: Text('ЖУРНАЛ ВНЕСЕННЫХ ИЗМЕНЕНИЙ',
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.button)),
                     onPressed: () {
                       FocusScope.of(context).unfocus(); //to unfocus id field
                       Navigator.push(
@@ -133,20 +117,9 @@ class _MainPageContentState extends State<MainPageContent> {
                           MaterialPageRoute(
                             builder: (context) =>
                                 FormsHistoryPage(_connection, _projectInfo),
-                          )).then((value) => _updateHasSavedForms());
+                          ));
                     },
                   ),
-                  const SizedBox(height: 20),
-                  Visibility(
-                      visible: _hasSavedForms,
-                      child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.error_outline),
-                            const SizedBox(width: 10),
-                            Text('Внимание. Есть неотправленные формы.',
-                                style: Theme.of(context).textTheme.subtitle1)
-                          ])),
                   const SizedBox(height: 40),
                   Visibility(
                       visible: _showBusyIndicator,
@@ -190,21 +163,12 @@ class _MainPageContentState extends State<MainPageContent> {
           builder: (context) =>
               ClientPage(_connection, _projectInfo, clientId, findResult),
         ),
-      ).then((value) => _updateHasSavedForms());
+      );
     } on SocketException catch (e) {
       logger.e("MainPage: caught SocketException", e);
     } finally {
       setState(() {
         _showBusyIndicator = false;
-      });
-    }
-  }
-
-  void _updateHasSavedForms() {
-    var newHasSavedForms = Storage.hasSavedForms();
-    if (newHasSavedForms != _hasSavedForms) {
-      setState(() {
-        _hasSavedForms = newHasSavedForms;
       });
     }
   }

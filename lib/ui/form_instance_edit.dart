@@ -19,14 +19,8 @@ import '../storage.dart';
 import 'client_page.dart';
 
 class FormInstanceEdit extends StatefulWidget {
-  FormInstanceEdit(
-      this._connection,
-      this._projectInfo,
-      this._clientInfo,
-      this._instrumentInfo,
-      this._instrumentInstance,
-      this._saveFunction,
-      this._sendFunction,
+  FormInstanceEdit(this._connection, this._projectInfo, this._clientInfo,
+      this._instrumentInfo, this._instrumentInstance, this._sendFunction,
       {Key key})
       : super(key: key);
 
@@ -35,13 +29,12 @@ class FormInstanceEdit extends StatefulWidget {
   final ClientInfo _clientInfo;
   final InstrumentInfo _instrumentInfo;
   final InstrumentInstance _instrumentInstance;
-  final void Function(BuildContext) _saveFunction;
   final void Function(BuildContext) _sendFunction;
 
   @override
   _FormInstanceEditState createState() {
     return _FormInstanceEditState(_connection, _projectInfo, _clientInfo,
-        _instrumentInfo, _instrumentInstance, _saveFunction, _sendFunction);
+        _instrumentInfo, _instrumentInstance, _sendFunction);
   }
 }
 
@@ -52,7 +45,6 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
       ClientInfo clientInfo,
       this._instrumentInfo,
       this._instrumentInstance,
-      this._saveFunction,
       this._sendFunction)
       : _branchingLogicEvaluator =
             BranchingLogicEvaluator(_projectInfo, clientInfo);
@@ -61,7 +53,6 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
   final ProjectInfo _projectInfo;
   final InstrumentInfo _instrumentInfo;
   final InstrumentInstance _instrumentInstance;
-  final void Function(BuildContext) _saveFunction;
   final void Function(BuildContext) _sendFunction;
   final _fieldsList = new List<InstrumentField>();
   final _formController = new MyFormController();
@@ -129,13 +120,6 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
       formWidgets.add(_createEditWidgetGroup(context, field));
     }
     formWidgets.add(SizedBox(height: 30));
-    if (_saveFunction != null) {
-      formWidgets
-          .add(_createBottomButton("СОХРАНИТЬ (чтобы отправить позже)", () {
-        FocusScope.of(context).unfocus(); //to unfocus text fields
-        _saveFunction(context);
-      }));
-    }
     formWidgets.add(_createBottomButton("ОТПРАВИТЬ", () {
       FocusScope.of(context).unfocus(); //to unfocus text fields
       if (!_formController.validate()) {
