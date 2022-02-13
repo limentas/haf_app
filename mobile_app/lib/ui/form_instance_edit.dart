@@ -15,8 +15,10 @@ import '../model/instrument_field.dart';
 import '../model/evaluators/branching_logic_evaluator.dart';
 import '../model/client_info.dart';
 import '../model/project_info.dart';
+import '../server_connection_exception.dart';
 import '../storage.dart';
 import 'client_page.dart';
+import 'busy_indicator_dialog.dart';
 
 class FormInstanceEdit extends StatefulWidget {
   FormInstanceEdit(this._connection, this._projectInfo, this._clientInfo,
@@ -29,7 +31,7 @@ class FormInstanceEdit extends StatefulWidget {
   final ClientInfo _clientInfo;
   final InstrumentInfo _instrumentInfo;
   final InstrumentInstance _instrumentInstance;
-  final void Function(BuildContext) _sendFunction;
+  final Future<void> Function(BuildContext) _sendFunction;
 
   @override
   _FormInstanceEditState createState() {
@@ -53,13 +55,14 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
   final ProjectInfo _projectInfo;
   final InstrumentInfo _instrumentInfo;
   final InstrumentInstance _instrumentInstance;
-  final void Function(BuildContext) _sendFunction;
+  final Future<void> Function(BuildContext) _sendFunction;
   final List<InstrumentField> _fieldsList = [];
   final _formController = new MyFormController();
   final BranchingLogicEvaluator _branchingLogicEvaluator;
   bool _hasChanges = false;
   int _checkSecondaryIdRequestId = 0;
   final _errorVariables = new HashSet<String>();
+  bool _savingInProgress = false;
 
   @override
   void initState() {
@@ -115,12 +118,16 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
     List<Widget> formWidgets = [];
     for (var field in _fieldsList) {
       if (isNotEmpty(field.sectionName)) {
-        formWidgets.add(_createSectionTitleWidget(context, field));
+        var widget = _createSectionTitleWidget(context, field);
+        if (widget != null) formWidgets.add(widget);
       }
-      formWidgets.add(_createEditWidgetGroup(context, field));
+      var widget = _createEditWidgetGroup(context, field);
+      if (widget != null) formWidgets.add(widget);
     }
     formWidgets.add(SizedBox(height: 30));
     formWidgets.add(_createBottomButton("ОТПРАВИТЬ", () {
+      if (_savingInProgress) return;
+      _savingInProgress = true;
       FocusScope.of(context).unfocus(); //to unfocus text fields
       if (!_formController.validate()) {
         Scaffold.of(context).showSnackBar(SnackBar(
@@ -128,9 +135,14 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
                 Text('Ошибка ввода данных - ошибочные поля отмечены красным')));
         return;
       }
+      BusyIndicatorDialog.show(context, "Отправляем данные...");
       _formController.save();
       _cleanupEditedInstance();
-      _sendFunction(context); //This will change current view
+      //This will change current view
+      _sendFunction(context).then((v) {
+        BusyIndicatorDialog.close(context);
+        _savingInProgress = false;
+      });
     }));
 
     return new SliverPadding(
@@ -174,8 +186,6 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
               newValues.first, value, ++_checkSecondaryIdRequestId, context));
     } on SocketException catch (e) {
       logger.d("isSecondaryIdOccupied threw SocketException", e);
-    } on TimeoutException catch (e) {
-      logger.d("isSecondaryIdOccupied threw TimeoutException", e);
     }
   }
 
@@ -227,7 +237,10 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
         ),
       );
     } on SocketException catch (e) {
-      logger.e("NewClientPage: caught SocketException", e);
+      logger.e("FormInstanceEdit: caught SocketException", e);
+    } on ServerConnectionException catch (e) {
+      logger.e("FormInstanceEdit: caught ServerConnectionException", e);
+      Scaffold.of(context).showSnackBar(SnackBar(content: Text(e.cause)));
     }
   }
 

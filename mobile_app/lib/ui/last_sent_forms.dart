@@ -13,6 +13,7 @@ import '../model/project_info.dart';
 import '../model/forms_history_item.dart';
 import '../model/client_info.dart';
 import '../model/instrument_info.dart';
+import '../server_connection_exception.dart';
 import '../storage.dart';
 import 'client_page.dart';
 import 'form_instance_edit_scaffold.dart';
@@ -179,11 +180,17 @@ class _LastSentFormsState extends State<LastSentForms> {
                     clientInfo.recordId)));
       }
     } on SocketException catch (e) {
-      logger.e("_SavedFormsTabState: caught SocketException", e);
+      logger.e("LastSentForms: caught SocketException", e);
+      Scaffold.of(context).showSnackBar(SnackBar(
+          content: Text(
+              'Не удалось подключиться к серверу - повторите попытку позже')));
+    } on ServerConnectionException catch (e) {
+      logger.e("LastSentForms: caught ServerConnectionException", e);
+      Scaffold.of(context).showSnackBar(SnackBar(content: Text(e.cause)));
     }
   }
 
-  void _sendUpdatedForm(
+  Future<void> _sendUpdatedForm(
       BuildContext context,
       InstrumentInfo instrumentInfo,
       ClientInfo clientInfo,
@@ -215,8 +222,8 @@ class _LastSentFormsState extends State<LastSentForms> {
               _connection, _projectInfo, clientInfo.secondaryId, clientInfo),
         ),
       );
-    } on TimeoutException catch (e) {
-      logger.e("TimeoutException during creating new client", e);
+    } on SocketException catch (e) {
+      logger.e("SocketException during creating new client", e);
       Scaffold.of(context).showSnackBar(SnackBar(
           content: Text(
               'Не удалось подключиться к серверу - повторите попытку позже')));

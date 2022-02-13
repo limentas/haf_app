@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:haf_spb_app/ui/settings_page.dart';
 
 import '../server_connection.dart';
 import '../model/project_info.dart';
@@ -21,8 +22,14 @@ class MainPage extends StatelessWidget {
     return new Scaffold(
         drawer: null,
         appBar: AppBar(
-            leading: null,
-            automaticallyImplyLeading: false,
+            leading: IconButton(
+                icon: Icon(Icons.settings, size: 32),
+                iconSize: 40,
+                onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SettingsPage(),
+                    ))),
             centerTitle: true,
             actions: [
               IconButton(

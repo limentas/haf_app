@@ -1,3 +1,4 @@
+import 'package:haf_spb_app/logger.dart';
 import 'package:haf_spb_app/model/form_permission.dart';
 import "package:intl/intl.dart";
 import 'package:quiver/collection.dart';
@@ -36,8 +37,10 @@ class InstrumentInfo {
   InstrumentInstance instanceFromNonRepeatingForm(
       ClientInfo info, ListMultimap<String, String> values) {
     final instance = new InstrumentInstance(null);
-    _fillWithDefaultValues(info, instance);
-    if (values != null) _fillWithExistentValues(instance, values);
+    if (values != null && values.containsKey(formStatusField.variable))
+      _fillWithExistentValues(instance, values);
+    else
+      _fillWithDefaultValues(info, instance);
     return instance;
   }
 

@@ -39,10 +39,11 @@ android {
 
     defaultConfig {
         applicationId "dev.slebe.haf_app"
-        minSdkVersion 18
+        minSdkVersion 19
         targetSdkVersion 30
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+        multiDexEnabled true
     }
 
     signingConfigs {
@@ -58,6 +59,10 @@ android {
         release {
             signingConfig signingConfigs.release
         }
+    }
+
+    dependencies {
+        implementation 'com.android.support:multidex:1.0.3'
     }
 }
 

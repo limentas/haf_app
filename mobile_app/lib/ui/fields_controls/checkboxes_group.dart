@@ -119,18 +119,36 @@ class _CheckboxesGroupState extends State<CheckboxesGroup>
           Padding(
               padding: EdgeInsets.only(bottom: 40),
               child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: _valueTitleMap.entries
-                      .map((entry) => CheckboxListTile(
-                          value: _currentValue.contains(entry.key),
-                          onChanged: (value) => tapItem(context, entry.key),
-                          title: Text(entry.value, style: itemTextStyle),
-                          //dense: true,
-                          controlAffinity: ListTileControlAffinity.leading))
+                      .map((entry) => InkWell(
+                          onTap: () {
+                            tapItem(context, entry.key);
+                          },
+                          child: SizedBox(
+                              height: 60,
+                              child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Checkbox(
+                                      value: _currentValue.contains(entry.key),
+                                      onChanged: (value) =>
+                                          tapItem(context, entry.key),
+                                      //title: Text(entry.value, style: itemTextStyle),
+                                      //dense: true,
+                                      //controlAffinity: ListTileControlAffinity.leading
+                                    ),
+                                    Expanded(
+                                        child: Text(entry.value,
+                                            style: itemTextStyle,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis))
+                                  ]))))
                       .toList())),
           Positioned.fill(
               child: Align(
                   alignment: Alignment.bottomRight,
-                  child: FlatButton(
+                  child: TextButton(
                       onPressed: () {
                         FocusScope.of(context)
                             .unfocus(); //to unfocus other text fields

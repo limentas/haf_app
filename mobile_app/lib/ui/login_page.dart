@@ -16,6 +16,7 @@ import '../user_info.dart';
 import '../logger.dart';
 import '../model/project_info.dart';
 import '../server_connection.dart';
+import '../utils.dart';
 import 'main_page.dart';
 import 'svg_icon_button.dart';
 
@@ -112,6 +113,22 @@ class _LoginPageState extends State<LoginPage> {
         if (UserInfo.userName != null)
           _userTextFieldController.text = UserInfo.userName;
       }
+
+      final orientation = Storage.getDefaultValue(
+          EmpiricalEvidence.deviceOrientationStaticVariable);
+
+      logger.d("Orientation from storage: $orientation");
+
+      var deviceOrientation = [
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown
+      ];
+      if (orientation.isNotEmpty) {
+        deviceOrientation =
+            orientation.map((e) => Utils.stringToDeviceOrientation(e)).toList();
+      }
+
+      SystemChrome.setPreferredOrientations(deviceOrientation);
     });
   }
 
@@ -369,12 +386,6 @@ class _LoginPageState extends State<LoginPage> {
       );
     } on SocketException catch (e) {
       logger.e("LoginPage: caught SocketException", e);
-      setState(() {
-        _tokenValidateError =
-            "Не удалось подключиться к серверу. Проверьте подключение к Интернет.";
-      });
-    } on TimeoutException catch (e) {
-      logger.e("LoginPage: caught TimeoutException", e);
       setState(() {
         _tokenValidateError =
             "Не удалось подключиться к серверу. Проверьте подключение к Интернет.";

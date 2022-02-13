@@ -120,19 +120,34 @@ class _RadioButtonsGroupState extends State<RadioButtonsGroup>
           Padding(
               padding: EdgeInsets.only(bottom: 40),
               child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: _valueTitleMap.entries
-                      .map((entry) => RadioListTile(
-                            value: entry.key,
-                            groupValue: _selectedValue,
-                            onChanged: (value) => tapItem(context, value),
-                            title: Text(entry.value, style: itemTextStyle),
-                            dense: true,
-                          ))
+                      .map((entry) => InkWell(
+                          onTap: () {
+                            tapItem(context, entry.key);
+                          },
+                          child: SizedBox(
+                              height: 60,
+                              child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Radio(
+                                      value: entry.key,
+                                      groupValue: _selectedValue,
+                                      onChanged: (value) =>
+                                          tapItem(context, value),
+                                    ),
+                                    Expanded(
+                                        child: Text(entry.value,
+                                            style: itemTextStyle,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis))
+                                  ]))))
                       .toList())),
           Positioned.fill(
               child: Align(
                   alignment: Alignment.bottomRight,
-                  child: FlatButton(
+                  child: TextButton(
                       onPressed: () => tapItem(context, null),
                       child: Text("Сброс", style: resetStyle))))
         ]));

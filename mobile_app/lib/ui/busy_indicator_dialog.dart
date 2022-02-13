@@ -14,8 +14,8 @@ class BusyIndicatorDialog {
     return result;
   }
 
-  static void show(BuildContext context) {
-    EasyLoading.show(status: 'Загрузка...');
+  static void show(BuildContext context, String text) {
+    EasyLoading.show(status: text);
     _indicatorIsShown = true;
   }
 

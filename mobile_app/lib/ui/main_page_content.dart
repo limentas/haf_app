@@ -5,6 +5,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:haf_spb_app/model/form_permission.dart';
 
 import '../logger.dart';
+import '../server_connection_exception.dart';
 import '../utils.dart';
 import '../server_connection.dart';
 import '../user_info.dart';
@@ -174,6 +175,12 @@ class _MainPageContentState extends State<MainPageContent> {
       );
     } on SocketException catch (e) {
       logger.e("MainPage: caught SocketException", e);
+      Scaffold.of(context).showSnackBar(SnackBar(
+          content: Text(
+              'Не удалось подключиться к серверу - повторите попытку позже')));
+    } on ServerConnectionException catch (e) {
+      logger.e("MainPage: caught ServerConnectionException", e);
+      Scaffold.of(context).showSnackBar(SnackBar(content: Text(e.cause)));
     } finally {
       setState(() {
         _showBusyIndicator = false;

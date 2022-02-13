@@ -26,7 +26,7 @@ class FormInstanceEditScaffold extends StatelessWidget with SendFormMixin {
   final InstrumentInfo _instrumentInfo;
   final InstrumentInstance _instrumentInstance;
   final String _titleText;
-  final void Function(BuildContext) _sendFunction;
+  final Future<void> Function(BuildContext) _sendFunction;
 
   @override
   Widget build(BuildContext context) {

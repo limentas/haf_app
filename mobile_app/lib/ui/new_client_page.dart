@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:quiver/strings.dart';
 
 import '../logger.dart';
+import '../server_connection_exception.dart';
 import '../storage.dart';
 import '../user_info.dart';
 import 'client_page.dart';
@@ -105,45 +106,38 @@ class NewClientPage extends StatelessWidget {
   }
 
   Future<void> sendData(BuildContext context) async {
-    try {
-      var recordId = await _connection.createNewRecord(1, _instrumentInstance);
-      if (recordId == null) {
-        Scaffold.of(context).showSnackBar(SnackBar(
-            content: Text(
-                'Ошибка добавления нового пользователя - свяжитесь с разработчиком')));
-        return;
-      }
-
-      var secondaryId =
-          _instrumentInstance.valuesMap[_projectInfo.secondaryIdFieldName];
-
-      if (secondaryId.isEmpty) {
-        logger.e("Couldn't get secondary id for the new created client");
-        Scaffold.of(context).showSnackBar(SnackBar(
-            content: Text(
-                'Ошибка добавления нового пользователя - свяжитесь с разработчиком')));
-        return;
-      }
-
-      var historyItem = new FormsHistoryItem(
-          tokenHash: UserInfo.tokenHash,
-          createTime: DateTime.now(),
-          lastEditTime: DateTime.now(),
-          formName: _projectInfo.initInstrument.formNameId,
-          secondaryId: secondaryId.first,
-          instanceNumber: _instrumentInstance.number);
-      Storage.addFormsHistoryItem(historyItem);
-
-      await navigateToNewUser(recordId, context);
-    } on TimeoutException catch (e) {
-      logger.e("TimeoutException during creating new client", e);
+    var recordId = await _connection.createNewRecord(1, _instrumentInstance);
+    if (recordId == null) {
       Scaffold.of(context).showSnackBar(SnackBar(
           content: Text(
-              'Не удалось подключиться к серверу - повторите попытку позже')));
+              'Ошибка добавления нового пользователя - свяжитесь с разработчиком')));
+      return;
     }
+
+    var secondaryId =
+        _instrumentInstance.valuesMap[_projectInfo.secondaryIdFieldName];
+
+    if (secondaryId.isEmpty) {
+      logger.e("Couldn't get secondary id for the new created client");
+      Scaffold.of(context).showSnackBar(SnackBar(
+          content: Text(
+              'Ошибка добавления нового пользователя - свяжитесь с разработчиком')));
+      return;
+    }
+
+    var historyItem = new FormsHistoryItem(
+        tokenHash: UserInfo.tokenHash,
+        createTime: DateTime.now(),
+        lastEditTime: DateTime.now(),
+        formName: _projectInfo.initInstrument.formNameId,
+        secondaryId: secondaryId.first,
+        instanceNumber: _instrumentInstance.number);
+    Storage.addFormsHistoryItem(historyItem);
+
+    await _navigateToNewUser(recordId, context);
   }
 
-  Future<void> navigateToNewUser(int recordId, BuildContext context) async {
+  Future<void> _navigateToNewUser(int recordId, BuildContext context) async {
     try {
       var clientInfo = await _connection.retreiveClientInfoByRecordId(
           _projectInfo, recordId);
@@ -172,6 +166,12 @@ class NewClientPage extends StatelessWidget {
       );
     } on SocketException catch (e) {
       logger.e("NewClientPage: caught SocketException", e);
+      Scaffold.of(context).showSnackBar(SnackBar(
+          content: Text(
+              'Не удалось подключиться к серверу - повторите попытку позже')));
+    } on ServerConnectionException catch (e) {
+      logger.e("NewClientPage: caught ServerConnectionException", e);
+      Scaffold.of(context).showSnackBar(SnackBar(content: Text(e.cause)));
     }
   }
 }

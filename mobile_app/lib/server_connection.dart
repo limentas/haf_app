@@ -12,6 +12,7 @@ import 'model/instrument_instance.dart';
 import 'model/project_info.dart';
 import 'model/redcap_record.dart';
 import 'model/client_info.dart';
+import 'server_connection_exception.dart';
 import 'settings.dart';
 import 'utils.dart';
 
@@ -131,9 +132,12 @@ class ServerConnection {
     logger.d("retreiveClientInfo response statusCode = ${response.statusCode}");
     if (response.statusCode == HttpStatus.badRequest) {
       logger.e("Bad request. Error: ${response.body}");
-      return null;
+      throw new ServerConnectionException(
+          "Программная ошибка. Обратитесь к разработчику.");
     }
-    if (response.statusCode != HttpStatus.ok) return null;
+    if (response.statusCode != HttpStatus.ok)
+      throw new ServerConnectionException(
+          "Не удалось загрузить данные. Попробуйте еще раз.");
 
     return _parseClientInfoJson(projectInfo, response.body);
   }
@@ -150,9 +154,12 @@ class ServerConnection {
     logger.d("retreiveClientInfo response statusCode = ${response.statusCode}");
     if (response.statusCode == HttpStatus.badRequest) {
       logger.e("Bad request. Error: ${response.body}");
-      return null;
+      throw new ServerConnectionException(
+          "Программная ошибка. Обратитесь к разработчику.");
     }
-    if (response.statusCode != HttpStatus.ok) return null;
+    if (response.statusCode != HttpStatus.ok)
+      throw new ServerConnectionException(
+          "Не удалось загрузить данные. Попробуйте еще раз.");
 
     return _parseClientInfoJson(projectInfo, response.body);
   }
@@ -180,7 +187,8 @@ class ServerConnection {
       return result;
     } on FormatException catch (e) {
       logger.e("Json format exception", e);
-      return null;
+      throw new ServerConnectionException(
+          "Ошибка загрузки данных. Попробуйте еще раз.");
     }
   }
 

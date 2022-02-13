@@ -132,11 +132,10 @@ class SmartVariablesEvaluator {
     }
     List<String> fieldValues;
     if (index < 0) {
-      if (_clientInfo != null)
-        fieldValues = _clientInfo.valuesMap[variableName];
-      if ((fieldValues == null || fieldValues.isEmpty) &&
-          currentInstance != null)
+      if (currentInstance != null)
         fieldValues = currentInstance.valuesMap[variableName];
+      if ((fieldValues == null || fieldValues.isEmpty) && _clientInfo != null)
+        fieldValues = _clientInfo.valuesMap[variableName];
     } else {
       if (_clientInfo == null) return defaultValue;
       var instrumentInstances =

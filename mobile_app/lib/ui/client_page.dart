@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:haf_spb_app/model/form_permission.dart';
 
 import '../logger.dart';
+import '../server_connection_exception.dart';
 import '../storage.dart';
 import 'form_instance_details.dart';
 import 'non_repeat_form_edit.dart';
@@ -248,7 +249,12 @@ class _ClientPageState extends State<ClientPage>
         _clientInfo = clientInfo;
       });
     } on SocketException catch (e) {
-      logger.e("MainPage: caught SocketException", e);
+      logger.e("ClientPage: caught SocketException", e);
+      Scaffold.of(context).showSnackBar(
+          SnackBar(content: Text('Не удалось подключиться к серверу - повторите попытку позже')));
+    } on ServerConnectionException catch (e) {
+      logger.e("ClientPage: caught ServerConnectionException", e);
+      Scaffold.of(context).showSnackBar(SnackBar(content: Text(e.cause)));
     }
   }
 

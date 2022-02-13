@@ -7,6 +7,7 @@ import 'instrument_field.dart';
 
 //Class agregates information about specific use of Redcap
 class EmpiricalEvidence {
+  static final deviceOrientationStaticVariable = "orientation#static#unified";
   static final fellowWorkerUnifiedVariable = "staff#unified";
 
   //Key - variable name, that could be stored in DB,

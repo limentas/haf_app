@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:quiver/strings.dart';
 
 import 'constants.dart';
@@ -72,4 +73,19 @@ class Utils {
 
   static bool numToBool(num value) => value != 0;
   static int boolToInt(bool value) => value ? 1 : 0;
+
+  static String deviceOrientationToString(DeviceOrientation orientation) =>
+      orientation.toString();
+
+  static DeviceOrientation stringToDeviceOrientation(String orientation) {
+    if (orientation == DeviceOrientation.portraitUp.toString())
+      return DeviceOrientation.portraitUp;
+    if (orientation == DeviceOrientation.portraitDown.toString())
+      return DeviceOrientation.portraitDown;
+    if (orientation == DeviceOrientation.landscapeLeft.toString())
+      return DeviceOrientation.landscapeLeft;
+    if (orientation == DeviceOrientation.landscapeRight.toString())
+      return DeviceOrientation.landscapeRight;
+    return DeviceOrientation.portraitUp;
+  }
 }

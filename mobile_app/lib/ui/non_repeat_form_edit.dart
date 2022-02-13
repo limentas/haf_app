@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 
@@ -114,8 +115,8 @@ class NonRepeatFormEdit extends StatelessWidget with SendFormMixin {
       //Return to the previous view.
       //Result is sign: do we need to refresh current client's info
       Navigator.pop(context, true);
-    } on TimeoutException catch (e) {
-      logger.e("TimeoutException during creating new client", e);
+    } on SocketException catch (e) {
+      logger.e("SocketException during sending form", e);
       Scaffold.of(context).showSnackBar(SnackBar(
           content: Text(
               'Не удалось подключиться к серверу - повторите попытку позже')));

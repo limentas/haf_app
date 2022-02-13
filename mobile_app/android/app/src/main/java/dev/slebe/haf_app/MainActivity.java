@@ -1,6 +1,11 @@
 package dev.slebe.haf_app;
 
 import java.lang.String;
+import java.lang.Runtime;
+import java.io.File;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
+import java.text.SimpleDateFormat;
 import android.bluetooth.BluetoothAdapter;
 import android.util.Log;
 import androidx.annotation.NonNull;
@@ -26,6 +31,10 @@ public class MainActivity extends FlutterActivity {
         String deviceName = getDeviceBluetoothName();
         result.success(deviceName);
       }
+      else if (call.method.equals("saveLogsToFile")) {
+        String fileName = saveLogsToFile();
+        result.success(fileName);
+      }
       else {
         result.notImplemented();
       }
@@ -36,7 +45,7 @@ public class MainActivity extends FlutterActivity {
     if (_bluetoothAdapter == null) {
         _bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (_bluetoothAdapter == null) {
-            return "no bluetooth";
+            return null;
         }
     }
     String name = _bluetoothAdapter.getName();
@@ -45,5 +54,22 @@ public class MainActivity extends FlutterActivity {
         name = _bluetoothAdapter.getAddress();
     }
     return name;
+  }
+
+  private String saveLogsToFile() {
+    try {
+      String now = new SimpleDateFormat("yyyy-MM-dd_HHmmss").format(new Date());
+      String fileName = String.format("hafspb_log_%s.txt", now);
+      File outputFile = new File(this.getCacheDir(), fileName);
+      if (outputFile.exists())
+        outputFile.delete();
+      String outputFilePath = outputFile.getAbsolutePath();
+      Process process = Runtime.getRuntime().exec("logcat -d -f " + outputFilePath);
+      process.waitFor(2000, TimeUnit.MILLISECONDS);
+      return outputFilePath;
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return null;
   }
 }

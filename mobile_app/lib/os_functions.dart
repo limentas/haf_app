@@ -25,6 +25,18 @@ class OsFunctions {
     }
   }
 
+  static Future<String> saveLogsToFile() async {
+    try {
+      _ensureInit();
+
+      final name = await _platform.invokeMethod('saveLogsToFile');
+      return name as String;
+    } catch (e) {
+      logger.e("saveLogsToFile exception", e);
+      return "";
+    }
+  }
+
   static void _ensureInit() {
     if (_platform == null) {
       _platform = MethodChannel('slebe.dev/haf_app');
