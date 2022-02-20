@@ -1,4 +1,4 @@
-package dev.slebe.haf_app;
+package org.haf_spb.haf_app;
 
 import java.lang.String;
 import java.lang.Runtime;

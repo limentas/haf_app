@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="dev.slebe.haf_app">
+    package="org.haf_spb.haf_app">
    <application
         android:label="Гуманитарное действие"
         android:icon="@mipmap/ic_launcher">
