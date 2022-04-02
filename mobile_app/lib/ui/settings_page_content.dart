@@ -227,7 +227,7 @@ class _SettingsPageContentState extends State<SettingsPageContent> {
         printerInfo.printerModel = Model.PT_P900W;
         printerInfo.port = Port.NET;
         printerInfo.ipAddress = netPrinters.first.ipAddress;
-        printerInfo.printMode = PrintMode.FIT_TO_PAGE;
+        printerInfo.printMode = PrintMode.FIT_TO_PAPER;
         printerInfo.isAutoCut = false;
         printerInfo.labelNameIndex = PT.ordinalFromID(PT.W36.getId());
         if (!await printer.setPrinterInfo(printerInfo)) {
@@ -240,8 +240,17 @@ class _SettingsPageContentState extends State<SettingsPageContent> {
         var info = await printer.getLabelInfo();
         logger.d("Label info: $info");
 
-        var qrPainter =
-            QrPainter(data: "ром17нат1277", version: QrVersions.auto);
+        var qrPainter = QrPainter(
+            data: "ром17нат1277",
+            version: QrVersions.auto,
+            gapless: true,
+            eyeStyle: const QrEyeStyle(
+                eyeShape: QrEyeShape.square, color: Color(0xFF000000)),
+            dataModuleStyle: const QrDataModuleStyle(
+              dataModuleShape: QrDataModuleShape.square,
+              color: Color(0xFF000000),
+            ),
+            emptyColor: Color(0xFFFFFFFF));
         var qrImage = await qrPainter.toImage(400);
         var imagePrintStatus = await printer.printImage(qrImage);
         logger.d(
