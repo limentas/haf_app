@@ -133,6 +133,7 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
         Scaffold.of(context).showSnackBar(SnackBar(
             content:
                 Text('Ошибка ввода данных - ошибочные поля отмечены красным')));
+        _savingInProgress = false;
         return;
       }
       BusyIndicatorDialog.show(context, "Отправляем данные...");

@@ -1,8 +1,8 @@
 import 'package:flutter/services.dart';
 import 'package:quiver/strings.dart';
+import 'package:flutter/material.dart';
 
 import 'constants.dart';
-import 'date_utils.dart';
 import 'logger.dart';
 
 class Utils {
@@ -23,7 +23,7 @@ class Utils {
       birthYear = 1900 + birthYear;
     else
       birthYear = 2000 + birthYear;
-    var daysInMonth = DateUtils.daysInMonth(birthYear, birthMonth);
+    var daysInMonth = DateUtils.getDaysInMonth(birthYear, birthMonth);
     if (birthday <= 0 || birthday > daysInMonth)
       return 'В $birthMonth-ом месяце $birthYear года - $daysInMonth дней';
     return null;

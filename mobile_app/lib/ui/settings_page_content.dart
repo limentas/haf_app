@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_email_sender/flutter_email_sender.dart';
@@ -6,6 +7,9 @@ import 'package:flutter_archive/flutter_archive.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:another_brother/another_brother.dart';
 import 'package:another_brother/printer_info.dart';
+import 'package:another_brother/label_info.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'dart:ui' as ui;
 
 import '../logger.dart';
 import '../model/empirical_evidence.dart';
@@ -174,6 +178,7 @@ class _SettingsPageContentState extends State<SettingsPageContent> {
       final fileName = await OsFunctions.saveLogsToFile();
 
       var logFile = File(fileName);
+      logger.d("Logs file size: ${logFile.statSync().size}");
       var zipFile = File(logFile.parent.path +
           "/hafspb_log_${DateTime.now().toIso8601String()}.zip");
       await ZipFile.createFromFiles(
@@ -202,11 +207,9 @@ class _SettingsPageContentState extends State<SettingsPageContent> {
     });
 
     var printersCount = 0;
-
     var printerInfo = new PrinterInfo();
 
     try {
-      //platformVersion = await AnotherBrother.platformVersion;
       final platformVersion = await Printer.platformVersion;
       logger.d("Printer: platform version: $platformVersion");
     } catch (e) {
@@ -224,35 +227,48 @@ class _SettingsPageContentState extends State<SettingsPageContent> {
         printerInfo.printerModel = Model.PT_P900W;
         printerInfo.port = Port.NET;
         printerInfo.ipAddress = netPrinters.first.ipAddress;
-        printerInfo.paperSize = PaperSize.CUSTOM;
         printerInfo.printMode = PrintMode.FIT_TO_PAGE;
-        printerInfo.isAutoCut = true;
+        printerInfo.isAutoCut = false;
+        printerInfo.labelNameIndex = PT.ordinalFromID(PT.W36.getId());
+        if (!await printer.setPrinterInfo(printerInfo)) {
+          logger.e("Printer: couldn't set printer info");
+          throw new Exception("Couldn't set printer info");
+        }
+
+        logger.d("Printer info setted successfully");
+
+        var info = await printer.getLabelInfo();
+        logger.d("Label info: $info");
+
+        var qrPainter =
+            QrPainter(data: "ром17нат1277", version: QrVersions.auto);
+        var qrImage = await qrPainter.toImage(400);
+        var imagePrintStatus = await printer.printImage(qrImage);
+        logger.d(
+            "Printer: got status: $imagePrintStatus, and error: ${imagePrintStatus.errorCode.getName()}");
+
+        var style = TextStyle(
+            color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold);
+        var paragraphBuilder = ui.ParagraphBuilder(ui.ParagraphStyle(
+          fontSize: style.fontSize,
+          fontFamily: style.fontFamily,
+          fontStyle: style.fontStyle,
+          fontWeight: style.fontWeight,
+          textAlign: TextAlign.center,
+          maxLines: 10,
+        ))
+          ..pushStyle(style.getTextStyle())
+          ..addText("ром17нат1277");
+
+        var paragraph = paragraphBuilder.build()
+          ..layout(ui.ParagraphConstraints(width: 300));
+        logger.d("Paragraph was built");
+        var textPrintStatus = await printer.printText(paragraph);
+        logger.d(
+            "Printer: got status: $textPrintStatus, and error: ${textPrintStatus.errorCode.getName()}");
       }
     } catch (e) {
       logger.e('Printer: Error getting net printers: $e');
-    }
-
-    try {
-      var bluetoothDevice = await OsFunctions.getDeviceBluetoothName();
-      if (bluetoothDevice != null && bluetoothDevice.isNotEmpty) {
-        printer = Printer();
-
-        var bluetoothPrinters =
-            await printer.getBluetoothPrinters([Model.PT_P900W.getName()]);
-        logger.d("Bluetooth printers: $bluetoothPrinters");
-        printersCount += bluetoothPrinters.length;
-      }
-    } catch (e) {
-      logger.e('Printer: Error getting bluetooth printers: $e');
-    }
-
-    try {
-      printer = Printer();
-      var blePrinters = await printer.getBLEPrinters(10000);
-      logger.d("BLE printers: $blePrinters");
-      printersCount += blePrinters.length;
-    } catch (e) {
-      logger.e('Printer: Error getting ble printers: $e');
     }
 
     setState(() {

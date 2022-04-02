@@ -25,7 +25,8 @@ class ServerConnection {
 
   Future<bool> checkAccess() async {
     var response = await _post(
-        {"token": _token, "content": "version", "format": "json"}, 5);
+        {"token": _token, "content": "version", "format": "json"}, 5,
+        retriesCount: 3);
     logger.d("checkAccess response statusCode = ${response.statusCode}");
     if (response.statusCode == HttpStatus.ok) {
       logger.i("Redcap version: ${response.body}");
@@ -35,8 +36,9 @@ class ServerConnection {
   }
 
   Future<Map<String, FormPermission>> getUserPermissions() async {
-    var response =
-        await _post({"token": _token, "content": "user", "format": "json"}, 5);
+    var response = await _post(
+        {"token": _token, "content": "user", "format": "json"}, 5,
+        retriesCount: 3);
     var result = new Map<String, FormPermission>();
     var tokenHash = Hash.calc(_token.toUpperCase());
     logger.d("getUserPermissions response statusCode = ${response.statusCode}");
@@ -112,7 +114,7 @@ class ServerConnection {
       "token": _token,
       "content": "project_xml",
       "returnMetadataOnly": "true"
-    }, 30);
+    }, 30, retriesCount: 2);
     logger.d("retreiveProjectXml response statusCode = ${response.statusCode}");
     if (response.statusCode == HttpStatus.ok) {
       return response.body;
@@ -128,7 +130,7 @@ class ServerConnection {
       "format": "json",
       "type": "eav",
       "filterLogic": "[${projectInfo.secondaryIdFieldName}]=\"$secondaryId\""
-    }, 15);
+    }, 10, retriesCount: 3);
     logger.d("retreiveClientInfo response statusCode = ${response.statusCode}");
     if (response.statusCode == HttpStatus.badRequest) {
       logger.e("Bad request. Error: ${response.body}");
@@ -150,7 +152,7 @@ class ServerConnection {
       "format": "json",
       "type": "eav",
       "records": recordId.toString()
-    }, 15);
+    }, 10, retriesCount: 3);
     logger.d("retreiveClientInfo response statusCode = ${response.statusCode}");
     if (response.statusCode == HttpStatus.badRequest) {
       logger.e("Bad request. Error: ${response.body}");
@@ -193,8 +195,9 @@ class ServerConnection {
   }
 
   Future<int> retreiveNextRecordId() async {
-    var response =
-        await _post({"token": _token, "content": "generateNextRecordName"}, 5);
+    var response = await _post(
+        {"token": _token, "content": "generateNextRecordName"}, 5,
+        retriesCount: 3);
     logger
         .d("retreiveNextRecordId response statusCode = ${response.statusCode}");
     if (response.statusCode == HttpStatus.badRequest) {
@@ -314,7 +317,7 @@ class ServerConnection {
       "type": "eav",
       "records": recordId.toString(),
       "forms": instrumentName
-    }, 15);
+    }, 15, retriesCount: 2);
     logger.d(
         "retreiveNextInstanceNumber response statusCode = ${response.statusCode}");
     if (response.statusCode == HttpStatus.badRequest) {
@@ -341,7 +344,7 @@ class ServerConnection {
       "type": "eav",
       "filterLogic": "[$secondaryIdFieldName]=\"$secondaryId\"",
       "fields": secondaryIdFieldName
-    }, 3);
+    }, 3, retriesCount: 3);
     logger.d(
         "isSecondaryIdOccupied response statusCode = ${response.statusCode}");
     if (response.statusCode == HttpStatus.badRequest) {
@@ -363,14 +366,18 @@ class ServerConnection {
     return null;
   }
 
-  Future<http.Response> _post(Map<String, String> body, int timeoutSecs) async {
-    try {
-      return await http
-          .post(Settings.redcapUrl, body: body)
-          .timeout(Duration(seconds: timeoutSecs));
-    } on TimeoutException {
-      throw new SocketException("Connection timed out");
-    }
+  Future<http.Response> _post(Map<String, String> body, int timeoutSecs,
+      {int retriesCount = 1}) async {
+    do {
+      try {
+        return await http
+            .post(Settings.redcapUrl, body: body)
+            .timeout(Duration(seconds: timeoutSecs));
+      } on TimeoutException {
+        if (--retriesCount > 0)
+          throw new SocketException("Connection timed out");
+      }
+    } while (true);
   }
 
   List<RedcapRecord> _parseRedcapRecordsArray(String jsonData) {
