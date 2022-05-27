@@ -284,7 +284,12 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void submitToken() async {
-    if (!_userNameRegExp.hasMatch(_userTextFieldController.text)) {
+    // Special case to pass Google Play checkups
+    var isGoogleTester =
+        _userTextFieldController.text.toLowerCase() == "google test";
+
+    if (!isGoogleTester &&
+        !_userNameRegExp.hasMatch(_userTextFieldController.text)) {
       setState(() {
         _userNameError = "Введите фамилию и имя в формате 'Фамилия Имя'";
       });

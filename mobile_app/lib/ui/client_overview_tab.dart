@@ -14,27 +14,12 @@ import '../model/form_instances_status.dart';
 import '../model/form_permission.dart';
 import '../logger.dart';
 
-class ClientOverviewTab extends StatefulWidget {
+//ignore: must_be_immutable
+class ClientOverviewTab extends StatelessWidget {
   ClientOverviewTab(this._projectInfo, this._clientInfo, this._switchToTabFunc,
       this._createNewInstrumentInstance,
       {Key key})
       : super(key: key);
-
-  final ProjectInfo _projectInfo;
-  final ClientInfo _clientInfo;
-  final void Function(String) _switchToTabFunc;
-  final void Function(InstrumentInfo) _createNewInstrumentInstance;
-
-  @override
-  _ClientOverviewTabState createState() {
-    return _ClientOverviewTabState(_projectInfo, _clientInfo, _switchToTabFunc,
-        _createNewInstrumentInstance);
-  }
-}
-
-class _ClientOverviewTabState extends State<ClientOverviewTab> {
-  _ClientOverviewTabState(this._projectInfo, this._clientInfo,
-      this._switchToTabFunc, this._createNewInstrumentInstance);
 
   final ProjectInfo _projectInfo;
   final ClientInfo _clientInfo;
@@ -171,6 +156,7 @@ class _ClientOverviewTabState extends State<ClientOverviewTab> {
   }
 
   void onPrintQrCodeClicked(BuildContext context) async {
+    return;
     if (_isPrintingInProgress) return;
 
     _isPrintingInProgress = true;

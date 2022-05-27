@@ -1,21 +1,16 @@
 import 'dart:io';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:flutter_archive/flutter_archive.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:another_brother/another_brother.dart';
-import 'package:another_brother/printer_info.dart';
-import 'package:another_brother/label_info.dart';
-import 'package:qr_flutter/qr_flutter.dart';
-import 'dart:ui' as ui;
 
 import '../logger.dart';
 import '../model/empirical_evidence.dart';
 import '../os_functions.dart';
 import '../storage.dart';
 import '../utils.dart';
+import "../sticker_printer.dart";
 
 class SettingsPageContent extends StatefulWidget {
   SettingsPageContent({Key key}) : super(key: key);
@@ -206,85 +201,10 @@ class _SettingsPageContentState extends State<SettingsPageContent> {
       _showBusyIndicator = true;
     });
 
-    var printersCount = 0;
-    var printerInfo = new PrinterInfo();
-
-    try {
-      final platformVersion = await Printer.platformVersion;
-      logger.d("Printer: platform version: $platformVersion");
-    } catch (e) {
-      logger.e('Printer: Error getting platform version: $e');
-      return;
-    }
-
-    var printer = Printer();
-    try {
-      var netPrinters =
-          await printer.getNetPrinters([Model.PT_P900W.getName()]);
-      logger.d("Net printers: $netPrinters");
-      printersCount += netPrinters.length;
-      if (netPrinters.isNotEmpty) {
-        printerInfo.printerModel = Model.PT_P900W;
-        printerInfo.port = Port.NET;
-        printerInfo.ipAddress = netPrinters.first.ipAddress;
-        printerInfo.printMode = PrintMode.FIT_TO_PAPER;
-        printerInfo.isAutoCut = false;
-        printerInfo.labelNameIndex = PT.ordinalFromID(PT.W36.getId());
-        if (!await printer.setPrinterInfo(printerInfo)) {
-          logger.e("Printer: couldn't set printer info");
-          throw new Exception("Couldn't set printer info");
-        }
-
-        logger.d("Printer info setted successfully");
-
-        var info = await printer.getLabelInfo();
-        logger.d("Label info: $info");
-
-        var qrPainter = QrPainter(
-            data: "ром17нат1277",
-            version: QrVersions.auto,
-            gapless: true,
-            eyeStyle: const QrEyeStyle(
-                eyeShape: QrEyeShape.square, color: Color(0xFF000000)),
-            dataModuleStyle: const QrDataModuleStyle(
-              dataModuleShape: QrDataModuleShape.square,
-              color: Color(0xFF000000),
-            ),
-            emptyColor: Color(0xFFFFFFFF));
-        var qrImage = await qrPainter.toImage(400);
-        var imagePrintStatus = await printer.printImage(qrImage);
-        logger.d(
-            "Printer: got status: $imagePrintStatus, and error: ${imagePrintStatus.errorCode.getName()}");
-
-        var style = TextStyle(
-            color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold);
-        var paragraphBuilder = ui.ParagraphBuilder(ui.ParagraphStyle(
-          fontSize: style.fontSize,
-          fontFamily: style.fontFamily,
-          fontStyle: style.fontStyle,
-          fontWeight: style.fontWeight,
-          textAlign: TextAlign.center,
-          maxLines: 10,
-        ))
-          ..pushStyle(style.getTextStyle())
-          ..addText("ром17нат1277");
-
-        var paragraph = paragraphBuilder.build()
-          ..layout(ui.ParagraphConstraints(width: 300));
-        logger.d("Paragraph was built");
-        var textPrintStatus = await printer.printText(paragraph);
-        logger.d(
-            "Printer: got status: $textPrintStatus, and error: ${textPrintStatus.errorCode.getName()}");
-      }
-    } catch (e) {
-      logger.e('Printer: Error getting net printers: $e');
-    }
+    await StickerPrinter.print("ром17нат1277");
 
     setState(() {
       _showBusyIndicator = false;
     });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Найдено принтеров: $printersCount')));
   }
 }
