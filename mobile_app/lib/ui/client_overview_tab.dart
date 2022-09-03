@@ -1,6 +1,7 @@
 import 'package:another_brother/label_info.dart';
 import 'package:another_brother/printer_info.dart' as brother;
 import 'package:flutter/material.dart';
+import 'package:haf_spb_app/ui/client_qr_page.dart';
 import "package:intl/intl.dart";
 import 'package:qr_flutter/qr_flutter.dart';
 import 'dart:ui' as ui;
@@ -57,7 +58,12 @@ class ClientOverviewTab extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         TextButton(
-                            onPressed: () => onPrintQrCodeClicked(context),
+                            onPressed: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      ClientQrPage(_clientInfo.secondaryId),
+                                )),
                             child: Stack(children: [
                               QrImage(
                                 data: _clientInfo.secondaryId,
@@ -153,80 +159,5 @@ class ClientOverviewTab extends StatelessWidget {
                                 _createNewInstrumentInstance(instrument))),
                   ))
             ])));
-  }
-
-  void onPrintQrCodeClicked(BuildContext context) async {
-    return;
-    if (_isPrintingInProgress) return;
-
-    _isPrintingInProgress = true;
-
-    BusyIndicatorDialog.show(context, "Идет печать...");
-    logger.d("Printing Qr code");
-
-    var printerInfo = new brother.PrinterInfo();
-
-    try {
-      final platformVersion = await brother.Printer.platformVersion;
-      logger.d("Printer: platform version: $platformVersion");
-    } catch (e) {
-      logger.e('Printer: Error getting platform version: $e');
-      return;
-    }
-
-    var printer = brother.Printer();
-    try {
-      var netPrinters =
-          await printer.getNetPrinters([brother.Model.PT_P900W.getName()]);
-      logger.d("Net printers: $netPrinters");
-      if (netPrinters.isEmpty) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Принтер не найден')));
-        return;
-      }
-      printerInfo.printerModel = brother.Model.PT_P900W;
-      printerInfo.port = brother.Port.NET;
-      printerInfo.ipAddress = netPrinters.first.ipAddress;
-      printerInfo.printMode = brother.PrintMode.FIT_TO_PAGE;
-      printerInfo.isAutoCut = true;
-      printerInfo.labelNameIndex = PT.ordinalFromID(PT.W36.getId());
-      if (!await printer.setPrinterInfo(printerInfo)) {
-        logger.e("Printer: couldn't set printer info");
-        throw new Exception("Couldn't set printer info");
-      }
-
-      logger.d("Printer info setted successfully");
-
-      var info = await printer.getLabelInfo();
-      logger.d("Label info: $info");
-
-      var style = TextStyle(
-          color: Colors.black, fontSize: 7, fontWeight: FontWeight.bold);
-      var paragraphBuilder = ui.ParagraphBuilder(ui.ParagraphStyle(
-        fontSize: style.fontSize,
-        fontFamily: style.fontFamily,
-        fontStyle: style.fontStyle,
-        fontWeight: style.fontWeight,
-        textAlign: TextAlign.center,
-        maxLines: 10,
-      ))
-        ..pushStyle(style.getTextStyle())
-        ..addText("ром17нат1277");
-
-      var paragraph = paragraphBuilder.build()
-        ..layout(ui.ParagraphConstraints(width: 300));
-      logger.d("Paragraph was built");
-      var status = await printer.printText(paragraph);
-      logger.d(
-          "Printer: got status: $status, and error: ${status.errorCode.getName()}");
-    } catch (e) {
-      logger.e('Print error: $e');
-
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Произошла ошибка печати')));
-    } finally {
-      _isPrintingInProgress = false;
-      BusyIndicatorDialog.close(context);
-    }
   }
 }

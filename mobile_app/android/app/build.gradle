@@ -23,6 +23,7 @@ if (flutterVersionName == null) {
 
 apply plugin: 'com.android.application'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
+apply plugin: 'kotlin-android'
 
 def keystoreProperties = new Properties()
 def keystorePropertiesFile = rootProject.file('key.properties')
@@ -39,7 +40,7 @@ android {
 
     defaultConfig {
         applicationId "org.haf_spb.haf_app"
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 32
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
@@ -63,6 +64,7 @@ android {
 
     dependencies {
         implementation 'com.android.support:multidex:1.0.3'
+        implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     }
 }
 

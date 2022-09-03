@@ -6,6 +6,11 @@ import 'package:qr_flutter/qr_flutter.dart';
 
 import '../logger.dart';
 
+class PrintException implements Exception {
+  String cause;
+  PrintException(this.cause);
+}
+
 class StickerPrinter {
   static Future<void> print(String text) async {
     var printerInfo = new pi.PrinterInfo();
@@ -21,41 +26,37 @@ class StickerPrinter {
     var imageToPrint = await _prepareImage(text);
 
     var printer = pi.Printer();
-    try {
-      var netPrinters =
-          await printer.getNetPrinters([pi.Model.PT_P900W.getName()]);
-      logger.d("Net printers: $netPrinters");
-      if (netPrinters.isNotEmpty) {
-        printerInfo.printerModel = pi.Model.PT_P900W;
-        printerInfo.port = pi.Port.NET;
-        printerInfo.ipAddress = netPrinters.first.ipAddress;
-        printerInfo.printMode = pi.PrintMode.ORIGINAL;
-        printerInfo.align = pi.Align.CENTER;
-        printerInfo.valign = pi.VAlign.TOP;
-        printerInfo.labelNameIndex = PT.ordinalFromID(PT.W36.getId());
-        printerInfo.labelMargin = 0;
-        printerInfo.margin = new pi.Margin(top: 0, left: 0);
-        printerInfo.isAutoCut = true;
-        printerInfo.isCutAtEnd = false;
-        printerInfo.isLabelEndCut = false;
-
-        if (!await printer.setPrinterInfo(printerInfo)) {
-          logger.e("Printer: couldn't set printer info");
-          throw new Exception("Couldn't set printer info");
-        }
-
-        logger.d("Printer info setted successfully");
-
-        var info = await printer.getLabelInfo();
-        logger.d("Label info: $info");
-
-        var imagePrintStatus = await printer.printImage(imageToPrint);
-        logger.d(
-            "Printer: got status: $imagePrintStatus, and error: ${imagePrintStatus.errorCode.getName()}");
-      }
-    } catch (e) {
-      logger.e('Printer: Error getting net printers: $e');
+    var netPrinters =
+        await printer.getNetPrinters([pi.Model.PT_P900W.getName()]);
+    logger.d("Net printers: $netPrinters");
+    if (netPrinters.isEmpty) {
+      throw new PrintException("Принтер не найден");
     }
+    printerInfo.printerModel = pi.Model.PT_P900W;
+    printerInfo.port = pi.Port.NET;
+    printerInfo.ipAddress = netPrinters.first.ipAddress;
+    printerInfo.printMode = pi.PrintMode.ORIGINAL;
+    printerInfo.align = pi.Align.CENTER;
+    printerInfo.valign = pi.VAlign.TOP;
+    printerInfo.labelNameIndex = PT.ordinalFromID(PT.W36.getId());
+    printerInfo.labelMargin = 0;
+    printerInfo.margin = new pi.Margin(top: 0, left: 0);
+    printerInfo.isAutoCut = false;
+    printerInfo.isHalfCut = true;
+
+    if (!await printer.setPrinterInfo(printerInfo)) {
+      logger.e("Printer: couldn't set printer info");
+      throw new Exception("Couldn't set printer info");
+    }
+
+    logger.d("Printer info setted successfully");
+
+    var info = await printer.getLabelInfo();
+    logger.d("Label info: $info");
+
+    var imagePrintStatus = await printer.printImage(imageToPrint);
+    logger.d(
+        "Printer: got status: $imagePrintStatus, and error: ${imagePrintStatus.errorCode.getName()}");
   }
 
   static Future<ui.Image> _prepareImage(String textString) async {

@@ -23,6 +23,23 @@ class ServerConnection {
     _token = token;
   }
 
+  static Future<String> checkServerAvailability(Uri server) async {
+    var retriesCount = 3;
+    do {
+      try {
+        var response = await http.get(server).timeout(Duration(seconds: 5));
+        logger.d("got status code = ${response.statusCode}");
+        return null;
+      } on TimeoutException {
+        if (--retriesCount > 0) return "Не удается подключиться";
+      } on SocketException catch (e) {
+        if (--retriesCount > 0) return "Ошибка ${e.osError.errorCode}";
+      } on ArgumentError catch (e) {
+        return "Некорректный адрес ${e}";
+      }
+    } while (true);
+  }
+
   Future<bool> checkAccess() async {
     var response = await _post(
         {"token": _token, "content": "version", "format": "json"}, 5,
@@ -101,7 +118,8 @@ class ServerConnection {
           });
         }
       } on FormatException {
-        logger.e("Import record json format exception. Body: ${response.body}");
+        logger
+            .e("Get users list json format exception. Body: ${response.body}");
         return result;
       }
     }
@@ -374,7 +392,7 @@ class ServerConnection {
             .post(Settings.redcapUrl, body: body)
             .timeout(Duration(seconds: timeoutSecs));
       } on TimeoutException {
-        if (--retriesCount > 0)
+        if (--retriesCount <= 0)
           throw new SocketException("Connection timed out");
       }
     } while (true);

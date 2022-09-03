@@ -10,6 +10,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:haf_spb_app/model/empirical_evidence.dart';
 import 'package:package_info/package_info.dart';
 
+import '../settings.dart';
 import '../storage.dart';
 import '../location.dart';
 import '../user_info.dart';
@@ -17,6 +18,7 @@ import '../logger.dart';
 import '../model/project_info.dart';
 import '../server_connection.dart';
 import '../utils.dart';
+import 'add_server_dialog.dart';
 import 'main_page.dart';
 import 'svg_icon_button.dart';
 
@@ -51,6 +53,11 @@ class _LoginPageState extends State<LoginPage> {
   String _appVersion = "";
   String _deviceName = "";
   String _userNameError;
+  String _serverError;
+  List<String> _serversList = ["https://db.haf-spb.org/api/"];
+  String _serverAddress;
+  ProjectInfo _projectInfo;
+  final serversFieldState = GlobalKey<FormFieldState>();
 
   int get tokenToShowLinesCount => _tokenToShowLinesCount;
   set tokenToShowLinesCount(value) {
@@ -67,8 +74,6 @@ class _LoginPageState extends State<LoginPage> {
     }
     _tokenToShowLinesCount = value;
   }
-
-  ProjectInfo _projectInfo;
 
   void _focusListener() {
     setState(() {});
@@ -105,6 +110,34 @@ class _LoginPageState extends State<LoginPage> {
     _focusNode.addListener(_focusListener);
 
     Storage.init().then((val) {
+      final serverAddressParameter = Storage.getDefaultValue(
+          EmpiricalEvidence.serverAddressStaticVariable);
+
+      String resultServerAddress;
+      if (serverAddressParameter.isNotEmpty &&
+          serverAddressParameter.first.isNotEmpty) {
+        try {
+          final serverUri = Uri.parse(serverAddressParameter.first);
+          resultServerAddress = serverAddressParameter.first;
+          Settings.redcapUrl = serverUri;
+        } on FormatException catch (e) {
+          logger.d(
+              "Не удалось распознать адрес сервера из настроек: $_serverAddress - $e");
+          resultServerAddress = Settings.redcapUrl.toString();
+        }
+      } else {
+        resultServerAddress = Settings.redcapUrl.toString();
+      }
+
+      logger.d("Default server address: $resultServerAddress");
+
+      setState(() {
+        _serverAddress = resultServerAddress;
+        if (!_serversList.contains(_serverAddress)) {
+          _serversList.add(_serverAddress);
+        }
+      });
+
       final userName = Storage.getDefaultValue(
           EmpiricalEvidence.fellowWorkerUnifiedVariable);
       if (userName.isNotEmpty) {
@@ -142,10 +175,19 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    var serversList = _serversList
+        .map((e) => DropdownMenuItem<String>(
+              value: e,
+              child: Text(e),
+            ))
+        .toList();
+    serversList
+        .add(DropdownMenuItem(value: null, child: Text("Добавить новый...")));
     var screenSize = MediaQuery.of(context).size;
     logger.i(
         "Screen size = $screenSize, devicePixelRatio = ${MediaQuery.of(context).devicePixelRatio}");
     tokenToShowLinesCount = MediaQuery.of(context).size.width > 700 ? 1 : 2;
+    // To let flutter think that field changed when we change the value
     return Scaffold(
         drawer: null,
         body: Stack(children: [
@@ -157,6 +199,24 @@ class _LoginPageState extends State<LoginPage> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         SizedBox(height: screenSize.height / 4),
+                        DropdownButtonFormField(
+                            key: serversFieldState,
+                            decoration: InputDecoration(
+                                border: OutlineInputBorder(),
+                                labelText: "Сервер базы данных",
+                                errorText: _serverError),
+                            value: _serverAddress,
+                            items: serversList,
+                            onChanged: (newValue) {
+                              if (newValue == null) {
+                                _addServerDialog(context);
+                                return;
+                              }
+                              setState(() {
+                                _serverAddress = newValue;
+                              });
+                            }),
+                        SizedBox(height: 40),
                         TextField(
                             style: TextStyle(fontSize: 22),
                             textAlign: TextAlign.left,
@@ -204,7 +264,7 @@ class _LoginPageState extends State<LoginPage> {
                                           ? null
                                           : [
                                               TextInputFormatter.withFunction(
-                                                  idTextFormat)
+                                                  _idTextFormat)
                                             ],
                                       controller: _tokenTextFieldController,
                                       onChanged: (newValue) {
@@ -321,22 +381,39 @@ class _LoginPageState extends State<LoginPage> {
 
     FocusScope.of(context).unfocus();
 
+    setState(() {
+      _showBusyIndicator = true;
+      _busyMessage = "Проверяем...";
+    });
+
     try {
+      final serverUri = Uri.parse(_serverAddress);
+      Settings.redcapUrl = serverUri;
+      logger.d("Using server: ${Settings.redcapUrl}");
+    } on FormatException catch (e) {
+      logger.d("Не удалось распознать адрес сервера: $_serverAddress - $e");
       setState(() {
-        _showBusyIndicator = true;
-        _busyMessage = "Проверяем...";
+        _serverError = "Не удалось распознать адрес сервера.";
       });
+      return;
+    }
+
+    try {
       _connection.setToken(token);
       var checkResult = await _connection.checkAccess();
       if (!checkResult) {
         setState(() {
-          _tokenValidateError = "Не удалось авторизоваться. Проверьте токен.";
+          _tokenValidateError =
+              "Не удалось авторизоваться. Проверьте токен и адрес сервера.";
         });
         return;
       }
 
+      Storage.setDefaultValue(
+          EmpiricalEvidence.serverAddressStaticVariable, [_serverAddress]);
+
       if (!_usingTokenFromStore) {
-        var saveResult = await saveToken(token);
+        var saveResult = await _saveToken(token);
         if (!saveResult) {
           logger.e("Error saving token to storage");
           return;
@@ -393,7 +470,7 @@ class _LoginPageState extends State<LoginPage> {
       logger.e("LoginPage: caught SocketException", e);
       setState(() {
         _tokenValidateError =
-            "Не удалось подключиться к серверу. Проверьте подключение к Интернет.";
+            "Не удалось подключиться к серверу. Проверьте адрес сервера и подключение к Интернет.";
       });
     } finally {
       setState(() {
@@ -403,7 +480,7 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  Future<bool> saveToken(String token) async {
+  Future<bool> _saveToken(String token) async {
     // Write api token
     logger.d("Saving token to secure storage");
     final storage = new FlutterSecureStorage();
@@ -416,7 +493,7 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  TextEditingValue idTextFormat(
+  TextEditingValue _idTextFormat(
       TextEditingValue oldValue, TextEditingValue newValue) {
     if (oldValue.text == newValue.text) return newValue;
     logger.v("oldValue=${oldValue.text}, newValue=$newValue");
@@ -456,5 +533,29 @@ class _LoginPageState extends State<LoginPage> {
         composing: TextRange.empty);
     logger.v("result = $result");
     return result;
+  }
+
+  Future<void> _addServerDialog(BuildContext context) async {
+    FocusScope.of(context).unfocus();
+    var oldServerAddress = _serverAddress;
+    var result = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => new AddServerDialog(),
+    );
+
+    if (result == null) {
+      setState(() {
+        _serverAddress = oldServerAddress;
+        serversFieldState.currentState.didChange(_serverAddress);
+      });
+
+      return;
+    }
+
+    setState(() {
+      if (!_serversList.contains(result)) _serversList.add(result);
+      _serverAddress = result;
+      serversFieldState.currentState.didChange(_serverAddress);
+    });
   }
 }

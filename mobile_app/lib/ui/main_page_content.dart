@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:barcode_scan2/barcode_scan2.dart';
 import 'package:haf_spb_app/model/form_permission.dart';
 
 import '../logger.dart';
@@ -68,10 +69,11 @@ class _MainPageContentState extends State<MainPageContent> {
                 children: [
                   const SizedBox(height: 60),
                   ElevatedButton(
-                    child: Text('СКАНИРОВАТЬ КОД',
-                        style: Theme.of(context).textTheme.button),
-                    onPressed: () {},
-                  ),
+                      child: Text('СКАНИРОВАТЬ КОД',
+                          style: Theme.of(context).textTheme.button),
+                      onPressed: () {
+                        _scanFromQrCode(context);
+                      }),
                   const SizedBox(height: 50),
                   TextFormField(
                     autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -185,6 +187,29 @@ class _MainPageContentState extends State<MainPageContent> {
       setState(() {
         _showBusyIndicator = false;
       });
+    }
+  }
+
+  void _scanFromQrCode(BuildContext context) async {
+    try {
+      var scanResult = await BarcodeScanner.scan();
+      logger.d("Scanner result: ${scanResult.type}");
+      if (scanResult.type != ResultType.Barcode) return;
+      var clientId = scanResult.rawContent;
+      logger.d("Scanned data: $clientId");
+      var validationResult = Utils.clientIdValidator(clientId);
+      if (validationResult != null) {
+        logger.d("Неверный токен. Ошибка: $validationResult");
+        Scaffold.of(context).showSnackBar(SnackBar(
+            content: Text(
+                'Прочитан некорректный идентификатор. Прочитанный идентификатор: $clientId')));
+        return;
+      }
+
+      _findClient(clientId, context);
+    } catch (e) {
+      logger.e("Qr scanner exception", e);
+      return;
     }
   }
 }
