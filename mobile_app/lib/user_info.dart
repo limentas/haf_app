@@ -20,9 +20,8 @@ class UserInfo {
   }
 
   static Future<void> init() async {
-    _deviceName = await OsFunctions.getDeviceBluetoothName();
-    if (_deviceName == null || _deviceName.isEmpty)
-      _deviceName = "no bluetooth";
+    _deviceName = await OsFunctions.getDeviceName();
+    if (_deviceName == null || _deviceName.isEmpty) _deviceName = "no name";
     logger.i("Device name = $_deviceName");
   }
 }

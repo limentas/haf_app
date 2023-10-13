@@ -58,7 +58,9 @@ class InstrumentField {
       this.isRecordId,
       this.isSecondaryId}) {
     if (annotation != null && annotation.isNotEmpty) {
-      isHidden = annotation != null ? annotation.contains("@HIDDEN") : false;
+      isHidden = annotation != null
+          ? annotation.contains("@HIDDEN") || annotation.contains("@HIDDEN-APP")
+          : false;
 
       final defaultPrefix = "@DEFAULT=";
       var prefixIndex = annotation.indexOf(defaultPrefix);

@@ -32,16 +32,18 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    compileSdkVersion 32
+    compileSdkVersion 33
 
     lintOptions {
         disable 'InvalidPackage'
     }
 
+    namespace "org.haf_spb.haf_app"
+
     defaultConfig {
         applicationId "org.haf_spb.haf_app"
         minSdkVersion 21
-        targetSdkVersion 32
+        targetSdkVersion 34
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         multiDexEnabled true

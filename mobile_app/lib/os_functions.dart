@@ -13,14 +13,14 @@ class OsFunctions {
     return null;
   }
 
-  static Future<String> getDeviceBluetoothName() async {
+  static Future<String> getDeviceName() async {
     try {
       _ensureInit();
 
-      final name = await _platform.invokeMethod('getDeviceBluetoothName');
+      final name = await _platform.invokeMethod('getDeviceName');
       return name as String;
     } catch (e) {
-      logger.e("getDeviceBluetoothName exception", e);
+      logger.e("getDeviceName exception", e);
       return "";
     }
   }

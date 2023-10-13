@@ -275,7 +275,7 @@ class ProjectInfo {
           isSecondaryId: secondaryKey == oid,
         );
 
-        fieldType.instrumentField = field;
+        if (fieldType != null) fieldType.instrumentField = field;
 
         if (EmpiricalEvidence.isFieldFormStatus(field))
           instrument.formStatusField = field;

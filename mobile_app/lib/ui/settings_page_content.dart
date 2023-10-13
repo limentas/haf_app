@@ -185,7 +185,7 @@ class _SettingsPageContentState extends State<SettingsPageContent> {
       final email = Email(
         body: '<Описание проблемы>',
         subject: 'HAF application feedback',
-        recipients: ['limentas@gmail.com'],
+        recipients: ['limentas@gmail.com', 'roman.skochilov@gmail.com'],
         attachmentPaths: [zipFile.path],
         isHTML: false,
       );
