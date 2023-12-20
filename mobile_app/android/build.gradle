@@ -1,13 +1,12 @@
 buildscript {
     ext.kotlin_version = '1.6.21'
-    
     repositories {
         google()
         jcenter()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.4.0'
+        classpath 'com.android.tools.build:gradle:7.1.1'
     }
 
     dependencies {

@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:cross_file/cross_file.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:ui' as ui;
 
 import '../sticker_printer.dart';
 import 'busy_indicator_dialog.dart';
@@ -46,6 +50,17 @@ class ClientQrPageContent extends StatelessWidget {
                     onPressed: () {
                       onPrintQrCodeClicked(context);
                     },
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    child: Align(
+                        alignment: Alignment.center,
+                        child: Text('ПОДЕЛИТЬСЯ',
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.button)),
+                    onPressed: () {
+                      onShareClicked(context);
+                    },
                   )
                 ])));
   }
@@ -63,5 +78,35 @@ class ClientQrPageContent extends StatelessWidget {
     } finally {
       BusyIndicatorDialog.close(context);
     }
+  }
+
+  void onShareClicked(BuildContext context) async {
+    var qrPainter = QrPainter(
+        data: _clientId,
+        version: QrVersions.auto,
+        gapless: true,
+        eyeStyle: const QrEyeStyle(
+            eyeShape: QrEyeShape.square, color: Color(0xFF000000)),
+        dataModuleStyle: const QrDataModuleStyle(
+          dataModuleShape: QrDataModuleShape.square,
+          color: Color(0xFF000000),
+        ),
+        emptyColor: Color(0xFFFFFFFF));
+
+    var pictureRecorder = ui.PictureRecorder();
+    var canvas = new Canvas(pictureRecorder);
+    canvas.translate(30, 30);
+    canvas.drawColor(Colors.white, ui.BlendMode.src);
+    qrPainter.paint(canvas, Size.square(450));
+
+    var image = await pictureRecorder.endRecording().toImage(510, 510);
+    var byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    final tempDir = await getTemporaryDirectory();
+    var path = tempDir.path + "/qr_code.png";
+    var file = await XFile.fromData(byteData.buffer.asUint8List(),
+        mimeType: "image/png", name: "qr_code.png", path: path);
+    await file.saveTo(path);
+    await Share.shareXFiles([file],
+        subject: "Qr код для " + _clientId, text: _clientId);
   }
 }
