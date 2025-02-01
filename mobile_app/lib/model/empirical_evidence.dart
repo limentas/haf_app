@@ -61,7 +61,7 @@ class EmpiricalEvidence {
         "organisation_other#unified", //Участник посетил организацию другое (test_form)
   });
 
-  static String secondaryId;
+  static String secondaryId = "";
 
   static const String clientCreationDateTime = "user_initial_date";
 
@@ -103,7 +103,7 @@ class EmpiricalEvidence {
     return _storedVariables.containsKey(field.variable);
   }
 
-  static String nameToStoreForField(String variableName) {
+  static String? nameToStoreForField(String variableName) {
     if (variableName.endsWith("#unified")) return variableName;
     return _storedVariables[variableName];
   }

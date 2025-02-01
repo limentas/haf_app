@@ -14,7 +14,7 @@ enum FieldTypeEnum {
   DescriptiveText
 }
 
-FieldTypeEnum parseFieldTypeEnum(String text) {
+FieldTypeEnum? parseFieldTypeEnum(String text) {
   switch (text) {
     case "text":
       return FieldTypeEnum.Text;

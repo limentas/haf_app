@@ -10,10 +10,10 @@ import 'smart_variable_char_predicate.dart';
 import 'smart_variables_evaluator.dart';
 
 class BranchingLogicEvaluator {
-  Parser _branchingLogicParser;
+  late Parser _branchingLogicParser;
   final SmartVariablesEvaluator smartVariablesEvaluator;
 
-  BranchingLogicEvaluator(ProjectInfo projectInfo, ClientInfo clientInfo)
+  BranchingLogicEvaluator(ProjectInfo projectInfo, ClientInfo? clientInfo)
       : smartVariablesEvaluator = new SmartVariablesEvaluator(
             projectInfo, clientInfo,
             useIntCheckboxes: true) {
@@ -79,11 +79,11 @@ class BranchingLogicEvaluator {
     _branchingLogicParser = calculateBuilder.build().end();
   }
 
-  bool calculate(String expression, InstrumentInstance currentInstance) {
+  bool? calculate(String expression, InstrumentInstance currentInstance) {
     if (isEmpty(expression)) return true;
     smartVariablesEvaluator.currentInstance = currentInstance;
     var result = _branchingLogicParser.parse(expression);
-    if (result.isFailure) {
+    if (result is Failure) {
       logger.e("Error evaluating expression: $expression. " +
           "Error: ${result.message}, position: ${result.position}, " +
           "buffer: ${result.buffer}");

@@ -3,7 +3,7 @@ import 'package:location/location.dart' as location;
 import 'logger.dart';
 
 class Location {
-  static location.LocationData _locationData;
+  static location.LocationData? _locationData;
   static bool _serviceDisabled = false;
   static bool _permissionNotGranted = false;
 
@@ -33,13 +33,13 @@ class Location {
 
       _locationData = await locationService.getLocation();
     } catch (e) {
-      logger.e("Getting location exception", e);
+      logger.e("Getting location exception", error: e);
     }
   }
 
   static bool get inited =>
       _locationData != null && !_serviceDisabled && !_permissionNotGranted;
-  static double get latitude => _locationData?.latitude;
-  static double get longitude => _locationData?.longitude;
-  static double get altitude => _locationData?.altitude;
+  static double? get latitude => _locationData?.latitude;
+  static double? get longitude => _locationData?.longitude;
+  static double? get altitude => _locationData?.altitude;
 }

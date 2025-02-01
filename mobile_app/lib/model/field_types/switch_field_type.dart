@@ -25,9 +25,9 @@ class SwitchFieldType extends FieldType {
   @override
   Widget buildEditControl(BuildContext context, MyFormController formController,
       Iterable<String> initialValue,
-      {@required ValidateStatusChange onValidateStatusChanged,
-      @required FieldValueChange onChanged,
-      @required FieldSaveValue onSaved}) {
+      {required ValidateStatusChange onValidateStatusChanged,
+      required FieldValueChange onChanged,
+      required FieldSaveValue onSaved}) {
     return TristateSwitch(_type, formController, instrumentField.isMandatory,
         onValidateStatusChanged, onChanged, onSaved,
         initialValue: initialValue == null ||

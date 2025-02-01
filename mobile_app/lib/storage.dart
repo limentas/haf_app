@@ -9,10 +9,10 @@ class Storage {
   static const _default_values_table = "default_values";
   static const _forms_history_table = "forms_history";
 
-  static Database _database; //TODO: consider closing the DB
+  static Database? _database; //TODO: consider closing the DB
 
-  static Multimap<String, String> _defaultValues;
-  static List<FormsHistoryItem> _formsHistory;
+  static var _defaultValues = new Multimap<String, String>();
+  static var _formsHistory = new List<FormsHistoryItem>.empty();
   static bool _inited = false;
 
   static Future<void> init() async {
@@ -21,7 +21,7 @@ class Storage {
       _defaultValues = await _loadDefaultValues();
       _inited = true;
     } on DatabaseException catch (e) {
-      logger.e("Init database exception", e);
+      logger.e("Init database exception", error: e);
     }
   }
 
@@ -29,17 +29,19 @@ class Storage {
     try {
       _formsHistory = await _loadFormsHistory(tokenHash);
     } on DatabaseException catch (e) {
-      logger.e("loadFormsHistory database exception", e);
+      logger.e("loadFormsHistory database exception", error: e);
     }
   }
 
   static Iterable<String> getDefaultValue(String varName) {
     var unifiedName = EmpiricalEvidence.nameToStoreForField(varName);
+    if (unifiedName == null) return List<String>.empty();
     return _defaultValues[unifiedName];
   }
 
   static void setDefaultValue(String varName, Iterable<String> newValue) async {
     var unifiedName = EmpiricalEvidence.nameToStoreForField(varName);
+    if (unifiedName == null) return;
     var currentValue = _defaultValues[unifiedName];
     if (DeepCollectionEquality.unordered().equals(currentValue, newValue))
       return;
@@ -49,7 +51,7 @@ class Storage {
     _defaultValues.removeAll(unifiedName);
     _defaultValues.addValues(unifiedName, newValue);
 
-    var batch = _database.batch();
+    var batch = _database!.batch();
     batch.delete(_default_values_table,
         where: "var_name = ?", whereArgs: [unifiedName]);
 
@@ -66,23 +68,21 @@ class Storage {
   }
 
   static void addFormsHistoryItem(FormsHistoryItem historyItem) {
-    var existentItem = _formsHistory.firstWhere(
-        (element) =>
-            element.secondaryId == historyItem.secondaryId &&
-            element.formName == historyItem.formName &&
-            element.instanceNumber == historyItem.instanceNumber,
-        orElse: () => null);
-    if (existentItem != null) {
+    try {
+      var existentItem = _formsHistory.firstWhere((element) =>
+          element.secondaryId == historyItem.secondaryId &&
+          element.formName == historyItem.formName &&
+          element.instanceNumber == historyItem.instanceNumber);
       updateHistoryItem(existentItem);
       return;
+    } on StateError {
+      //This is a new item
+      _formsHistory.add(historyItem);
     }
-
-    //This is a new item
-    _formsHistory.add(historyItem);
 
     try {
       var dbTime = historyItem.lastEditTime.millisecondsSinceEpoch ~/ 1000;
-      _database.insert(_forms_history_table, {
+      _database!.insert(_forms_history_table, {
         "api_token": historyItem.tokenHash,
         "create_time": dbTime,
         "last_edit_time": dbTime,
@@ -91,17 +91,17 @@ class Storage {
         "instance_number": historyItem.instanceNumber
       });
     } on Exception catch (e) {
-      logger.e("Storage::addFormsHistoryItem exception ", e);
+      logger.e("Storage::addFormsHistoryItem exception ", error: e);
     }
   }
 
   static void removeHistoryItem(FormsHistoryItem historyItem) {
     try {
-      _database.delete(_forms_history_table,
+      _database!.delete(_forms_history_table,
           where: "id = ?", whereArgs: [historyItem.id]);
       _formsHistory.removeWhere((element) => element.id == historyItem.id);
     } on Exception catch (e) {
-      logger.e("Storage::removeHistoryItem exception ", e);
+      logger.e("Storage::removeHistoryItem exception ", error: e);
     }
   }
 
@@ -109,7 +109,7 @@ class Storage {
     historyItem.lastEditTime = DateTime.now();
 
     try {
-      _database.update(
+      _database!.update(
           _forms_history_table,
           {
             "last_edit_time":
@@ -120,61 +120,63 @@ class Storage {
       _formsHistory.removeWhere((element) => element.id == historyItem.id);
       _formsHistory.add(historyItem);
     } on Exception catch (e) {
-      logger.e("Storage::updateHistoryItem exception ", e);
+      logger.e("Storage::updateHistoryItem exception ", error: e);
     }
   }
 
-  static FormsHistoryItem findHistoryItem(
-      String secondaryId, String formName, int instanceNumber) {
-    var item = _formsHistory.firstWhere(
-        (element) =>
-            element.secondaryId == secondaryId &&
-            element.formName == formName &&
-            element.instanceNumber == instanceNumber,
-        orElse: () => null);
-    logger.d("find item $secondaryId $formName $instanceNumber $item");
-    return item;
+  static FormsHistoryItem? findHistoryItem(
+      String secondaryId, String formName, int? instanceNumber) {
+    try {
+      var item = _formsHistory.firstWhere((element) =>
+          element.secondaryId == secondaryId &&
+          element.formName == formName &&
+          element.instanceNumber == instanceNumber);
+      logger.d("Find item $secondaryId $formName $instanceNumber $item");
+      return item;
+    } on StateError {
+      return null;
+    }
   }
 
   static Future<Multimap<String, String>> _loadDefaultValues() async {
     await _openDatabase();
 
     try {
-      final valuesMap = await _database.query(_default_values_table);
+      final valuesMap = await _database!.query(_default_values_table);
       return Multimap.fromIterable(valuesMap,
           key: (item) => item["var_name"], value: (item) => item["value"]);
     } on Exception catch (e) {
-      logger.e("Storage::_loadDefaultValues exception ", e);
+      logger.e("Storage::_loadDefaultValues exception ", error: e);
     }
 
-    return null;
+    return Multimap<String, String>();
   }
 
-  static Future<Iterable<FormsHistoryItem>> _loadFormsHistory(
+  static Future<List<FormsHistoryItem>> _loadFormsHistory(
       String tokenHash) async {
     await _openDatabase();
 
     try {
-      final itemsMap = await _database.query(_forms_history_table,
+      final itemsMap = await _database!.query(_forms_history_table,
           where: "api_token = ?", whereArgs: [tokenHash]);
       return List.generate(itemsMap.length, (i) {
         var item = itemsMap[i];
         return FormsHistoryItem(
-            id: item["id"],
-            tokenHash: item["api_token"],
+            id: item["id"] as int,
+            tokenHash: item["api_token"] as String,
             createTime: DateTime.fromMillisecondsSinceEpoch(
                 (item["create_time"] as int) * 1000),
             lastEditTime: DateTime.fromMillisecondsSinceEpoch(
                 (item["last_edit_time"] as int) * 1000),
-            formName: item["form_name"],
-            secondaryId: item["secondary_id"],
-            instanceNumber: item["instance_number"]);
+            formName: item["form_name"] as String,
+            secondaryId: item["secondary_id"] as String,
+            instanceNumber: item["instance_number"] as int);
       });
     } on Exception catch (e) {
-      logger.e("Storage::_loadFormsHistory exception ", e);
+      logger.e("Storage::_loadFormsHistory exception ", error: e);
     }
 
-    return null;
+    return List<FormsHistoryItem>.empty();
   }
 
   static Future<void> _openDatabase() async {
@@ -210,7 +212,8 @@ class Storage {
 
       await _cleanDatabase();
     } on Exception catch (e) {
-      logger.e("Storage::_openDatabase exception ", e);
+      logger.e("Storage::_openDatabase exception ", error: e);
+      rethrow;
     }
   }
 
@@ -220,12 +223,12 @@ class Storage {
     var now = DateTime.now();
     var lastEditDateTime = DateTime(now.year, now.month, now.day);
     try {
-      var deletedItems = await _database.delete(_forms_history_table,
+      var deletedItems = await _database!.delete(_forms_history_table,
           where: "create_time < ?",
           whereArgs: [lastEditDateTime.millisecondsSinceEpoch ~/ 1000]);
       logger.d("Deleted $deletedItems items from history database");
     } on Exception catch (e) {
-      logger.e("Storage::_cleanDatabase exception ", e);
+      logger.e("Storage::_cleanDatabase exception ", error: e);
     }
   }
 }

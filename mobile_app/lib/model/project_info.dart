@@ -29,19 +29,23 @@ class ProjectInfo {
   final String secondaryIdFieldName;
   final bool autonumberingEnabled;
 
-  InstrumentField birthdayField; //birthday
-  InstrumentInfo _initInstrument;
+  InstrumentField? birthdayField; //birthday
+  InstrumentInfo? _initInstrument;
   InstrumentInfo get initInstrument {
-    if (_initInstrument != null) return _initInstrument;
+    if (_initInstrument != null) return _initInstrument!;
     _initInstrument = instrumentsByName.values.firstWhere((instrument) =>
         EmpiricalEvidence.isInstrumentInitial(instrument, recordIdFieldName));
-    return _initInstrument;
+    if (_initInstrument == null) {
+      logger.w(
+          "Couldn't find initial instrument. It should have Record ID field.");
+    }
+    return _initInstrument!;
   }
 
   ProjectInfo(this.name, this.recordIdFieldName, this.secondaryIdFieldName,
       this.autonumberingEnabled);
 
-  factory ProjectInfo.fromXml(
+  static ProjectInfo? fromXml(
       String xml, Map<String, FormPermission> permissions) {
     try {
       var document = XmlDocument.parse(xml);
@@ -50,26 +54,26 @@ class ProjectInfo {
         throw new FormatException("Root element must be 'ODM'");
       var projectName = rootElement.getAttribute("Description");
       var studyElement = rootElement.getElement("Study");
-      var globalVariablesElement = studyElement.getElement("GlobalVariables");
-      var autonumberingElement = globalVariablesElement
+      var globalVariablesElement = studyElement!.getElement("GlobalVariables");
+      var autonumberingElement = globalVariablesElement!
           .getElement("redcap:RecordAutonumberingEnabled");
       var autonumberingEnabled = autonumberingElement?.innerText == "1";
       var secondaryKeyElement =
           globalVariablesElement.getElement("redcap:SecondaryUniqueField");
       var secondaryKey = secondaryKeyElement?.innerText;
-      EmpiricalEvidence.secondaryId = secondaryKey;
+      EmpiricalEvidence.secondaryId = secondaryKey ?? "";
       var repeatingInstrumentsAndEventsElement = globalVariablesElement
           .getElement("redcap:RepeatingInstrumentsAndEvents");
-      var repeatingInstrumentsElement = repeatingInstrumentsAndEventsElement
+      var repeatingInstrumentsElement = repeatingInstrumentsAndEventsElement!
           .getElement("redcap:RepeatingInstruments");
 
       // Reading redcap:RepeatingInstruments
-      var repeatingInstrumentElements = repeatingInstrumentsElement
+      var repeatingInstrumentElements = repeatingInstrumentsElement!
           .findAllElements("redcap:RepeatingInstrument");
-      var repeatingInstruments = new Map();
+      var repeatingInstruments = new Map<String, List<String>>();
       for (var repeatingInstrumentElement in repeatingInstrumentElements) {
-        String formNameId;
-        List<String> customLabels;
+        String? formNameId;
+        List<String> customLabels = [];
         for (var attr in repeatingInstrumentElement.attributes) {
           switch (attr.name.qualified) {
             case "redcap:RepeatInstrument":
@@ -84,30 +88,31 @@ class ProjectInfo {
               break;
           }
         }
-        repeatingInstruments.putIfAbsent(formNameId, () => customLabels);
+        if (formNameId != null)
+          repeatingInstruments.putIfAbsent(formNameId, () => customLabels);
       }
 
       // Reading FormDef elements
       var metadataElement = studyElement.getElement("MetaDataVersion");
       var recordIdFieldName =
-          metadataElement.getAttribute("redcap:RecordIdField");
-      var project = new ProjectInfo(
-          projectName, recordIdFieldName, secondaryKey, autonumberingEnabled);
+          metadataElement!.getAttribute("redcap:RecordIdField");
+      var project = new ProjectInfo(projectName!, recordIdFieldName!,
+          secondaryKey!, autonumberingEnabled);
       //key - group item oid, value - instrument oid
-      var fieldGroupsMap = new Map();
+      var fieldGroupsMap = new Map<String, String>();
       //key - field item oid, value - group oid
-      var fieldsMap = new LinkedHashMap();
+      var fieldsMap = new LinkedHashMap<String, String>();
 
       var forms = metadataElement.findAllElements("FormDef");
       for (var form in forms) {
-        String oid = form.getAttribute("OID");
-        String formNameId = form.getAttribute("redcap:FormName");
-        String formName = form.getAttribute("Name");
+        String oid = form.getAttribute("OID")!;
+        String formNameId = form.getAttribute("redcap:FormName")!;
+        String formName = form.getAttribute("Name")!;
 
         var repeatingInstrument = repeatingInstruments[formNameId];
         var instrument = InstrumentInfo(oid, formNameId, formName, project,
             isRepeating: repeatingInstrument != null,
-            customLabel: repeatingInstrument);
+            customLabel: repeatingInstrument ?? []);
         instrument.permission =
             permissions[formNameId] ?? FormPermission.NoAccess;
         project.instrumentsByOid[oid] = instrument;
@@ -128,15 +133,15 @@ class ProjectInfo {
       //Reading ItemGroupDef elements
       var itemGroupDefs = metadataElement.findAllElements("ItemGroupDef");
       for (var itemGroupDef in itemGroupDefs) {
-        var groupOid = itemGroupDef.getAttribute("OID");
-        var groupName = itemGroupDef.getAttribute("Name");
+        var groupOid = itemGroupDef.getAttribute("OID")!;
+        var groupName = itemGroupDef.getAttribute("Name")!;
         var instrumentOid = fieldGroupsMap[groupOid];
         if (instrumentOid == null) {
           logger.w("Couldn't find instrument for group $groupOid");
           continue;
         }
         final fieldsGroup = new FieldsGroup(groupOid, name: groupName);
-        project.instrumentsByOid[instrumentOid].fieldGroups[groupOid] =
+        project.instrumentsByOid[instrumentOid]!.fieldGroups[groupOid] =
             fieldsGroup;
 
         var itemRefs = itemGroupDef.findAllElements("ItemRef");
@@ -161,10 +166,10 @@ class ProjectInfo {
           logger.w("redcap:Variable of codelist element == null");
           continue;
         }
-        var codeList = new CodeList(codeListElement.getAttribute("OID"),
-            codeListElement.getAttribute("Name"), variable,
+        var codeList = new CodeList(codeListElement.getAttribute("OID")!,
+            codeListElement.getAttribute("Name")!, variable,
             checkboxesChoices:
-                codeListElement.getAttribute("redcap:CheckboxChoices"));
+                codeListElement.getAttribute("redcap:CheckboxChoices")!);
         codeListMap.add(variable, codeList);
 
         var codeListItems = codeListElement.findAllElements("CodeListItem");
@@ -179,7 +184,8 @@ class ProjectInfo {
               ?.getElement("TranslatedText")
               ?.innerText;
 
-          codeList.codeListItems[codedValue] = translatedText;
+          codeList.codeListItems[codedValue] =
+              translatedText ?? "Unknown value";
         }
       }
 
@@ -199,7 +205,11 @@ class ProjectInfo {
         }
 
         var fieldTypeEnum =
-            parseFieldTypeEnum(itemDef.getAttribute("redcap:FieldType"));
+            parseFieldTypeEnum(itemDef.getAttribute("redcap:FieldType")!);
+        if (fieldTypeEnum == null) {
+          logger.w("Skipping ItemDef element $oid");
+          continue;
+        }
 
         var fieldsGroupOid = fieldsMap[oid];
         if (fieldsGroupOid == null) {
@@ -209,6 +219,12 @@ class ProjectInfo {
 
         var instrumentOid = fieldGroupsMap[fieldsGroupOid];
         var instrument = project.instrumentsByOid[instrumentOid];
+
+        if (instrument == null) {
+          logger.w(
+              "Couldn't find an instrument by oid $instrumentOid. Looks like broken project xml.");
+          continue;
+        }
 
         //Skipping checkboxes not-necessary ItemDefs
         //One variable - one itemdef
@@ -222,16 +238,17 @@ class ProjectInfo {
             ?.getElement("redcap:FormattedTranslatedText")
             ?.innerText;
         if (question == null)
-          question = questionElement?.getElement("TranslatedText")?.innerText;
+          question =
+              questionElement?.getElement("TranslatedText")?.innerText ?? "";
 
-        String minValue, maxValue;
+        String minValue = "", maxValue = "";
         var rangeCheckElements = itemDef.findAllElements("RangeCheck");
         for (var rangeCheckElement in rangeCheckElements) {
           var softHardAttr = rangeCheckElement.getAttribute("SoftHard");
           if (softHardAttr != "Soft") //Just warn, don't know what does it mean
             logger.w("SoftHard attribute = $softHardAttr");
           var comparator = rangeCheckElement.getAttribute("Comparator");
-          var value = rangeCheckElement.getElement("CheckValue").innerText;
+          var value = rangeCheckElement.getElement("CheckValue")!.innerText;
           if (comparator == "GE")
             minValue = value;
           else if (comparator == "LE")
@@ -243,7 +260,7 @@ class ProjectInfo {
         var codeListOid =
             itemDef.getElement("CodeListRef")?.getAttribute("CodeListOID");
 
-        Iterable<CodeList> codeLists;
+        Iterable<CodeList> codeLists = [];
         if (codeListOid != null) codeLists = codeListMap[variable];
 
         var fieldType = FieldType.create(
@@ -251,31 +268,37 @@ class ProjectInfo {
           codeLists,
         );
 
+        var dataType = parseDataType(itemDef.getAttribute("DataType")!);
+        if (dataType == null) {
+          logger.w("Skipping ItemDef element $oid");
+          continue;
+        }
+
         var field = new InstrumentField(
           instrument,
           oid,
           variable,
-          itemDef.getAttribute("redcap:FieldAnnotation"),
-          name: itemDef.getAttribute("Name"),
+          itemDef.getAttribute("redcap:FieldAnnotation")!,
+          name: itemDef.getAttribute("Name")!,
           question: question,
-          note: itemDef.getAttribute("redcap:FieldNote"),
+          note: itemDef.getAttribute("redcap:FieldNote")!,
           isMandatory: itemDef.getAttribute("redcap:RequiredField") == "y",
           fieldTypeEnum: fieldTypeEnum,
           fieldType: fieldType,
-          dataType: parseDataType(itemDef.getAttribute("DataType")),
-          sectionName: itemDef.getAttribute("redcap:SectionHeader"),
+          dataType: dataType,
+          sectionName: itemDef.getAttribute("redcap:SectionHeader") ?? "",
           textValidationType: parseTextValidationType(
               itemDef.getAttribute("redcap:TextValidationType")),
-          length: int.tryParse(itemDef.getAttribute("Length")),
-          branchingLogic: itemDef.getAttribute("redcap:BranchingLogic"),
-          matrixGroupName: itemDef.getAttribute("redcap:MatrixGroupName"),
+          length: int.tryParse(itemDef.getAttribute("Length") ?? ""),
+          branchingLogic: itemDef.getAttribute("redcap:BranchingLogic") ?? "",
+          matrixGroupName: itemDef.getAttribute("redcap:MatrixGroupName") ?? "",
           minValue: minValue,
           maxValue: maxValue,
           isRecordId: fieldsMap.keys.first == oid,
           isSecondaryId: secondaryKey == oid,
         );
 
-        if (fieldType != null) fieldType.instrumentField = field;
+        fieldType.instrumentField = field;
 
         if (EmpiricalEvidence.isFieldFormStatus(field))
           instrument.formStatusField = field;
@@ -287,7 +310,7 @@ class ProjectInfo {
           project.birthdayField = field;
 
         instrument.fieldsByVariable[variable] = field;
-        var fieldGroup = instrument.fieldGroups[fieldsGroupOid];
+        var fieldGroup = instrument.fieldGroups[fieldsGroupOid]!;
         fieldGroup.fields.add(field);
         fieldGroup.fieldsMap[variable] = field;
         project.fieldsByVariable[variable] = field;
@@ -296,19 +319,15 @@ class ProjectInfo {
       project._fillVarDependencies();
       return project;
     } on XmlParserException catch (e) {
-      logger.e("Project xml parse error", e);
+      logger.e("Project xml parse error", error: e);
       return null;
     } on NoSuchMethodError catch (e) {
-      logger.e("Project xml structure error", e);
+      logger.e("Project xml structure error", error: e);
       return null;
     } catch (e) {
-      logger.e("Project xml other error", e);
+      logger.e("Project xml other error", error: e);
       return null;
     }
-  }
-
-  InstrumentField getFormField(String instrumentName, String variableName) {
-    return instrumentsByName[instrumentName].fieldsByVariable[variableName];
   }
 
   //For each variables fills its dependentVariables property
@@ -319,7 +338,7 @@ class ProjectInfo {
           SmartVariablesDependenciesExtractor.getVariablesDependOn(
               field.branchingLogic);
       for (var varibleName in dependOnVars) {
-        fieldsByVariable[varibleName].hasDependentVariables = true;
+        fieldsByVariable[varibleName]!.hasDependentVariables = true;
       }
     }
   }

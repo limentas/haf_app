@@ -14,7 +14,7 @@ class Combobox extends StatefulWidget {
       this._onValidateStatusChanged,
       this._onChanged,
       this._onSaved,
-      {Key key})
+      {Key? key})
       : super(key: key);
 
   final MyFormController _formController;
@@ -37,7 +37,7 @@ class _ComboboxState extends State<Combobox>
   _ComboboxState(
       this._formController,
       this._valueTitleMap,
-      String initialValue,
+      String? initialValue,
       this._isMandatory,
       this._onValidateStatusChanged,
       this._onChanged,
@@ -61,11 +61,11 @@ class _ComboboxState extends State<Combobox>
   final ValidateStatusChange _onValidateStatusChanged;
   final FieldValueChange _onChanged;
   final FieldSaveValue _onSaved;
-  String _selectedValue;
+  String? _selectedValue;
   final List<DropdownMenuItem<String>> _items = [];
-  int _formFieldId;
-  String _errorMessage; //null if there is no error
-  String _lastNotifiedValidateStatus;
+  late int _formFieldId;
+  String? _errorMessage; //null if there is no error
+  String? _lastNotifiedValidateStatus;
   bool _validateStatusWasNotified = false;
 
   @override
@@ -80,7 +80,7 @@ class _ComboboxState extends State<Combobox>
         _errorMessage = validate();
       });
       return _errorMessage == null;
-    }, () => _onSaved([_selectedValue]));
+    }, () => _onSaved([_selectedValue ?? ""]));
   }
 
   @override
@@ -89,8 +89,8 @@ class _ComboboxState extends State<Combobox>
     super.dispose();
   }
 
-  String validate() {
-    String result;
+  String? validate() {
+    String? result;
     if (_isMandatory) result = Utils.checkMandatory(_selectedValue);
     //Notify for the first time or when status changed
     if (!_validateStatusWasNotified || _lastNotifiedValidateStatus != result) {
@@ -120,7 +120,7 @@ class _ComboboxState extends State<Combobox>
               _selectedValue = newValue;
             });
             if (newValue == null) {
-              _onChanged(null);
+              _onChanged([""]);
             } else {
               _onChanged([newValue]);
             }

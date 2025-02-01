@@ -17,7 +17,7 @@ class FormInstanceEditScaffold extends StatelessWidget with SendFormMixin {
       this._instrumentInstance,
       this._titleText,
       this._sendFunction,
-      {Key key})
+      {Key? key})
       : super(key: key);
 
   final ServerConnection _connection;

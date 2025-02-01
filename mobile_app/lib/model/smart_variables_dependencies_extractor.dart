@@ -3,7 +3,7 @@ class SmartVariablesDependenciesExtractor {
 
   static Iterable<String> getVariablesDependOn(String expression) {
     return _regExp.allMatches(expression).map((e) {
-      return e.namedGroup("var_name");
+      return e.namedGroup("var_name") ?? "";
     });
   }
 }

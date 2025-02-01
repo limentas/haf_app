@@ -20,7 +20,7 @@ enum TextValidationType {
   Signature,
 }
 
-TextValidationType parseTextValidationType(String text) {
+TextValidationType? parseTextValidationType(String? text) {
   switch (text) {
     case "int":
       return TextValidationType.Int;
@@ -63,7 +63,8 @@ TextValidationType parseTextValidationType(String text) {
   }
 }
 
-String dateTimeFormat(TextValidationType validationType, String dateSeparator) {
+String? dateTimeFormat(
+    TextValidationType? validationType, String dateSeparator) {
   switch (validationType) {
     case TextValidationType.DateDmy:
       return "dd${dateSeparator}MM${dateSeparator}yyyy";
@@ -97,10 +98,10 @@ String dateTimeFormat(TextValidationType validationType, String dateSeparator) {
   }
 }
 
-String dateTimeFormatForCommit(TextValidationType validationType) {
+String? dateTimeFormatForCommit(TextValidationType? validationType) {
   return dateTimeFormat(validationType, '-');
 }
 
-String dateTimeFormatForDisplay(TextValidationType validationType) {
+String? dateTimeFormatForDisplay(TextValidationType? validationType) {
   return dateTimeFormat(validationType, '.');
 }

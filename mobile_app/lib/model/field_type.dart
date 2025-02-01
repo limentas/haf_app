@@ -12,22 +12,22 @@ import 'field_types/switch_field_type.dart';
 import 'field_types/checkboxes_field_type.dart';
 
 //error = null if validation successfull
-typedef ValidateStatusChange = void Function(String error);
+typedef ValidateStatusChange = void Function(String? error);
 typedef FieldValueChange = void Function(Iterable<String> newValue);
 typedef FieldSaveValue = void Function(Iterable<String> newValue);
 
 abstract class FieldType {
-  InstrumentField instrumentField;
-
   FieldType();
+
+  late InstrumentField instrumentField;
 
   String toReadableForm(Iterable<String> value);
   Iterable<String> parseDefaultValue(String defaultValue);
   Widget buildEditControl(BuildContext context, MyFormController formController,
       Iterable<String> initialValue,
-      {@required ValidateStatusChange onValidateStatusChanged,
-      @required FieldValueChange onChanged,
-      @required FieldSaveValue onSaved});
+      {required ValidateStatusChange onValidateStatusChanged,
+      required FieldValueChange onChanged,
+      required FieldSaveValue onSaved});
 
   factory FieldType.create(FieldTypeEnum type, Iterable<CodeList> codeLists) {
     switch (type) {
@@ -51,9 +51,9 @@ abstract class FieldType {
         return SliderFieldType();
       case FieldTypeEnum.File:
       case FieldTypeEnum.DescriptiveText:
-        return null;
+      default:
+        throw ArgumentError.value(
+            type, "type", "Этот тип поля не поддерживается: ${type}");
     }
-    throw ArgumentError.value(type, "type",
-        "Unsupported FieldTypeEnum value in function FieldType.create");
   }
 }

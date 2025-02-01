@@ -12,25 +12,25 @@ class UpDownIntField extends StatefulWidget {
       this._onChanged, this._onSaved,
       {
       // If user hasn't change anything, then result value will be defaultValue
-      String defaultValue,
+      String? defaultValue,
       // If default value is not specified, and user clicked one of buttons,
       // then editing will start with this value. If user hasn't change anything,
       // then result value will be null
       int startValue = 0,
-      bool isMandatory,
-      String minValue,
-      String maxValue,
-      Key key})
+      bool isMandatory = false,
+      String minValue = "",
+      String maxValue = "",
+      Key? key})
       : _initialValue = int.tryParse(defaultValue ?? "") ?? null,
         _isMandatory = isMandatory,
         _minValue =
-            int.tryParse(minValue ?? "") ?? -pow(2, 30), //for 32bit machines
-        _maxValue = int.tryParse(maxValue ?? "") ?? pow(2, 30) - 1,
+            int.tryParse(minValue) ?? -pow(2, 30).toInt(), //for 32bit machines
+        _maxValue = int.tryParse(maxValue) ?? pow(2, 30).toInt() - 1,
         _startValue = startValue,
         super(key: key);
 
   final MyFormController _formController;
-  final int _initialValue;
+  final int? _initialValue;
   final bool _isMandatory;
   final int _minValue;
   final int _maxValue;
@@ -61,12 +61,12 @@ class _UpDownIntFieldState extends State<UpDownIntField>
       this._onValidateStatusChanged,
       this._onChanged,
       this._onSaved,
-      int initialValue,
+      int? initialValue,
       this._isMandatory,
       this._minValue,
       this._maxValue,
       this._startValue)
-      : _currentValue = initialValue,
+      : _currentValue = initialValue ?? _startValue,
         _currentValueText =
             initialValue != null ? initialValue.toString() : "" {
     _textController = TextEditingController(text: _currentValueText);
@@ -80,13 +80,13 @@ class _UpDownIntFieldState extends State<UpDownIntField>
   final ValidateStatusChange _onValidateStatusChanged;
   final FieldValueChange _onChanged;
   final FieldSaveValue _onSaved;
-  TextEditingController _textController;
+  late TextEditingController _textController;
 
   int _currentValue;
   String _currentValueText;
-  int _formFieldId;
-  String _errorMessage; //null if there is no error
-  String _lastNotifiedValidateStatus;
+  late int _formFieldId;
+  String? _errorMessage; //null if there is no error
+  String? _lastNotifiedValidateStatus;
   bool _validateStatusWasNotified = false;
 
   int get currentValue {
@@ -133,10 +133,10 @@ class _UpDownIntFieldState extends State<UpDownIntField>
     super.dispose();
   }
 
-  String validate() {
+  String? validate() {
     _checkNewValue();
 
-    String result;
+    String? result;
     if (_isMandatory) result = Utils.checkMandatory(_currentValueText);
 
     //Notify for the first time or when status changed
@@ -160,8 +160,8 @@ class _UpDownIntFieldState extends State<UpDownIntField>
     super.build(context);
     final buttonTextStyle = Theme.of(context)
         .primaryTextTheme
-        .headline5
-        .copyWith(
+        .headlineSmall
+        ?.copyWith(
             color: Theme.of(context).primaryColorDark,
             fontWeight: FontWeight.bold);
     return InputDecorator(

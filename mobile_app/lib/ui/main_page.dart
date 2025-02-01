@@ -9,7 +9,7 @@ import 'main_page_content.dart';
 class MainPage extends StatelessWidget {
   MainPage(
       this._connection, this._projectInfo, this._appVersion, this._deviceName,
-      {Key key})
+      {Key? key})
       : super(key: key);
 
   final ServerConnection _connection;

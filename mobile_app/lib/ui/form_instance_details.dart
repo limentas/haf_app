@@ -11,7 +11,7 @@ import '../model/instrument_instance.dart';
 class FormInstanceDetails extends StatelessWidget {
   FormInstanceDetails(ProjectInfo projectInfo, ClientInfo clientInfo,
       this._instrumentInfo, this._instrumentInstance,
-      {Key key})
+      {Key? key})
       : _branchingLogicEvaluator =
             BranchingLogicEvaluator(projectInfo, clientInfo),
         super(key: key);
@@ -49,7 +49,7 @@ class FormInstanceDetails extends StatelessWidget {
                     alignment: Alignment.center,
                     child: Text(
                       field.sectionName,
-                      style: Theme.of(context).textTheme.subtitle1,
+                      style: Theme.of(context).textTheme.titleMedium,
                     ))));
         listItems.add(section);
       }
@@ -61,7 +61,7 @@ class FormInstanceDetails extends StatelessWidget {
         sliver: SliverList(delegate: SliverChildListDelegate(listItems)));
   }
 
-  Widget createVariableRow(BuildContext context, InstrumentField field) {
+  Widget? createVariableRow(BuildContext context, InstrumentField field) {
     var values = _instrumentInstance.valuesMap[field.variable];
     var valueText = field.fieldType.toReadableForm(values);
     var row = Padding(
@@ -89,7 +89,8 @@ class FormInstanceDetails extends StatelessWidget {
     if (isEmpty(field.branchingLogic)) return row;
 
     var isVisible = _branchingLogicEvaluator.calculate(
-        field.branchingLogic, _instrumentInstance);
+            field.branchingLogic, _instrumentInstance) ??
+        false;
     if (isVisible) return row;
     return null;
   }

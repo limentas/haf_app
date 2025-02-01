@@ -1,4 +1,3 @@
-import 'package:haf_spb_app/logger.dart';
 import 'package:haf_spb_app/model/form_permission.dart';
 import "package:intl/intl.dart";
 import 'package:quiver/collection.dart';
@@ -26,18 +25,18 @@ class InstrumentInfo {
   final fieldsByVariable =
       new Map<String, InstrumentField>(); //Key - variable name
   final ProjectInfo projectInfo;
-  InstrumentField formStatusField; //Form status auto variable
-  InstrumentField fillingDateField; //date of form filling
-  InstrumentField fillingPlaceField; //place of form filling
-  FormPermission permission; //Current user form permission
+  late InstrumentField formStatusField; //Form status auto variable
+  InstrumentField? fillingDateField; //date of form filling
+  InstrumentField? fillingPlaceField; //place of form filling
+  FormPermission? permission; //Current user form permission
 
   InstrumentInfo(this.oid, this.formNameId, this.formName, this.projectInfo,
       {this.isRepeating = false, this.customLabel = const []});
 
   InstrumentInstance instanceFromNonRepeatingForm(
-      ClientInfo info, ListMultimap<String, String> values) {
-    final instance = new InstrumentInstance(null);
-    if (values != null && values.containsKey(formStatusField.variable))
+      ClientInfo? info, ListMultimap<String, String> values) {
+    final instance = new InstrumentInstance(-1);
+    if (values.containsKey(formStatusField.variable))
       _fillWithExistentValues(instance, values);
     else
       _fillWithDefaultValues(info, instance);
@@ -51,7 +50,7 @@ class InstrumentInfo {
     return instance;
   }
 
-  void _fillWithDefaultValues(ClientInfo info, InstrumentInstance instance) {
+  void _fillWithDefaultValues(ClientInfo? info, InstrumentInstance instance) {
     var evaluator = new PipingEvaluator(projectInfo, info);
     //Initialize fields
     for (var entry in fieldsByVariable.entries) {
@@ -59,44 +58,38 @@ class InstrumentInfo {
       //Checking for @DEFAULT action tag
       if (field.defaultValue != null) {
         var valueWithoutSmartVars =
-            evaluator.calcPipingValue(field.defaultValue, instance);
+            evaluator.calcPipingValue(field.defaultValue!, instance);
         final defaultValues =
             field.fieldType.parseDefaultValue(valueWithoutSmartVars);
-        if (defaultValues != null && defaultValues.isNotEmpty) {
+        if (defaultValues.isNotEmpty) {
           instance.valuesMap.addValues(entry.key, defaultValues);
         }
         continue;
       }
 
-      Iterable<String> valueToInsert;
-      if (field.annotation != null &&
-          field.annotation.contains("@NOW") &&
+      late Iterable<String> valueToInsert;
+      if (field.annotation.contains("@NOW") &&
           field.fieldTypeEnum == FieldTypeEnum.Text) {
         //Using this format to behave as @DEFAULT acts.
         valueToInsert = [
           DateFormat(Constants.defaultDateTimeFormat).format(DateTime.now())
         ];
-      } else if (field.annotation != null &&
-          field.annotation.contains("@TODAY") &&
+      } else if (field.annotation.contains("@TODAY") &&
           field.fieldTypeEnum == FieldTypeEnum.Text) {
         //Using this format to behave as @DEFAULT acts.
         valueToInsert = [
           DateFormat(Constants.defaultDateFormat).format(DateTime.now())
         ];
-      } else if (field.annotation != null &&
-          field.annotation.contains("@USERNAME") &&
+      } else if (field.annotation.contains("@USERNAME") &&
           field.fieldTypeEnum == FieldTypeEnum.Text) {
-        valueToInsert = [UserInfo.userName];
-      } else if (field.annotation != null &&
-          field.annotation.contains("@APPUSERNAME-APP") &&
+        valueToInsert = [UserInfo.userName!];
+      } else if (field.annotation.contains("@APPUSERNAME-APP") &&
           field.fieldTypeEnum == FieldTypeEnum.Text) {
-        valueToInsert = [UserInfo.deviceName];
-      } else if (field.annotation != null &&
-          field.annotation.contains("@LATITUDE") &&
+        valueToInsert = [UserInfo.deviceName!];
+      } else if (field.annotation.contains("@LATITUDE") &&
           field.fieldTypeEnum == FieldTypeEnum.Text) {
         valueToInsert = [Location.latitude.toString()];
-      } else if (field.annotation != null &&
-          field.annotation.contains("@LONGITUDE") &&
+      } else if (field.annotation.contains("@LONGITUDE") &&
           field.fieldTypeEnum == FieldTypeEnum.Text) {
         valueToInsert = [Location.longitude.toString()];
       } else if (EmpiricalEvidence.isFieldFillingDate(field)) {
@@ -111,7 +104,7 @@ class InstrumentInfo {
         valueToInsert = Storage.getDefaultValue(field.variable);
       }
 
-      if (valueToInsert != null && valueToInsert.isNotEmpty) {
+      if (valueToInsert.isNotEmpty) {
         instance.valuesMap.addValues(entry.key, valueToInsert);
         continue;
       }

@@ -13,12 +13,12 @@ class RadioButtonsGroup extends StatefulWidget {
       this._onValidateStatusChanged,
       this._onChanged,
       this._onSaved,
-      {Key key})
+      {Key? key})
       : super(key: key);
 
   final MyFormController _formController;
   final Map<String, String> _valueTitleMap;
-  final String _initialValue;
+  final String? _initialValue;
   final bool _isMandatory;
   final ValidateStatusChange _onValidateStatusChanged;
   final FieldValueChange _onChanged;
@@ -42,7 +42,7 @@ class _RadioButtonsGroupState extends State<RadioButtonsGroup>
   _RadioButtonsGroupState(
       this._formController,
       this._valueTitleMap,
-      String initialValue,
+      String? initialValue,
       this._isMandatory,
       this._onValidateStatusChanged,
       this._onChanged,
@@ -56,10 +56,10 @@ class _RadioButtonsGroupState extends State<RadioButtonsGroup>
   final FieldValueChange _onChanged;
   final FieldSaveValue _onSaved;
 
-  String _selectedValue;
-  int _formFieldId;
-  String _errorMessage; //null if there is no error
-  String _lastNotifiedValidateStatus;
+  String? _selectedValue;
+  late int _formFieldId;
+  String? _errorMessage; //null if there is no error
+  String? _lastNotifiedValidateStatus;
   bool _validateStatusWasNotified = false;
 
   @override
@@ -74,7 +74,7 @@ class _RadioButtonsGroupState extends State<RadioButtonsGroup>
         _errorMessage = validate();
       });
       return _errorMessage == null;
-    }, () => _onSaved([_selectedValue]));
+    }, () => _onSaved([_selectedValue ?? ""]));
   }
 
   @override
@@ -83,8 +83,8 @@ class _RadioButtonsGroupState extends State<RadioButtonsGroup>
     super.dispose();
   }
 
-  String validate() {
-    String result;
+  String? validate() {
+    String? result;
     if (_isMandatory) result = Utils.checkMandatory(_selectedValue);
     //Notify for the first time or when status changed
     if (!_validateStatusWasNotified || _lastNotifiedValidateStatus != result) {
@@ -95,19 +95,19 @@ class _RadioButtonsGroupState extends State<RadioButtonsGroup>
     return result;
   }
 
-  void tapItem(BuildContext context, String value) {
+  void tapItem(BuildContext context, String? value) {
     FocusScope.of(context).unfocus(); //to unfocus other text fields
     setState(() {
       _selectedValue = value;
     });
-    _onChanged([value]);
+    _onChanged([value ?? ""]);
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final itemTextStyle = Theme.of(context).primaryTextTheme.subtitle1;
-    final resetStyle = Theme.of(context).primaryTextTheme.subtitle1.copyWith(
+    final itemTextStyle = Theme.of(context).primaryTextTheme.titleMedium;
+    final resetStyle = Theme.of(context).primaryTextTheme.titleMedium?.copyWith(
         color: Theme.of(context).primaryColorDark,
         fontWeight: FontWeight.bold,
         decoration: TextDecoration.underline);

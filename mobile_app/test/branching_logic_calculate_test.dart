@@ -7,19 +7,13 @@ import 'package:haf_spb_app/model/form_permission.dart';
 import 'test_project.dart';
 
 void main() {
-  ProjectInfo projectInfo;
-  BranchingLogicEvaluator eval;
-  ClientInfo clientInfo;
-
-  setUp(() {
-    projectInfo = new ProjectInfo.fromXml(TestProject.xml, {
-      "initial_form": FormPermission.ReadAndWrite,
-      "test_instrument": FormPermission.ReadAndWrite
-    });
-
-    clientInfo = new ClientInfo(projectInfo, 1);
-    eval = BranchingLogicEvaluator(projectInfo, clientInfo);
+  var projectInfo = ProjectInfo.fromXml(TestProject.xml, {
+    "initial_form": FormPermission.ReadAndWrite,
+    "test_instrument": FormPermission.ReadAndWrite
   });
+  ClientInfo clientInfo = ClientInfo(projectInfo!, 1);
+  BranchingLogicEvaluator eval =
+      BranchingLogicEvaluator(projectInfo, clientInfo);
 
   test('Test branching indexes', () {
     var instrument = projectInfo.instrumentsByName["test_instrument"];
@@ -29,9 +23,9 @@ void main() {
     var fourthInstance = new InstrumentInstance(4);
     clientInfo.repeatInstruments["test_instrument"] =
         new Map<int, InstrumentInstance>();
-    clientInfo.repeatInstruments["test_instrument"][1] = firstInstance;
-    clientInfo.repeatInstruments["test_instrument"][2] = secondInstance;
-    clientInfo.repeatInstruments["test_instrument"][4] = fourthInstance;
+    clientInfo.repeatInstruments["test_instrument"]![1] = firstInstance;
+    clientInfo.repeatInstruments["test_instrument"]![2] = secondInstance;
+    clientInfo.repeatInstruments["test_instrument"]![4] = fourthInstance;
 
     firstInstance.valuesMap.add("text_field2", "text1");
     secondInstance.valuesMap.add("text_field2", "text2");
@@ -74,8 +68,8 @@ void main() {
     var currentInstance = new InstrumentInstance(3);
     clientInfo.repeatInstruments["test_instrument"] =
         new Map<int, InstrumentInstance>();
-    clientInfo.repeatInstruments["test_instrument"][1] = firstInstance;
-    clientInfo.repeatInstruments["test_instrument"][2] = secondInstance;
+    clientInfo.repeatInstruments["test_instrument"]![1] = firstInstance;
+    clientInfo.repeatInstruments["test_instrument"]![2] = secondInstance;
 
     firstInstance.valuesMap.add("checkbox_field1", "1");
     secondInstance.valuesMap.add("checkbox_field1", "2");
@@ -114,8 +108,8 @@ void main() {
     var currentInstance = new InstrumentInstance(3);
     clientInfo.repeatInstruments["test_instrument"] =
         new Map<int, InstrumentInstance>();
-    clientInfo.repeatInstruments["test_instrument"][1] = firstInstance;
-    clientInfo.repeatInstruments["test_instrument"][2] = secondInstance;
+    clientInfo.repeatInstruments["test_instrument"]![1] = firstInstance;
+    clientInfo.repeatInstruments["test_instrument"]![2] = secondInstance;
 
     currentInstance.valuesMap.add("radio_field1", "2");
     currentInstance.valuesMap.add("yesno_field1", "1");

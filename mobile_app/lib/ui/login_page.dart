@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -42,9 +41,9 @@ class _LoginPageState extends State<LoginPage> {
       RegExp(r'^[А-Я][а-я]*(-[А-Я][а-я]*)? [А-Я][а-я]*(-[А-Я][а-я]*)?$');
   final ServerConnection _connection = new ServerConnection();
   final _focusNode = new FocusNode();
-  String _apiTokenFromStore;
-  String _apiTokenFromStoreShadowed;
-  String _tokenValidateError;
+  String? _apiTokenFromStore;
+  String? _apiTokenFromStoreShadowed;
+  String? _tokenValidateError;
   bool _usingTokenFromStore = false;
   int _tokenToShowLinesCount = 0; //We can split
   bool _showBusyIndicator = false;
@@ -52,11 +51,11 @@ class _LoginPageState extends State<LoginPage> {
   String _lastOnChangedText = '';
   String _appVersion = "";
   String _deviceName = "";
-  String _userNameError;
-  String _serverError;
+  String? _userNameError;
+  String? _serverError;
   List<String> _serversList = ["https://db.haf-spb.org/api/"];
-  String _serverAddress;
-  ProjectInfo _projectInfo;
+  String _serverAddress = "";
+  ProjectInfo? _projectInfo;
   final serversFieldState = GlobalKey<FormFieldState>();
 
   int get tokenToShowLinesCount => _tokenToShowLinesCount;
@@ -87,10 +86,11 @@ class _LoginPageState extends State<LoginPage> {
     storage.read(key: _tokenStorageKey).then((token) {
       if (token != null) {
         _apiTokenFromStore = token;
-        _apiTokenFromStoreShadowed =
-            _apiTokenFromStore.replaceRange(4, null, "*****");
+        var tokenShadowed = token.replaceRange(4, null, "*****");
+        _apiTokenFromStoreShadowed = tokenShadowed;
+
         logger.i("Token was successfully loaded: $_apiTokenFromStoreShadowed");
-        _tokenTextFieldController.text = _apiTokenFromStoreShadowed;
+        _tokenTextFieldController.text = tokenShadowed;
         setState(() {
           _usingTokenFromStore = true;
         });
@@ -104,7 +104,7 @@ class _LoginPageState extends State<LoginPage> {
         }));
 
     UserInfo.init().then((value) => setState(() {
-          _deviceName = UserInfo.deviceName;
+          _deviceName = UserInfo.deviceName!;
         }));
 
     _focusNode.addListener(_focusListener);
@@ -144,7 +144,7 @@ class _LoginPageState extends State<LoginPage> {
         UserInfo.userName = userName.first;
 
         if (UserInfo.userName != null)
-          _userTextFieldController.text = UserInfo.userName;
+          _userTextFieldController.text = UserInfo.userName!;
       }
 
       final orientation = Storage.getDefaultValue(
@@ -287,21 +287,19 @@ class _LoginPageState extends State<LoginPage> {
                                         submitToken();
                                       })),
                               SvgIconButton(
-                                iconName: 'resources/icons/restore.svg',
-                                width: 48,
-                                height: 48,
-                                onPressed: _usingTokenFromStore ||
+                                  iconName: 'resources/icons/restore.svg',
+                                  width: 48,
+                                  height: 48,
+                                  onPressed: () {
+                                    if (_usingTokenFromStore ||
                                         _apiTokenFromStore == null ||
-                                        _apiTokenFromStore.isEmpty
-                                    ? null
-                                    : () {
-                                        setState(() {
-                                          _usingTokenFromStore = true;
-                                          _tokenTextFieldController.text =
-                                              _apiTokenFromStoreShadowed;
-                                        });
-                                      },
-                              )
+                                        _apiTokenFromStore!.isEmpty) return;
+                                    setState(() {
+                                      _usingTokenFromStore = true;
+                                      _tokenTextFieldController.text =
+                                          _apiTokenFromStoreShadowed!;
+                                    });
+                                  })
                             ])),
                         const SizedBox(height: 50),
                         ElevatedButton(
@@ -310,7 +308,7 @@ class _LoginPageState extends State<LoginPage> {
                                   const EdgeInsets.symmetric(
                                       horizontal: 40, vertical: 15))),
                           child: Text('ВОЙТИ',
-                              style: Theme.of(context).textTheme.button),
+                              style: Theme.of(context).textTheme.labelLarge),
                           onPressed: () {
                             submitToken();
                           },
@@ -327,19 +325,19 @@ class _LoginPageState extends State<LoginPage> {
                                 _showBusyIndicator && _busyMessage.isNotEmpty,
                             child: Text(
                               _busyMessage,
-                              style: Theme.of(context).textTheme.subtitle1,
+                              style: Theme.of(context).textTheme.titleMedium,
                             ))
                       ]))),
           Container(
               alignment: Alignment.bottomRight,
               padding: EdgeInsets.all(10),
               child: Text(_appVersion,
-                  style: Theme.of(context).textTheme.caption)),
+                  style: Theme.of(context).textTheme.bodySmall)),
           Container(
               alignment: Alignment.bottomLeft,
               padding: EdgeInsets.all(10),
               child: Text("Устройство: $_deviceName",
-                  style: Theme.of(context).textTheme.caption))
+                  style: Theme.of(context).textTheme.bodySmall))
         ]));
   }
 
@@ -362,10 +360,10 @@ class _LoginPageState extends State<LoginPage> {
 
     UserInfo.userName = _userTextFieldController.text;
     Storage.setDefaultValue(
-        EmpiricalEvidence.fellowWorkerUnifiedVariable, [UserInfo.userName]);
+        EmpiricalEvidence.fellowWorkerUnifiedVariable, [UserInfo.userName!]);
 
     var token = _usingTokenFromStore
-        ? _apiTokenFromStore
+        ? _apiTokenFromStore!
         : _tokenTextFieldController.text.replaceAll(RegExp(r'-|\n'), '');
 
     if (!_usingTokenFromStore) {
@@ -422,9 +420,9 @@ class _LoginPageState extends State<LoginPage> {
         setState(() {
           _usingTokenFromStore = true;
           _apiTokenFromStore = token;
-          _apiTokenFromStoreShadowed =
-              _apiTokenFromStore.replaceRange(4, null, "*****");
-          _tokenTextFieldController.text = _apiTokenFromStoreShadowed;
+          var tokenShadowed = token.replaceRange(4, null, "*****");
+          _apiTokenFromStoreShadowed = tokenShadowed;
+          _tokenTextFieldController.text = tokenShadowed;
         });
       }
 
@@ -432,7 +430,8 @@ class _LoginPageState extends State<LoginPage> {
 
       UserInfo.tokenHash = _apiTokenFromStore;
 
-      Storage.loadFormsHistory(UserInfo.tokenHash);
+      if (UserInfo.tokenHash != null)
+        Storage.loadFormsHistory(UserInfo.tokenHash!);
 
       setState(() {
         _showBusyIndicator = true;
@@ -463,11 +462,11 @@ class _LoginPageState extends State<LoginPage> {
         context,
         MaterialPageRoute(
           builder: (context) =>
-              MainPage(_connection, _projectInfo, _appVersion, _deviceName),
+              MainPage(_connection, _projectInfo!, _appVersion, _deviceName),
         ),
       );
     } on SocketException catch (e) {
-      logger.e("LoginPage: caught SocketException", e);
+      logger.e("LoginPage: caught SocketException", error: e);
       setState(() {
         _tokenValidateError =
             "Не удалось подключиться к серверу. Проверьте адрес сервера и подключение к Интернет.";
@@ -488,7 +487,7 @@ class _LoginPageState extends State<LoginPage> {
       await storage.write(key: _tokenStorageKey, value: token);
       return true;
     } on PlatformException catch (e) {
-      logger.e("PlatformException caught", e);
+      logger.e("PlatformException caught", error: e);
       return false;
     }
   }
@@ -496,7 +495,6 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingValue _idTextFormat(
       TextEditingValue oldValue, TextEditingValue newValue) {
     if (oldValue.text == newValue.text) return newValue;
-    logger.v("oldValue=${oldValue.text}, newValue=$newValue");
     var newValueText = _usingTokenFromStore
         ? ''
         : newValue.text.replaceAll(RegExp(r'-|\n'), '');
@@ -531,7 +529,6 @@ class _LoginPageState extends State<LoginPage> {
         selection:
             TextSelection.fromPosition(TextPosition(offset: cursorOffset)),
         composing: TextRange.empty);
-    logger.v("result = $result");
     return result;
   }
 
@@ -546,7 +543,7 @@ class _LoginPageState extends State<LoginPage> {
     if (result == null) {
       setState(() {
         _serverAddress = oldServerAddress;
-        serversFieldState.currentState.didChange(_serverAddress);
+        serversFieldState.currentState?.didChange(_serverAddress);
       });
 
       return;
@@ -555,7 +552,7 @@ class _LoginPageState extends State<LoginPage> {
     setState(() {
       if (!_serversList.contains(result)) _serversList.add(result);
       _serverAddress = result;
-      serversFieldState.currentState.didChange(_serverAddress);
+      serversFieldState.currentState?.didChange(_serverAddress);
     });
   }
 }

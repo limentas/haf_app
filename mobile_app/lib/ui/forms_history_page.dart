@@ -5,7 +5,7 @@ import '../model/project_info.dart';
 import 'last_sent_forms.dart';
 
 class FormsHistoryPage extends StatelessWidget {
-  FormsHistoryPage(this._connection, this._projectInfo, {Key key})
+  FormsHistoryPage(this._connection, this._projectInfo, {Key? key})
       : super(key: key);
 
   final ServerConnection _connection;

@@ -20,7 +20,7 @@ class MyLogPrinter extends ExtLogger.LogPrinter {
   String _labelFor(ExtLogger.Level level) {
     var prefix = ExtLogger.SimplePrinter.levelPrefixes[level];
     var color = ExtLogger.SimplePrinter.levelColors[level];
-    return color(prefix);
+    return color!.call(prefix!);
   }
 
   String _stringifyMessage(dynamic message) {

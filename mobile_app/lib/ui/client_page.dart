@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:haf_spb_app/model/form_permission.dart';
@@ -21,7 +22,7 @@ import 'svg_icon_button.dart';
 class ClientPage extends StatefulWidget {
   ClientPage(
       this._connection, this._projectInfo, this._clientId, this._clientInfo,
-      {Key key})
+      {Key? key})
       : super(key: key);
 
   final ServerConnection _connection;
@@ -45,10 +46,10 @@ class _ClientPageState extends State<ClientPage>
   final String _clientSecondaryId;
   ClientInfo _clientInfo;
 
-  TabController _tabController;
+  late TabController _tabController;
   final List<Tab> _tabs = [];
   final List<Widget> _pages = [];
-  final List<Widget> _floatingButtons = [];
+  final List<Widget?> _floatingButtons = [];
   //Key - instrument nameId, value - index of corresponding tab
   final _tabIndexer = new Map<String, int>();
 
@@ -71,7 +72,7 @@ class _ClientPageState extends State<ClientPage>
       _tabIndexer[instrument.formNameId] = _tabs.length;
       _tabs.add(tab);
       // Add or edit button
-      Widget floatingButton;
+      late Widget floatingButton;
       if (instrument.isRepeating) {
         floatingButton = new SvgIconButton(
             iconName: 'resources/icons/plus.svg',
@@ -150,7 +151,7 @@ class _ClientPageState extends State<ClientPage>
               _projectInfo,
               _clientInfo,
               instrument,
-              _clientInfo.repeatInstruments[instrument.formNameId].values
+              _clientInfo.repeatInstruments[instrument.formNameId]!.values
                   .toList())
           : FormInstanceDetails(_projectInfo, _clientInfo, instrument,
               new InstrumentInstance(-1, _clientInfo.valuesMap));
@@ -237,7 +238,7 @@ class _ClientPageState extends State<ClientPage>
     );
   }
 
-  Widget _getFloatingButton() {
+  Widget? _getFloatingButton() {
     return _floatingButtons[_tabController.index];
   }
 
@@ -245,16 +246,23 @@ class _ClientPageState extends State<ClientPage>
     try {
       var clientInfo = await _connection.retreiveClientInfoByRecordId(
           _projectInfo, _clientInfo.recordId);
-      setState(() {
-        _clientInfo = clientInfo;
-      });
+      if (clientInfo == null) {
+        // How is this possible?
+        logger.e("Couldn't get client info for id ${_clientInfo.recordId}");
+      } else {
+        setState(() {
+          _clientInfo = clientInfo;
+        });
+      }
     } on SocketException catch (e) {
-      logger.e("ClientPage: caught SocketException", e);
-      Scaffold.of(context).showSnackBar(
-          SnackBar(content: Text('Не удалось подключиться к серверу - повторите попытку позже')));
+      logger.e("ClientPage: caught SocketException", error: e);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+              'Не удалось подключиться к серверу - повторите попытку позже')));
     } on ServerConnectionException catch (e) {
-      logger.e("ClientPage: caught ServerConnectionException", e);
-      Scaffold.of(context).showSnackBar(SnackBar(content: Text(e.cause)));
+      logger.e("ClientPage: caught ServerConnectionException", error: e);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.cause)));
     }
   }
 

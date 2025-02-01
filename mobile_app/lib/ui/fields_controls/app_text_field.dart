@@ -13,12 +13,12 @@ class AppTextField extends StatefulWidget {
       this._onValidateStatusChanged,
       this._onChanged,
       this._onSaved,
-      {Key key})
+      {Key? key})
       : super(key: key);
 
   final MyFormController _formController;
-  final String _initialValue;
-  final TextInputType _inputType;
+  final String? _initialValue;
+  final TextInputType? _inputType;
   final bool _isMandatory;
   final bool _isSecondaryId;
   final ValidateStatusChange _onValidateStatusChanged;
@@ -43,7 +43,7 @@ class _AppTextFieldState extends State<AppTextField>
     with AutomaticKeepAliveClientMixin {
   _AppTextFieldState(
     this._formController,
-    String initialValue,
+    String? initialValue,
     this._inputType,
     this._isMandatory,
     this._isSecondaryId,
@@ -53,17 +53,17 @@ class _AppTextFieldState extends State<AppTextField>
   ) : _textController = TextEditingController(text: initialValue);
 
   final MyFormController _formController;
-  final TextInputType _inputType;
+  final TextInputType? _inputType;
   final bool _isMandatory;
   final bool _isSecondaryId;
   final ValidateStatusChange _onValidateStatusChanged;
   final FieldValueChange _onChanged;
   final FieldSaveValue _onSaved;
   final TextEditingController _textController;
-  String _lastNotifiedValue;
-  int _formFieldId;
-  String _errorMessage; //null if there is no error
-  String _lastNotifiedValidateStatus;
+  String? _lastNotifiedValue;
+  int _formFieldId = 0;
+  String? _errorMessage; //null if there is no error
+  String? _lastNotifiedValidateStatus;
   bool _validateStatusWasNotified = false;
 
   @override
@@ -92,8 +92,8 @@ class _AppTextFieldState extends State<AppTextField>
     super.dispose();
   }
 
-  String validate() {
-    String result;
+  String? validate() {
+    String? result;
     if (_isSecondaryId)
       result = validateSecondaryId(_textController.text);
     else
@@ -108,12 +108,12 @@ class _AppTextFieldState extends State<AppTextField>
     return result;
   }
 
-  String validateMandatory(String value) {
+  String? validateMandatory(String value) {
     if (_isMandatory) return Utils.checkMandatory(value);
-    return null;
+    return "";
   }
 
-  String validateSecondaryId(String value) {
+  String? validateSecondaryId(String value) {
     var mandatoryError = validateMandatory(value);
     if (mandatoryError != null) return mandatoryError;
 

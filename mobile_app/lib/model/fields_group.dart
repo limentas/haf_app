@@ -7,5 +7,5 @@ class FieldsGroup {
   final fieldsMap =
       new Map<String, InstrumentField>(); ////Key - redcap variable name
 
-  FieldsGroup(this.oid, {this.name});
+  FieldsGroup(this.oid, {required this.name});
 }

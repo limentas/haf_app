@@ -17,14 +17,12 @@ class SliderFieldType extends FieldType {
   @override
   Widget buildEditControl(BuildContext context, MyFormController formController,
       Iterable<String> initialValue,
-      {@required ValidateStatusChange onValidateStatusChanged,
-      @required FieldValueChange onChanged,
-      @required FieldSaveValue onSaved}) {
+      {required ValidateStatusChange onValidateStatusChanged,
+      required FieldValueChange onChanged,
+      required FieldSaveValue onSaved}) {
     return MySlider(
         formController,
-        initialValue == null || initialValue.isEmpty
-            ? null
-            : initialValue.first,
+        initialValue.isEmpty ? "" : initialValue.first,
         onValidateStatusChanged,
         onChanged,
         onSaved);

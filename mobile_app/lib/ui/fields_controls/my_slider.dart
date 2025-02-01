@@ -25,17 +25,17 @@ class _MySliderState extends State<MySlider>
     with AutomaticKeepAliveClientMixin {
   _MySliderState(this._formController, String initialValue,
       this._onValidateStatusChanged, this._onChanged, this._onSaved) {
-    if (isNotEmpty(initialValue)) _selectedValue = int.tryParse(initialValue);
-    if (_selectedValue == null) _selectedValue = 0;
+    if (isNotEmpty(initialValue))
+      _selectedValue = int.tryParse(initialValue) ?? 0;
   }
 
   final MyFormController _formController;
   final ValidateStatusChange _onValidateStatusChanged;
   final FieldValueChange _onChanged;
   final FieldSaveValue _onSaved;
-  int _selectedValue;
-  int _formFieldId;
-  String _errorMessage; //null if there is no error
+  late int _selectedValue;
+  late int _formFieldId;
+  String? _errorMessage; //null if there is no error
 
   @override
   bool get wantKeepAlive => true;
@@ -58,7 +58,7 @@ class _MySliderState extends State<MySlider>
     super.dispose();
   }
 
-  String validate() {
+  String? validate() {
     return null;
   }
 

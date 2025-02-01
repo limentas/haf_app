@@ -4,7 +4,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 class BusyIndicatorDialog {
   static bool _indicatorIsShown = false;
 
-  static Widget Function(BuildContext, Widget) init() {
+  static Widget Function(BuildContext, Widget?) init() {
     var result = EasyLoading.init();
     EasyLoading.instance
       ..indicatorType = EasyLoadingIndicatorType.circle

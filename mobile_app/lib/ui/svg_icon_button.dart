@@ -3,36 +3,36 @@ import 'package:flutter_svg/svg.dart';
 
 class SvgIconButton extends StatelessWidget {
   SvgIconButton(
-      {Key key,
-      this.iconName,
-      this.width,
-      this.height,
-      this.iconWidth,
-      this.onPressed})
+      {Key? key,
+      required this.iconName,
+      required this.width,
+      required this.height,
+      this.iconWidth = null,
+      this.onPressed = null})
       : super(key: key);
 
-  final void Function() onPressed;
+  final void Function()? onPressed;
   final String iconName;
   final double width;
   final double height;
-  final double iconWidth;
+  final double? iconWidth;
 
   void toggle(bool toggled) {}
 
   @override
   Widget build(BuildContext context) {
-    return new ButtonTheme(
-        height: height,
-        minWidth: width,
-        child: RaisedButton(
-            materialTapTargetSize: MaterialTapTargetSize.padded,
-            child: SvgPicture.asset(
-              //TODO: replace to standard icons
-              iconName,
-              width: iconWidth,
-            ),
-            shape: CircleBorder(),
+    return new ElevatedButton(
+        style: ElevatedButton.styleFrom(
             elevation: 3,
-            onPressed: onPressed));
+            shape: CircleBorder(),
+            fixedSize: Size.fromHeight(height),
+            minimumSize: Size.fromWidth(width),
+            tapTargetSize: MaterialTapTargetSize.padded),
+        child: SvgPicture.asset(
+          //TODO: replace to standard icons
+          iconName,
+          width: iconWidth,
+        ),
+        onPressed: onPressed);
   }
 }

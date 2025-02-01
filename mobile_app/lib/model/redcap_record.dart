@@ -4,22 +4,31 @@ import '../utils.dart';
 
 part 'redcap_record.g.dart';
 
-@JsonSerializable(nullable: false, fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake)
 class RedcapRecord {
-  @JsonKey(fromJson: Utils.stringOrIntToInt, toJson: Utils.stringFromInt)
+  @JsonKey(
+      disallowNullValue: true,
+      required: true,
+      fromJson: Utils.stringOrIntToInt,
+      toJson: Utils.stringFromInt)
   final int record;
   final String redcapRepeatInstrument;
-  @JsonKey(fromJson: Utils.stringOrIntToInt, toJson: Utils.stringFromInt)
-  final int redcapRepeatInstance;
+  @JsonKey(
+      disallowNullValue: true,
+      required: true,
+      fromJson: Utils.stringOrIntToInt,
+      toJson: Utils.stringFromInt)
+  final int? redcapRepeatInstance;
   final String fieldName;
+  @JsonKey(disallowNullValue: true)
   final String value;
 
   RedcapRecord(
-      {this.record,
-      this.redcapRepeatInstrument,
-      this.redcapRepeatInstance,
-      this.fieldName,
-      this.value});
+      {required this.record,
+      required this.redcapRepeatInstrument,
+      required this.redcapRepeatInstance,
+      required this.fieldName,
+      required this.value});
 
   factory RedcapRecord.fromJson(Map<String, dynamic> json) =>
       _$RedcapRecordFromJson(json);

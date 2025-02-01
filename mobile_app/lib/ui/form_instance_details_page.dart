@@ -9,7 +9,7 @@ import '../model/instrument_instance.dart';
 class FormInstanceDetailsPage extends StatelessWidget {
   FormInstanceDetailsPage(this._projectInfo, this._clientInfo,
       this._instrumentInfo, this._instrumentInstance,
-      {Key key})
+      {Key? key})
       : super(key: key);
 
   final ProjectInfo _projectInfo;

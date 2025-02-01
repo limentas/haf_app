@@ -23,12 +23,11 @@ class TextFieldType extends FieldType {
   @override
   Widget buildEditControl(BuildContext context, MyFormController formController,
       Iterable<String> initialValue,
-      {@required ValidateStatusChange onValidateStatusChanged,
-      @required FieldValueChange onChanged,
-      @required FieldSaveValue onSaved}) {
-    var normalizedInitialValue = initialValue == null || initialValue.isEmpty
-        ? null
-        : initialValue.first;
+      {required ValidateStatusChange onValidateStatusChanged,
+      required FieldValueChange onChanged,
+      required FieldSaveValue onSaved}) {
+    var normalizedInitialValue =
+        initialValue.isEmpty ? null : initialValue.first;
     switch (instrumentField.textValidationType) {
       case TextValidationType.Int:
         return UpDownIntField(
@@ -119,11 +118,11 @@ class TextFieldType extends FieldType {
   Widget createTextField(
       BuildContext context,
       MyFormController formController,
-      String initialValue,
+      String? initialValue,
       ValidateStatusChange onValidateStatusChanged,
       FieldValueChange onChanged,
       FieldSaveValue onSaved,
-      {TextInputType inputType}) {
+      {TextInputType? inputType}) {
     return AppTextField(
         formController,
         initialValue,

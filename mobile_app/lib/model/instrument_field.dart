@@ -16,8 +16,8 @@ class InstrumentField {
   final FieldTypeEnum fieldTypeEnum;
   final DataType dataType;
   final String sectionName;
-  final TextValidationType textValidationType;
-  final int length;
+  final TextValidationType? textValidationType;
+  final int? length;
   final String branchingLogic;
   final String matrixGroupName; //TODO: matrixGroupName process
   final String annotation;
@@ -30,7 +30,7 @@ class InstrumentField {
   bool hasDependentVariables = false; //do we have variables that depend on this
 
   bool isHidden = false;
-  String defaultValue;
+  String? defaultValue;
 
   String get helperText {
     return isMandatory
@@ -41,22 +41,22 @@ class InstrumentField {
   }
 
   InstrumentField(this.instrumentInfo, this.oid, this.variable, this.annotation,
-      {this.name,
-      this.question,
-      this.note,
-      this.isMandatory,
-      this.fieldTypeEnum,
-      this.fieldType,
-      this.dataType,
-      this.sectionName,
+      {required this.name,
+      required this.question,
+      required this.note,
+      required this.isMandatory,
+      required this.fieldTypeEnum,
+      required this.fieldType,
+      required this.dataType,
+      required this.sectionName,
       this.textValidationType,
       this.length,
-      this.branchingLogic,
-      this.matrixGroupName,
-      this.minValue,
-      this.maxValue,
-      this.isRecordId,
-      this.isSecondaryId}) {
+      required this.branchingLogic,
+      required this.matrixGroupName,
+      required this.minValue,
+      required this.maxValue,
+      required this.isRecordId,
+      required this.isSecondaryId}) {
     if (annotation != null && annotation.isNotEmpty) {
       isHidden = annotation != null
           ? annotation.contains("@HIDDEN") || annotation.contains("@HIDDEN-APP")

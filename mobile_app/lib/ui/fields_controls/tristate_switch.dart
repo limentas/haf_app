@@ -11,12 +11,12 @@ enum TristateSwitchType { YesNo, TrueFalse }
 class TristateSwitch extends StatefulWidget {
   TristateSwitch(this._type, this._formController, this._isMandatory,
       this._onValidateStatusChanged, this._onChanged, this._onSaved,
-      {this.initialValue, Key key})
+      {this.initialValue, Key? key})
       : super(key: key);
 
   final SwitchFieldTypeEnum _type;
   final MyFormController _formController;
-  final bool initialValue;
+  final bool? initialValue;
   final bool _isMandatory;
   final ValidateStatusChange _onValidateStatusChanged;
   final FieldValueChange _onChanged;
@@ -34,7 +34,7 @@ class _TristateSwitchState extends State<TristateSwitch>
   _TristateSwitchState(
       SwitchFieldTypeEnum type,
       this._formController,
-      bool initialValue,
+      bool? initialValue,
       this._isMandatory,
       this._onValidateStatusChanged,
       this._onChanged,
@@ -52,18 +52,18 @@ class _TristateSwitchState extends State<TristateSwitch>
   final String _negativeText;
   final String _positiveText;
 
-  bool _selectedValue;
-  int _formFieldId;
-  String _errorMessage; //null if there is no error
-  String _lastNotifiedValidateStatus;
+  bool? _selectedValue;
+  late int _formFieldId;
+  String? _errorMessage; //null if there is no error
+  String? _lastNotifiedValidateStatus;
   bool _validateStatusWasNotified = false;
 
   final uncheckedStyle = ElevatedButton.styleFrom(
-      primary: Colors.grey[50],
+      backgroundColor: Colors.grey[50],
       elevation: 0,
-      side: BorderSide(color: Colors.grey[500]));
+      side: BorderSide(color: Colors.grey.shade500));
   final checkedStyle = ElevatedButton.styleFrom(
-      elevation: 0, side: BorderSide(color: Colors.grey[700]));
+      elevation: 0, side: BorderSide(color: Colors.grey.shade700));
 
   @override
   bool get wantKeepAlive => true;
@@ -79,7 +79,7 @@ class _TristateSwitchState extends State<TristateSwitch>
       return _errorMessage == null;
     },
         () => _onSaved(
-            _selectedValue != null ? (_selectedValue ? ["0"] : ["1"]) : null));
+            _selectedValue != null ? (_selectedValue! ? ["0"] : ["1"]) : [""]));
   }
 
   @override
@@ -88,8 +88,8 @@ class _TristateSwitchState extends State<TristateSwitch>
     super.dispose();
   }
 
-  String validate() {
-    String result;
+  String? validate() {
+    String? result;
     if (_isMandatory)
       result = Utils.checkMandatory(_selectedValue == true
           ? "1"
@@ -141,13 +141,13 @@ class _TristateSwitchState extends State<TristateSwitch>
               _onChanged(["1"]);
             },
           )),
-          FlatButton(
+          TextButton(
               onPressed: () {
                 FocusScope.of(context).unfocus(); //to unfocus other text fields
                 setState(() {
                   _selectedValue = null;
                 });
-                _onChanged(null);
+                _onChanged([""]);
               },
               child: Text("Сброс", style: Style.fieldRegularTextStyle))
         ]));

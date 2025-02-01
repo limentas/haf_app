@@ -1,25 +1,20 @@
-import 'package:another_brother/label_info.dart';
-import 'package:another_brother/printer_info.dart' as brother;
 import 'package:flutter/material.dart';
 import 'package:haf_spb_app/ui/client_qr_page.dart';
 import "package:intl/intl.dart";
 import 'package:qr_flutter/qr_flutter.dart';
-import 'dart:ui' as ui;
 
-import 'busy_indicator_dialog.dart';
 import 'svg_icon_button.dart';
 import '../model/instrument_info.dart';
 import '../model/project_info.dart';
 import '../model/client_info.dart';
 import '../model/form_instances_status.dart';
 import '../model/form_permission.dart';
-import '../logger.dart';
 
 //ignore: must_be_immutable
 class ClientOverviewTab extends StatelessWidget {
   ClientOverviewTab(this._projectInfo, this._clientInfo, this._switchToTabFunc,
       this._createNewInstrumentInstance,
-      {Key key})
+      {Key? key})
       : super(key: key);
 
   final ProjectInfo _projectInfo;
@@ -65,7 +60,7 @@ class ClientOverviewTab extends StatelessWidget {
                                       ClientQrPage(_clientInfo.secondaryId),
                                 )),
                             child: Stack(children: [
-                              QrImage(
+                              QrImageView(
                                 data: _clientInfo.secondaryId,
                                 version: QrVersions.auto,
                                 size: 100,
@@ -80,7 +75,7 @@ class ClientOverviewTab extends StatelessWidget {
                             ])),
                         Expanded(
                             child: DefaultTextStyle(
-                                style: Theme.of(context).textTheme.subtitle1,
+                                style: Theme.of(context).textTheme.titleMedium!,
                                 child: Table(children: [
                                   TableRow(children: [
                                     Text("Дата рождения:"),
@@ -120,7 +115,7 @@ class ClientOverviewTab extends StatelessWidget {
                   child: Padding(
                       padding: EdgeInsets.only(top: 30),
                       child: Text(instrument.formName,
-                          style: Theme.of(context).textTheme.headline5))),
+                          style: Theme.of(context).textTheme.headlineSmall))),
               Align(
                   alignment: Alignment.center,
                   child: Text(
@@ -128,7 +123,7 @@ class ClientOverviewTab extends StatelessWidget {
                                   ?.length ??
                               0)
                           .toString(),
-                      style: Theme.of(context).textTheme.headline1)),
+                      style: Theme.of(context).textTheme.displayLarge)),
               Align(
                   alignment: Alignment.bottomCenter,
                   child: Container(

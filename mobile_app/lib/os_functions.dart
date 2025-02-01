@@ -5,22 +5,21 @@ import 'package:flutter/services.dart';
 import 'logger.dart';
 
 class OsFunctions {
-  static MethodChannel _platform;
+  static MethodChannel? _platform;
 
-  static Future _callHandler(MethodCall call) {
-    switch (call.method) {
-    }
-    return null;
+  static Future<dynamic> _callHandler(MethodCall call) {
+    switch (call.method) {}
+    return Future.value(null);
   }
 
   static Future<String> getDeviceName() async {
     try {
       _ensureInit();
 
-      final name = await _platform.invokeMethod('getDeviceName');
+      final name = await _platform!.invokeMethod('getDeviceName');
       return name as String;
     } catch (e) {
-      logger.e("getDeviceName exception", e);
+      logger.e("getDeviceName exception", error: e);
       return "";
     }
   }
@@ -29,10 +28,10 @@ class OsFunctions {
     try {
       _ensureInit();
 
-      final name = await _platform.invokeMethod('saveLogsToFile');
+      final name = await _platform!.invokeMethod('saveLogsToFile');
       return name as String;
     } catch (e) {
-      logger.e("saveLogsToFile exception", e);
+      logger.e("saveLogsToFile exception", error: e);
       return "";
     }
   }
@@ -40,7 +39,7 @@ class OsFunctions {
   static void _ensureInit() {
     if (_platform == null) {
       _platform = MethodChannel('slebe.dev/haf_app');
-      _platform.setMethodCallHandler(_callHandler);
+      _platform!.setMethodCallHandler(_callHandler);
     }
   }
 }

@@ -13,7 +13,7 @@ import '../utils.dart';
 import "../sticker_printer.dart";
 
 class SettingsPageContent extends StatefulWidget {
-  SettingsPageContent({Key key}) : super(key: key);
+  SettingsPageContent({Key? key}) : super(key: key);
 
   @override
   _SettingsPageContentState createState() {
@@ -26,11 +26,11 @@ enum _DeviceOrientation { Portrait, Landscape, Auto }
 class _SettingsPageContentState extends State<SettingsPageContent> {
   _SettingsPageContentState();
 
-  _DeviceOrientation _orientation;
+  _DeviceOrientation _orientation = _DeviceOrientation.Portrait;
   bool _showBusyIndicator = false;
 
   _DeviceOrientation get orientation => _orientation;
-  void set orientation(value) {
+  void set orientation(_DeviceOrientation value) {
     if (_orientation == value) return;
     _orientation = value;
 
@@ -83,36 +83,36 @@ class _SettingsPageContentState extends State<SettingsPageContent> {
                 children: [
                   const SizedBox(height: 60),
                   Text("Ориентация экрана",
-                      style: Theme.of(context).textTheme.headline6),
+                      style: Theme.of(context).textTheme.titleLarge),
                   const SizedBox(height: 10),
                   RadioListTile<_DeviceOrientation>(
                       title: Text("Портретная",
-                          style: Theme.of(context).textTheme.subtitle1),
+                          style: Theme.of(context).textTheme.titleMedium),
                       value: _DeviceOrientation.Portrait,
                       groupValue: orientation,
-                      onChanged: (_DeviceOrientation value) {
+                      onChanged: (_DeviceOrientation? value) {
                         setState(() {
-                          orientation = value;
+                          if (value != null) orientation = value;
                         });
                       }),
                   RadioListTile<_DeviceOrientation>(
                       title: Text("Ландшафтная",
-                          style: Theme.of(context).textTheme.subtitle1),
+                          style: Theme.of(context).textTheme.titleMedium),
                       value: _DeviceOrientation.Landscape,
                       groupValue: orientation,
-                      onChanged: (_DeviceOrientation value) {
+                      onChanged: (_DeviceOrientation? value) {
                         setState(() {
-                          orientation = value;
+                          if (value != null) orientation = value;
                         });
                       }),
                   RadioListTile<_DeviceOrientation>(
                       title: Text("Автоматическая",
-                          style: Theme.of(context).textTheme.subtitle1),
+                          style: Theme.of(context).textTheme.titleMedium),
                       value: _DeviceOrientation.Auto,
                       groupValue: orientation,
-                      onChanged: (_DeviceOrientation value) {
+                      onChanged: (_DeviceOrientation? value) {
                         setState(() {
-                          orientation = value;
+                          if (value != null) orientation = value;
                         });
                       }),
                   const SizedBox(height: 60),
@@ -122,7 +122,7 @@ class _SettingsPageContentState extends State<SettingsPageContent> {
                             const EdgeInsets.symmetric(
                                 horizontal: 40, vertical: 15))),
                     child: Text('Отправить лог-файл приложения',
-                        style: Theme.of(context).textTheme.button),
+                        style: Theme.of(context).textTheme.labelLarge),
                     onPressed: () {
                       _sendLogs();
                     },
@@ -134,7 +134,7 @@ class _SettingsPageContentState extends State<SettingsPageContent> {
                             const EdgeInsets.symmetric(
                                 horizontal: 40, vertical: 15))),
                     child: Text('Тест принтера',
-                        style: Theme.of(context).textTheme.button),
+                        style: Theme.of(context).textTheme.labelLarge),
                     onPressed: () {
                       _testPrinter();
                     },

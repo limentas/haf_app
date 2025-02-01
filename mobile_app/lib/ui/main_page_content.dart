@@ -18,7 +18,7 @@ import 'new_client_page.dart';
 class MainPageContent extends StatefulWidget {
   MainPageContent(
       this._connection, this._projectInfo, this._appVersion, this._deviceName,
-      {Key key})
+      {Key? key})
       : super(key: key);
 
   final ServerConnection _connection;
@@ -70,7 +70,7 @@ class _MainPageContentState extends State<MainPageContent> {
                   const SizedBox(height: 60),
                   ElevatedButton(
                       child: Text('СКАНИРОВАТЬ КОД',
-                          style: Theme.of(context).textTheme.button),
+                          style: Theme.of(context).textTheme.labelLarge),
                       onPressed: () {
                         _scanFromQrCode(context);
                       }),
@@ -87,7 +87,7 @@ class _MainPageContentState extends State<MainPageContent> {
                   const SizedBox(height: 20),
                   ElevatedButton(
                     child: Text('НАЙТИ',
-                        style: Theme.of(context).textTheme.button),
+                        style: Theme.of(context).textTheme.labelLarge),
                     onPressed: () {
                       FocusScope.of(context).unfocus(); //to unfocus id field
                       _findClient(_clientIdTextFieldController.text, context);
@@ -102,7 +102,7 @@ class _MainPageContentState extends State<MainPageContent> {
                           FormPermission.ReadAndWrite,
                       child: ElevatedButton(
                         child: Text('СОЗДАТЬ НОВОГО',
-                            style: Theme.of(context).textTheme.button),
+                            style: Theme.of(context).textTheme.labelLarge),
                         onPressed: () {
                           FocusScope.of(context)
                               .unfocus(); //to unfocus id field
@@ -120,7 +120,7 @@ class _MainPageContentState extends State<MainPageContent> {
                         alignment: Alignment.center,
                         child: Text('ЖУРНАЛ ВНЕСЕННЫХ ИЗМЕНЕНИЙ',
                             textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.button)),
+                            style: Theme.of(context).textTheme.labelLarge)),
                     onPressed: () {
                       FocusScope.of(context).unfocus(); //to unfocus id field
                       Navigator.push(
@@ -142,16 +142,17 @@ class _MainPageContentState extends State<MainPageContent> {
           alignment: Alignment.bottomLeft,
           padding: EdgeInsets.only(left: 10, bottom: 30),
           child: Text("Сотрудник: ${UserInfo.userName}",
-              style: Theme.of(context).textTheme.caption)),
+              style: Theme.of(context).textTheme.bodySmall)),
       Container(
           alignment: Alignment.bottomLeft,
           padding: EdgeInsets.all(10),
           child: Text("Устройство: $_deviceName",
-              style: Theme.of(context).textTheme.caption)),
+              style: Theme.of(context).textTheme.bodySmall)),
       Container(
           alignment: Alignment.bottomRight,
           padding: EdgeInsets.all(10),
-          child: Text(_appVersion, style: Theme.of(context).textTheme.caption))
+          child:
+              Text(_appVersion, style: Theme.of(context).textTheme.bodySmall))
     ]);
   }
 
@@ -164,7 +165,7 @@ class _MainPageContentState extends State<MainPageContent> {
       var findResult =
           await _connection.retreiveClientInfo(_projectInfo, clientId);
       if (findResult == null) {
-        Scaffold.of(context).showSnackBar(SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text('Участник с таким идентификатором не найден')));
         return;
       }
@@ -176,13 +177,14 @@ class _MainPageContentState extends State<MainPageContent> {
         ),
       );
     } on SocketException catch (e) {
-      logger.e("MainPage: caught SocketException", e);
-      Scaffold.of(context).showSnackBar(SnackBar(
+      logger.e("MainPage: caught SocketException", error: e);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
               'Не удалось подключиться к серверу - повторите попытку позже')));
     } on ServerConnectionException catch (e) {
-      logger.e("MainPage: caught ServerConnectionException", e);
-      Scaffold.of(context).showSnackBar(SnackBar(content: Text(e.cause)));
+      logger.e("MainPage: caught ServerConnectionException", error: e);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.cause)));
     } finally {
       setState(() {
         _showBusyIndicator = false;
@@ -200,7 +202,7 @@ class _MainPageContentState extends State<MainPageContent> {
       var validationResult = Utils.clientIdValidator(clientId);
       if (validationResult != null) {
         logger.d("Неверный токен. Ошибка: $validationResult");
-        Scaffold.of(context).showSnackBar(SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(
                 'Прочитан некорректный идентификатор. Прочитанный идентификатор: $clientId')));
         return;
@@ -208,7 +210,7 @@ class _MainPageContentState extends State<MainPageContent> {
 
       _findClient(clientId, context);
     } catch (e) {
-      logger.e("Qr scanner exception", e);
+      logger.e("Qr scanner exception", error: e);
       return;
     }
   }

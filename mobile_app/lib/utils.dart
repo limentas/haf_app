@@ -6,8 +6,8 @@ import 'constants.dart';
 import 'logger.dart';
 
 class Utils {
-  static String clientIdValidator(String value) {
-    if (!Constants.clientIdRegExp.hasMatch(value))
+  static String? clientIdValidator(String? value) {
+    if (value == null || !Constants.clientIdRegExp.hasMatch(value))
       return 'Первые три буквы имени / день рождения / три буквы имени мамы / месяц рождения / год рождения (2 последние цифры)';
     var birthday = int.tryParse(value.substring(3, 5), radix: 10);
     if (birthday == null) return 'День рождения представляет собой целое число';
@@ -29,28 +29,24 @@ class Utils {
     return null;
   }
 
-  static String checkMandatory(String value) {
+  static String? checkMandatory(String? value) {
     if (isEmpty(value)) return "Поле является обязательным для заполнения";
 
     return null;
   }
 
-  static String checkMandatoryList(List<String> value) {
-    if (value == null || value.isEmpty)
-      return "Поле является обязательным для заполнения";
+  static String? checkMandatoryIterable(Iterable<String> value) {
+    if (value.isEmpty) return "Поле является обязательным для заполнения";
 
     return null;
   }
 
-  static int stringToInt(String number) =>
-      isEmpty(number) ? null : int.parse(number);
-
   static int stringOrIntToInt(dynamic number) {
-    if (number is String) return isEmpty(number) ? null : int.parse(number);
+    if (number is String) return int.parse(number);
     return number;
   }
 
-  static String stringFromInt(int number) {
+  static String stringFromInt(int? number) {
     if (number == null) return "";
     return number.toString();
   }

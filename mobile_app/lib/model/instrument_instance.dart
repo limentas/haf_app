@@ -9,22 +9,23 @@ class InstrumentInstance {
   //key - variable name, value - field value
   final ListMultimap<String, String> valuesMap;
 
-  VisitInfo _visitInfo;
+  VisitInfo? _visitInfo;
 
-  InstrumentInstance(this.number, [ListMultimap<String, String> values])
+  InstrumentInstance(this.number, [ListMultimap<String, String>? values])
       : valuesMap = values ?? new ListMultimap<String, String>();
 
-  VisitInfo getVisitInfo(InstrumentInfo instrument) {
+  VisitInfo? getVisitInfo(InstrumentInfo instrument) {
     if (_visitInfo != null) return _visitInfo;
-    var fillingDateStr = valuesMap[instrument.fillingDateField.variable];
+    var fillingDateStr = valuesMap[instrument.fillingDateField?.variable];
     if (fillingDateStr.isEmpty) return null;
     var date = DateTime.tryParse(fillingDateStr.first);
     if (date == null) return null;
-    var place = valuesMap[instrument.fillingPlaceField.variable];
+    if (instrument.fillingPlaceField == null) return null;
+    var place = valuesMap[instrument.fillingPlaceField!.variable];
     if (place.isEmpty) return null;
 
     return VisitInfo(
-        instrument.fillingPlaceField.fieldType.toReadableForm(place), date);
+        instrument.fillingPlaceField!.fieldType.toReadableForm(place), date);
   }
 
   FormInstanceStatus getInstanceStatus(InstrumentInfo instrument) {

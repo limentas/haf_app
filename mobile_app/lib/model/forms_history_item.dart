@@ -1,18 +1,18 @@
 class FormsHistoryItem {
-  int id = -1;
+  int id;
   final String tokenHash;
   DateTime lastEditTime;
   DateTime createTime;
   String formName;
   String secondaryId;
-  int instanceNumber;
+  int? instanceNumber; // null for non-repeating forms
 
   FormsHistoryItem(
-      {this.id,
-      this.tokenHash,
-      this.createTime,
-      this.lastEditTime,
-      this.formName,
-      this.secondaryId,
-      this.instanceNumber});
+      {this.id = -1,
+      required this.tokenHash,
+      required this.createTime,
+      required this.lastEditTime,
+      required this.formName,
+      required this.secondaryId,
+      required this.instanceNumber});
 }

@@ -7,15 +7,15 @@ import 'package:haf_spb_app/model/project_info.dart';
 import 'test_project.dart';
 
 void main() {
-  ProjectInfo projectInfo;
-  PipingEvaluator eval;
-  ClientInfo clientInfo;
+  late ProjectInfo projectInfo;
+  late PipingEvaluator eval;
+  late ClientInfo clientInfo;
 
   setUp(() {
-    projectInfo = new ProjectInfo.fromXml(TestProject.xml, {
+    projectInfo = ProjectInfo.fromXml(TestProject.xml, {
       "initial_form": FormPermission.ReadAndWrite,
       "test_instrument": FormPermission.ReadAndWrite
-    });
+    })!;
 
     clientInfo = new ClientInfo(projectInfo, 1);
     eval = PipingEvaluator(projectInfo, clientInfo);
@@ -29,9 +29,9 @@ void main() {
     var fourthInstance = new InstrumentInstance(4);
     clientInfo.repeatInstruments["test_instrument"] =
         new Map<int, InstrumentInstance>();
-    clientInfo.repeatInstruments["test_instrument"][1] = firstInstance;
-    clientInfo.repeatInstruments["test_instrument"][2] = secondInstance;
-    clientInfo.repeatInstruments["test_instrument"][4] = fourthInstance;
+    clientInfo.repeatInstruments["test_instrument"]![1] = firstInstance;
+    clientInfo.repeatInstruments["test_instrument"]![2] = secondInstance;
+    clientInfo.repeatInstruments["test_instrument"]![4] = fourthInstance;
 
     firstInstance.valuesMap.add("text_field2", "text1");
     secondInstance.valuesMap.add("text_field2", "text2");

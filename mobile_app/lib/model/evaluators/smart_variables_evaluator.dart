@@ -9,16 +9,16 @@ import '../field_types/checkboxes_field_type.dart';
 class SmartVariablesEvaluator {
   final RegExp _smartVarRegexp = RegExp(r"\w+");
 
-  ProjectInfo _projectInfo;
-  ClientInfo _clientInfo;
-  bool useIntCheckboxes = false;
-  InstrumentInstance currentInstance;
+  ProjectInfo? _projectInfo;
+  ClientInfo? _clientInfo;
+  bool useIntCheckboxes;
+  InstrumentInstance? currentInstance;
 
   SmartVariablesEvaluator(this._projectInfo, this._clientInfo,
-      {this.useIntCheckboxes});
+      {this.useIntCheckboxes = false});
 
   dynamic calcSmartVariablesGroup(List<String> varsGroup) {
-    if (varsGroup == null || varsGroup.isEmpty) return "";
+    if (varsGroup.isEmpty) return "";
     if (varsGroup.length > 2) {
       logger.e("_calcSmartVariable: Smart variables groups of " +
           "size ${varsGroup.length} are not supported. Vars group: $varsGroup");
@@ -46,7 +46,7 @@ class SmartVariablesEvaluator {
     }
 
     //Now we working with variable as first item
-    var indexValue = -1;
+    int? indexValue = -1;
     if (varsGroup.length > 1) {
       //reading index
       var secondPart = _removeBrackets(varsGroup[1]);
@@ -65,41 +65,42 @@ class SmartVariablesEvaluator {
     return variableName.substring(1, variableName.length - 1);
   }
 
-  String _interpretAsVariable(String value) {
+  String? _interpretAsVariable(String value) {
+    if (_projectInfo == null) return null;
     var match = _smartVarRegexp.firstMatch(value);
     if (match == null) return null;
     var varName = value.substring(match.start, match.end);
-    if (_projectInfo.fieldsByVariable.containsKey(varName)) return varName;
+    if (_projectInfo!.fieldsByVariable.containsKey(varName)) return varName;
     return null;
   }
 
-  //return -1
-  int _interpretAsIndex(String value, String variableName) {
+  int? _interpretAsIndex(String value, String? variableName) {
     switch (value) {
       case "previous-instance":
-        return currentInstance != null ? currentInstance.number - 1 : -1;
+        return currentInstance != null ? currentInstance!.number - 1 : -1;
       case "current-instance":
         return -1;
       case "next-instance":
-        return currentInstance != null ? currentInstance.number + 1 : -1;
+        return currentInstance != null ? currentInstance!.number + 1 : -1;
       case "first-instance":
-        if (_clientInfo == null) return -1;
-        var fieldInfo = _projectInfo.fieldsByVariable[variableName];
-        assert(fieldInfo != null);
-        var instances =
-            _clientInfo.repeatInstruments[fieldInfo.instrumentInfo.formNameId];
-        return instances.isEmpty
+        if (_clientInfo == null) return null;
+        if (variableName == null) return null;
+        if (_projectInfo == null) return null;
+        var fieldInfo = _projectInfo!.fieldsByVariable[variableName];
+        var instances = _clientInfo!
+            .repeatInstruments[fieldInfo!.instrumentInfo.formNameId];
+        return instances == null || instances.isEmpty
             ? -1
             : instances.values
                 .reduce((a, b) => a.number > b.number ? b : a)
                 .number;
       case "last-instance":
-        if (_clientInfo == null) return -1;
-        var fieldInfo = _projectInfo.fieldsByVariable[variableName];
-        assert(fieldInfo != null);
-        var instances =
-            _clientInfo.repeatInstruments[fieldInfo.instrumentInfo.formNameId];
-        return instances.isEmpty
+        if (_clientInfo == null) return null;
+        if (_projectInfo == null) return null;
+        var fieldInfo = _projectInfo!.fieldsByVariable[variableName];
+        var instances = _clientInfo!
+            .repeatInstruments[fieldInfo!.instrumentInfo.formNameId];
+        return instances == null || instances.isEmpty
             ? -1
             : instances.values
                 .reduce((a, b) => a.number > b.number ? a : b)
@@ -112,9 +113,10 @@ class SmartVariablesEvaluator {
   //index = -1 means current instance
   dynamic _getFieldValue(String variableName, String smartVarItem,
       [int index = -1]) {
-    var field = _projectInfo.fieldsByVariable[variableName];
+    if (_projectInfo == null) return null;
+    var field = _projectInfo!.fieldsByVariable[variableName];
     dynamic defaultValue;
-    switch (field.dataType) {
+    switch (field!.dataType) {
       case DataType.Text:
         defaultValue = "";
         break;
@@ -130,16 +132,16 @@ class SmartVariablesEvaluator {
         defaultValue = "";
         break;
     }
-    List<String> fieldValues;
+    var fieldValues = List<String>.empty();
     if (index < 0) {
       if (currentInstance != null)
-        fieldValues = currentInstance.valuesMap[variableName];
-      if ((fieldValues == null || fieldValues.isEmpty) && _clientInfo != null)
-        fieldValues = _clientInfo.valuesMap[variableName];
+        fieldValues = currentInstance!.valuesMap[variableName];
+      if (fieldValues.isEmpty && _clientInfo != null)
+        fieldValues = _clientInfo!.valuesMap[variableName];
     } else {
       if (_clientInfo == null) return defaultValue;
       var instrumentInstances =
-          _clientInfo.repeatInstruments[field.instrumentInfo.formNameId];
+          _clientInfo!.repeatInstruments[field.instrumentInfo.formNameId];
       if (instrumentInstances == null) {
         logger.e(
             "Couldn't find repeat instrument with name = ${field.instrumentInfo.formNameId}");

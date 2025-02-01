@@ -5,11 +5,12 @@ import 'package:cross_file/cross_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:ui' as ui;
 
+import '../logger.dart';
 import '../sticker_printer.dart';
 import 'busy_indicator_dialog.dart';
 
 class ClientQrPageContent extends StatelessWidget {
-  ClientQrPageContent(this._clientId, {Key key}) : super(key: key);
+  ClientQrPageContent(this._clientId, {Key? key}) : super(key: key);
 
   final String _clientId;
 
@@ -35,7 +36,7 @@ class ClientQrPageContent extends StatelessWidget {
                   const SizedBox(height: 30),
                   Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 40),
-                      child: QrImage(
+                      child: QrImageView(
                         data: _clientId,
                         errorCorrectionLevel: QrErrorCorrectLevel.Q,
                         version: QrVersions.auto,
@@ -46,7 +47,7 @@ class ClientQrPageContent extends StatelessWidget {
                         alignment: Alignment.center,
                         child: Text('ПЕЧАТЬ НАКЛЕЙКИ',
                             textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.button)),
+                            style: Theme.of(context).textTheme.labelLarge)),
                     onPressed: () {
                       onPrintQrCodeClicked(context);
                     },
@@ -57,7 +58,7 @@ class ClientQrPageContent extends StatelessWidget {
                         alignment: Alignment.center,
                         child: Text('ПОДЕЛИТЬСЯ',
                             textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.button)),
+                            style: Theme.of(context).textTheme.labelLarge)),
                     onPressed: () {
                       onShareClicked(context);
                     },
@@ -70,9 +71,10 @@ class ClientQrPageContent extends StatelessWidget {
       BusyIndicatorDialog.show(context, "Отправляем на печать...");
       await StickerPrinter.print(_clientId);
     } on PrintException catch (e) {
-      Scaffold.of(context).showSnackBar(SnackBar(content: Text(e.cause)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.cause)));
     } catch (e) {
-      Scaffold.of(context).showSnackBar(SnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
               'Ошибка печати. Если ошибка повторяется - отправьте сообщение разработчику.')));
     } finally {
@@ -101,6 +103,10 @@ class ClientQrPageContent extends StatelessWidget {
 
     var image = await pictureRecorder.endRecording().toImage(510, 510);
     var byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    if (byteData == null) {
+      logger.w("Couldn't generate QR-code to share.");
+      return;
+    }
     final tempDir = await getTemporaryDirectory();
     var path = tempDir.path + "/qr_code.png";
     var file = await XFile.fromData(byteData.buffer.asUint8List(),

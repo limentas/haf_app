@@ -24,8 +24,8 @@ class ClientInfo {
       String, //key - instrument's name id (formNameId)
       Map<int, InstrumentInstance>>(); //key - instance number
 
-  VisitInfo _lastVisit;
-  DateTime _birthday;
+  VisitInfo? _lastVisit;
+  DateTime? _birthday;
   final _instancesStatus = new Map<
       String, //key - instrument's name id
       FormInstancesStatus>();
@@ -38,56 +38,56 @@ class ClientInfo {
     }
   }
 
-  String _secondaryId;
+  String? _secondaryId;
 
   String get secondaryId {
-    if (_secondaryId != null) return _secondaryId;
+    if (_secondaryId != null) return _secondaryId!;
     var secondaryId = valuesMap[EmpiricalEvidence.secondaryId];
-    if (secondaryId == null || secondaryId.isEmpty) return null;
+    if (secondaryId.isEmpty) return "";
     _secondaryId = secondaryId.first;
-    return _secondaryId;
+    return _secondaryId!;
   }
 
-  DateTime _creationDateTime;
+  DateTime? _creationDateTime;
 
-  DateTime get creationDateTime {
-    if (_creationDateTime != null) return _creationDateTime;
+  DateTime? get creationDateTime {
+    if (_creationDateTime != null) return _creationDateTime!;
     var creationDateTime = valuesMap[EmpiricalEvidence.clientCreationDateTime];
-    if (creationDateTime == null || creationDateTime.isEmpty) return null;
+    if (creationDateTime.isEmpty) return null;
     try {
       _creationDateTime = DateFormat(Constants.defaultDateTimeFormat)
           .parse(creationDateTime.first);
     } on FormatException catch (e) {
-      logger.e("Creation DateTime format exception", e);
+      logger.e("Creation DateTime format exception", error: e);
     }
-    return _creationDateTime;
+    return _creationDateTime!;
   }
 
-  VisitInfo getLastVisit(ProjectInfo projectInfo) {
-    if (_lastVisit != null) return _lastVisit;
-    DateTime lastDate;
-    String lastPlace;
+  VisitInfo? getLastVisit(ProjectInfo projectInfo) {
+    if (_lastVisit != null) return _lastVisit!;
+    DateTime? lastDate;
+    String? lastPlace;
     for (var instrument in projectInfo.instrumentsByOid.values) {
       if (instrument.fillingDateField == null ||
           instrument.fillingPlaceField == null) continue;
 
-      String fillingDateStr, fillingPlace;
+      String? fillingDateStr, fillingPlace;
       if (instrument.isRepeating) {
         var instrumentInstances = repeatInstruments[instrument.formNameId];
         if (instrumentInstances == null || instrumentInstances.isEmpty)
           continue;
         for (var instance in instrumentInstances.values) {
           var fillingDates =
-              instance.valuesMap[instrument.fillingDateField.variable];
+              instance.valuesMap[instrument.fillingDateField!.variable];
           var fillingPlaces =
-              instance.valuesMap[instrument.fillingPlaceField.variable];
+              instance.valuesMap[instrument.fillingPlaceField!.variable];
           if (fillingDates.isEmpty || fillingPlaces.isEmpty) continue;
           fillingDateStr = fillingDates.first;
           fillingPlace = fillingPlaces.first;
         }
       } else {
-        var fillingDates = valuesMap[instrument.fillingDateField.variable];
-        var fillingPlaces = valuesMap[instrument.fillingPlaceField.variable];
+        var fillingDates = valuesMap[instrument.fillingDateField!.variable];
+        var fillingPlaces = valuesMap[instrument.fillingPlaceField!.variable];
         if (fillingDates.isEmpty || fillingPlaces.isEmpty) continue;
         fillingDateStr = fillingDates.first;
         fillingPlace = fillingPlaces.first;
@@ -97,8 +97,10 @@ class ClientInfo {
       if (date == null) continue;
       if (lastDate == null || lastDate.isBefore(date)) {
         lastDate = date;
-        lastPlace = instrument.fillingPlaceField.fieldType
-            .toReadableForm([fillingPlace]);
+        lastPlace = fillingPlace != null
+            ? instrument.fillingPlaceField!.fieldType
+                .toReadableForm([fillingPlace])
+            : null;
       }
     }
     if (lastDate == null || lastPlace == null) return null;
@@ -108,11 +110,11 @@ class ClientInfo {
     return result;
   }
 
-  DateTime getBirthday(ProjectInfo projectInfo) {
-    if (_birthday != null) return _birthday;
+  DateTime? getBirthday(ProjectInfo projectInfo) {
+    if (_birthday != null) return _birthday!;
     if (projectInfo.birthdayField == null) return null;
 
-    var birthday = valuesMap[projectInfo.birthdayField.variable];
+    var birthday = valuesMap[projectInfo.birthdayField!.variable];
     if (birthday.isEmpty) return null;
 
     return DateTime.tryParse(birthday.first);
@@ -123,7 +125,7 @@ class ClientInfo {
     var cachedResult = _instancesStatus[instrumentNameId];
     if (cachedResult != null) return cachedResult;
     var instrument = projectInfo.instrumentsByName[instrumentNameId];
-    if (!instrument.isRepeating) {
+    if (!instrument!.isRepeating) {
       var status = valuesMap[instrument.formStatusField.variable];
       FormInstancesStatus result;
       switch (status.first) {
@@ -134,6 +136,7 @@ class ClientInfo {
           result = FormInstancesStatus.AllUnverified;
           break;
         case "2":
+        default:
           result = FormInstancesStatus.AllComplete;
           break;
       }
@@ -141,29 +144,33 @@ class ClientInfo {
       return result;
     }
     // repeating instrument
-    FormInstancesStatus result;
-    for (var instance in repeatInstruments[instrumentNameId].values) {
-      var status = instance.valuesMap[instrument.formStatusField.variable];
-      FormInstancesStatus currentStatus;
-      switch (status.first) {
-        case "0":
-          currentStatus = FormInstancesStatus.AllIncomplete;
-          break;
-        case "1":
-          currentStatus = FormInstancesStatus.AllUnverified;
-          break;
-        case "2":
-          currentStatus = FormInstancesStatus.AllComplete;
-          break;
+    FormInstancesStatus? result;
+    var instrumentInstances = repeatInstruments[instrumentNameId];
+    if (instrumentInstances != null) {
+      for (var instance in instrumentInstances.values) {
+        var status = instance.valuesMap[instrument.formStatusField.variable];
+        FormInstancesStatus currentStatus;
+        switch (status.first) {
+          case "0":
+            currentStatus = FormInstancesStatus.AllIncomplete;
+            break;
+          case "1":
+            currentStatus = FormInstancesStatus.AllUnverified;
+            break;
+          case "2":
+          default:
+            currentStatus = FormInstancesStatus.AllComplete;
+            break;
+        }
+        if (result == null) {
+          result = currentStatus;
+        } else if (result != currentStatus) {
+          result = FormInstancesStatus.Mixed;
+        }
+        _instancesStatus[instrumentNameId] = result;
       }
-      if (result == null) {
-        result = currentStatus;
-      } else if (result != currentStatus) {
-        result = FormInstancesStatus.Mixed;
-      }
-      _instancesStatus[instrumentNameId] = result;
     }
-    return result;
+    return result!;
   }
 
   int getNextInstrumentInstanceNumber(String instrumentName) {

@@ -17,13 +17,13 @@ import 'settings.dart';
 import 'utils.dart';
 
 class ServerConnection {
-  String _token;
+  String _token = "";
 
   void setToken(String token) {
     _token = token;
   }
 
-  static Future<String> checkServerAvailability(Uri server) async {
+  static Future<String?> checkServerAvailability(Uri server) async {
     var retriesCount = 3;
     do {
       try {
@@ -33,7 +33,7 @@ class ServerConnection {
       } on TimeoutException {
         if (--retriesCount > 0) return "Не удается подключиться";
       } on SocketException catch (e) {
-        if (--retriesCount > 0) return "Ошибка ${e.osError.errorCode}";
+        if (--retriesCount > 0) return "Ошибка ${e.osError?.errorCode}";
       } on ArgumentError catch (e) {
         return "Некорректный адрес ${e}";
       }
@@ -122,6 +122,10 @@ class ServerConnection {
             .e("Get users list json format exception. Body: ${response.body}");
         return result;
       }
+    } else {
+      logger
+          .e("Get users list error. ${response.statusCode}\n${response.body}");
+      //TODO: return error
     }
     logger.e("Couldn't find curent user by token hash ${tokenHash}");
     return result;
@@ -137,10 +141,10 @@ class ServerConnection {
     if (response.statusCode == HttpStatus.ok) {
       return response.body;
     }
-    return null;
+    return "";
   }
 
-  Future<ClientInfo> retreiveClientInfo(
+  Future<ClientInfo?> retreiveClientInfo(
       ProjectInfo projectInfo, String secondaryId) async {
     var response = await _post({
       "token": _token,
@@ -162,7 +166,7 @@ class ServerConnection {
     return _parseClientInfoJson(projectInfo, response.body);
   }
 
-  Future<ClientInfo> retreiveClientInfoByRecordId(
+  Future<ClientInfo?> retreiveClientInfoByRecordId(
       ProjectInfo projectInfo, int recordId) async {
     var response = await _post({
       "token": _token,
@@ -184,20 +188,25 @@ class ServerConnection {
     return _parseClientInfoJson(projectInfo, response.body);
   }
 
-  ClientInfo _parseClientInfoJson(ProjectInfo projectInfo, String jsonData) {
+  ClientInfo? _parseClientInfoJson(ProjectInfo projectInfo, String jsonData) {
     try {
       var recordsList = _parseRedcapRecordsArray(jsonData);
-      if (recordsList == null || recordsList.isEmpty) return null;
+      if (recordsList.isEmpty) return null;
 
       var result = new ClientInfo(projectInfo, recordsList.first.record);
       for (var record in recordsList) {
-        if (record.redcapRepeatInstrument?.isEmpty == false) {
+        if (record.redcapRepeatInstrument.isEmpty == false) {
           var instrumentInstances = result.repeatInstruments.putIfAbsent(
               record.redcapRepeatInstrument,
               () => new Map<int, InstrumentInstance>());
+          if (record.redcapRepeatInstance == null) {
+            logger.w(
+                "Couldn't parse records array. Instance number is null. Json: $jsonData");
+            continue;
+          }
           var instance = instrumentInstances.putIfAbsent(
-              record.redcapRepeatInstance,
-              () => new InstrumentInstance(record.redcapRepeatInstance));
+              record.redcapRepeatInstance!,
+              () => new InstrumentInstance(record.redcapRepeatInstance!));
           instance.valuesMap.add(record.fieldName, record.value);
         } else {
           //repeat instrument name null or empty
@@ -206,13 +215,13 @@ class ServerConnection {
       }
       return result;
     } on FormatException catch (e) {
-      logger.e("Json format exception", e);
+      logger.e("Json format exception", error: e);
       throw new ServerConnectionException(
           "Ошибка загрузки данных. Попробуйте еще раз.");
     }
   }
 
-  Future<int> retreiveNextRecordId() async {
+  Future<int?> retreiveNextRecordId() async {
     var response = await _post(
         {"token": _token, "content": "generateNextRecordName"}, 5,
         retriesCount: 3);
@@ -224,7 +233,6 @@ class ServerConnection {
     }
     if (response.statusCode != HttpStatus.ok) return null;
 
-    if (response.body == null) return null;
     var result = int.tryParse(response.body);
     if (result == null)
       logger.e(
@@ -232,11 +240,11 @@ class ServerConnection {
     return result;
   }
 
-  Future<int> createNewRecord(int recordId, InstrumentInstance instance) {
-    return importRecord(recordId, null, null, instance, true);
+  Future<int?> createNewRecord(int recordId, InstrumentInstance instance) {
+    return importRecord(recordId, "", null, instance, true);
   }
 
-  Future<int> createNewInstance(InstrumentInfo instrumentInfo, int recordId,
+  Future<int?> createNewInstance(InstrumentInfo instrumentInfo, int recordId,
       InstrumentInstance instance) async {
     var instanceNumber =
         await retreiveNextInstanceNumber(recordId, instrumentInfo.formNameId);
@@ -250,22 +258,22 @@ class ServerConnection {
         recordId, instrumentInfo.formNameId, instanceNumber, instance, false);
   }
 
-  Future<int> editNonRepeatForm(int recordId, InstrumentInstance instance) {
-    return importRecord(recordId, null, null, instance, false);
+  Future<int?> editNonRepeatForm(int recordId, InstrumentInstance instance) {
+    return importRecord(recordId, "", null, instance, false);
   }
 
   Future<bool> editRepeatInstanceForm(InstrumentInfo instrumentInfo,
       int recordId, InstrumentInstance instance) async {
-    var id = importRecord(
+    var id = await importRecord(
         recordId, instrumentInfo.formNameId, instance.number, instance, false);
     return id != null;
   }
 
   ///Returns new record id
-  Future<int> importRecord(
+  Future<int?> importRecord(
       int recordId,
       String repeatInstrumentName,
-      int instanceNumber,
+      int? instanceNumber,
       InstrumentInstance instance,
       bool createAutoId) async {
     var body = {
@@ -307,7 +315,7 @@ class ServerConnection {
             "Error occured during importing new record. Body: ${response.body}");
         return null;
       }
-      var idsList = idsObj as List<dynamic>;
+      var idsList = idsObj;
       if (idsList.isEmpty) {
         logger.e(
             "Error occured during importing new record. Body: ${response.body}");
@@ -319,14 +327,14 @@ class ServerConnection {
             "Error occured during importing new record. Body: ${response.body}");
         return null;
       }
-      return Utils.stringOrIntToInt(resultDynamic as String);
+      return Utils.stringOrIntToInt(resultDynamic);
     } on FormatException {
       logger.e("Import record json format exception. Body: ${response.body}");
       return null;
     }
   }
 
-  Future<int> retreiveNextInstanceNumber(
+  Future<int?> retreiveNextInstanceNumber(
       int recordId, String instrumentName) async {
     var response = await _post({
       "token": _token,
@@ -347,13 +355,14 @@ class ServerConnection {
     var redcapRecords = _parseRedcapRecordsArray(response.body);
     int instanceNumber = 0;
     for (var record in redcapRecords) {
-      if (instanceNumber < record.redcapRepeatInstance)
-        instanceNumber = record.redcapRepeatInstance;
+      if (record.redcapRepeatInstance != null &&
+          instanceNumber < record.redcapRepeatInstance!)
+        instanceNumber = record.redcapRepeatInstance!;
     }
     return instanceNumber + 1;
   }
 
-  Future<bool> isSecondaryIdOccupied(
+  Future<bool?> isSecondaryIdOccupied(
       String secondaryId, String secondaryIdFieldName) async {
     var response = await _post({
       "token": _token,
@@ -372,14 +381,13 @@ class ServerConnection {
     if (response.statusCode != HttpStatus.ok) return null;
 
     if (isEmpty(response.body)) return false;
-
     try {
       var recordsListRaw = jsonDecode(response.body);
       if (recordsListRaw is! List) return false;
       var recordsJsonList = recordsListRaw as List;
       return recordsJsonList.isNotEmpty;
     } on FormatException catch (e) {
-      logger.e("Json format exception", e);
+      logger.e("Json format exception", error: e);
     }
     return null;
   }
@@ -404,13 +412,13 @@ class ServerConnection {
       if (recordsListRaw is! List) {
         logger
             .e("Error occured during retrieving client info. Data: $jsonData");
-        return null;
+        return List<RedcapRecord>.empty();
       }
       var recordsJsonList = recordsListRaw as List;
       return recordsJsonList.map((e) => RedcapRecord.fromJson(e)).toList();
     } on FormatException catch (e) {
-      logger.e("Json format exception", e);
+      logger.e("Json format exception", error: e);
     }
-    return null;
+    return List<RedcapRecord>.empty();
   }
 }

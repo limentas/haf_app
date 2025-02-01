@@ -13,7 +13,7 @@ import '../model/form_instance_status.dart';
 class ClientRepeatFormTab extends StatelessWidget {
   ClientRepeatFormTab(this._projectInfo, this._clientInfo, this._instrumentInfo,
       this._formInstances,
-      {Key key})
+      {Key? key})
       : super(key: key);
 
   final ProjectInfo _projectInfo;
@@ -51,7 +51,7 @@ class ClientRepeatFormTab extends StatelessWidget {
             var keyText = field?.question;
             if (keyText == null) continue;
             var labelValues = instance.valuesMap[labelVar];
-            var valueText = field.fieldType.toReadableForm(labelValues);
+            var valueText = field?.fieldType.toReadableForm(labelValues);
             if (valueText == null) valueText = "";
             tableRows.add(TableRow(children: [
               Align(

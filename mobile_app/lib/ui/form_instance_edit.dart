@@ -23,12 +23,12 @@ import 'busy_indicator_dialog.dart';
 class FormInstanceEdit extends StatefulWidget {
   FormInstanceEdit(this._connection, this._projectInfo, this._clientInfo,
       this._instrumentInfo, this._instrumentInstance, this._sendFunction,
-      {Key key})
+      {Key? key})
       : super(key: key);
 
   final ServerConnection _connection;
   final ProjectInfo _projectInfo;
-  final ClientInfo _clientInfo;
+  final ClientInfo? _clientInfo;
   final InstrumentInfo _instrumentInfo;
   final InstrumentInstance _instrumentInstance;
   final Future<void> Function(BuildContext) _sendFunction;
@@ -44,7 +44,7 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
   _FormInstanceEditState(
       this._connection,
       this._projectInfo,
-      ClientInfo clientInfo,
+      ClientInfo? clientInfo,
       this._instrumentInfo,
       this._instrumentInstance,
       this._sendFunction)
@@ -73,11 +73,11 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
     }
   }
 
-  WillPopCallback _willPopCallback;
+  WillPopCallback? _willPopCallback;
 
   Future<bool> _onWillPop(BuildContext context) async {
     if (!_hasChanges) {
-      Scaffold.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
       return true;
     }
     return (await showDialog(
@@ -85,10 +85,10 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
           builder: (dialogContext) => new AlertDialog(
             contentPadding: EdgeInsets.all(24),
             title: new Text('Отменить изменения?',
-                style: Theme.of(context).primaryTextTheme.headline5),
+                style: Theme.of(context).primaryTextTheme.headlineSmall),
             content: Text(
                 'Вы действительно хотите отменить введенные изменения?',
-                style: Theme.of(context).primaryTextTheme.bodyText2),
+                style: Theme.of(context).primaryTextTheme.bodyMedium),
             actions: <Widget>[
               new TextButton(
                   onPressed: () => Navigator.of(context).pop(false),
@@ -97,7 +97,7 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
                   )),
               new TextButton(
                 onPressed: () {
-                  Scaffold.of(context).hideCurrentSnackBar();
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
                   Navigator.of(context).pop(true);
                 },
                 child: new Text('ДА'),
@@ -111,9 +111,9 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
   @override
   Widget build(BuildContext context) {
     if (_willPopCallback != null)
-      ModalRoute.of(context).removeScopedWillPopCallback(_willPopCallback);
+      ModalRoute.of(context)?.removeScopedWillPopCallback(_willPopCallback!);
     _willPopCallback = () => _onWillPop(context);
-    ModalRoute.of(context).addScopedWillPopCallback(_willPopCallback);
+    ModalRoute.of(context)?.addScopedWillPopCallback(_willPopCallback!);
 
     List<Widget> formWidgets = [];
     for (var field in _fieldsList) {
@@ -130,7 +130,7 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
       _savingInProgress = true;
       FocusScope.of(context).unfocus(); //to unfocus text fields
       if (!_formController.validate()) {
-        Scaffold.of(context).showSnackBar(SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content:
                 Text('Ошибка ввода данных - ошибочные поля отмечены красным')));
         _savingInProgress = false;
@@ -164,13 +164,13 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
     if (field.hasDependentVariables) {
       setState(() {
         _instrumentInstance.valuesMap.removeAll(field.variable);
-        if (newValues != null && newValues.isNotEmpty)
+        if (newValues.isNotEmpty)
           _instrumentInstance.valuesMap.addValues(field.variable, newValues);
       });
     } else {
       //Otherwise will not update UI
       _instrumentInstance.valuesMap.removeAll(field.variable);
-      if (newValues != null && newValues.isNotEmpty)
+      if (newValues.isNotEmpty)
         _instrumentInstance.valuesMap.addValues(field.variable, newValues);
     }
   }
@@ -186,18 +186,18 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
           .then((value) => _secondaryIdCheckCompleted(
               newValues.first, value, ++_checkSecondaryIdRequestId, context));
     } on SocketException catch (e) {
-      logger.d("isSecondaryIdOccupied threw SocketException", e);
+      logger.d("isSecondaryIdOccupied threw SocketException", error: e);
     }
   }
 
   void _secondaryIdCheckCompleted(
-      String secondaryId, bool result, int requestId, BuildContext context) {
+      String secondaryId, bool? result, int requestId, BuildContext context) {
     //We have to handle only last request and ignore all previous if we have
     //several requests at the same time
     if (requestId != _checkSecondaryIdRequestId) return;
 
     if (result == true) {
-      Scaffold.of(context).showSnackBar(SnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           duration: Duration(hours: 999),
           content: Text(
               'Клиент с таким идентификатором уже существует. Перейти к нему?'),
@@ -217,7 +217,7 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
           await _connection.retreiveClientInfo(_projectInfo, secondaryId);
       if (clientInfo == null) {
         logger.e("Could not found existing record $secondaryId");
-        Scaffold.of(context).showSnackBar(SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(
                 'Ошибка поиска пользователя - свяжитесь с разработчиком')));
         return;
@@ -225,7 +225,7 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
 
       if (isEmpty(clientInfo.secondaryId)) {
         logger.e("Could not found secondary id for the record $secondaryId");
-        Scaffold.of(context).showSnackBar(SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(
                 'Ошибка поиска пользователя - свяжитесь с разработчиком')));
         return;
@@ -238,10 +238,11 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
         ),
       );
     } on SocketException catch (e) {
-      logger.e("FormInstanceEdit: caught SocketException", e);
+      logger.e("FormInstanceEdit: caught SocketException", error: e);
     } on ServerConnectionException catch (e) {
-      logger.e("FormInstanceEdit: caught ServerConnectionException", e);
-      Scaffold.of(context).showSnackBar(SnackBar(content: Text(e.cause)));
+      logger.e("FormInstanceEdit: caught ServerConnectionException", error: e);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.cause)));
     }
   }
 
@@ -269,14 +270,14 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
           child: Align(
               alignment: Alignment.centerLeft,
               child: Text(field.question,
-                  style: Theme.of(context).textTheme.subtitle2))));
+                  style: Theme.of(context).textTheme.titleSmall))));
     if (!isEmpty(field.helperText))
       widgetGroupList.add(Padding(
           padding: const EdgeInsets.only(left: 14, right: 14, bottom: 6),
           child: Align(
               alignment: Alignment.centerLeft,
               child: Text(field.helperText,
-                  style: Theme.of(context).textTheme.caption))));
+                  style: Theme.of(context).textTheme.bodySmall))));
     widgetGroupList.add(editWidget);
     var combinedWidget = new Padding(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
@@ -286,7 +287,8 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
                 shape: Border(
                     left: _errorVariables.contains(field.variable)
                         ? BorderSide(
-                            width: 3, color: Theme.of(context).errorColor)
+                            width: 3,
+                            color: Theme.of(context).colorScheme.error)
                         : BorderSide.none)),
             child: Column(
               children: widgetGroupList,
@@ -296,7 +298,8 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
         ? combinedWidget
         : Visibility(
             visible: _branchingLogicEvaluator.calculate(
-                field.branchingLogic, _instrumentInstance),
+                    field.branchingLogic, _instrumentInstance) ??
+                false,
             child: combinedWidget);
   }
 
@@ -319,13 +322,14 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
                   alignment: Alignment.center,
                   child: Text(field.sectionName,
                       textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.headline6))),
+                      style: Theme.of(context).textTheme.titleLarge))),
         ));
     return isEmpty(field.branchingLogic)
         ? titleWidget
         : Visibility(
             visible: _branchingLogicEvaluator.calculate(
-                field.branchingLogic, _instrumentInstance),
+                    field.branchingLogic, _instrumentInstance) ??
+                false,
             child: titleWidget);
   }
 
@@ -341,8 +345,9 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
         if (!_instrumentInstance.valuesMap.containsKey(field.variable))
           continue;
 
-        if (!_branchingLogicEvaluator.calculate(
-            field.branchingLogic, _instrumentInstance)) {
+        var calculateResult = _branchingLogicEvaluator.calculate(
+            field.branchingLogic, _instrumentInstance);
+        if (calculateResult == null || !calculateResult) {
           _instrumentInstance.valuesMap.removeAll(field.variable);
           if (field.hasDependentVariables) needToRecheck = true;
         }
@@ -357,6 +362,6 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
             onPressed: onPressed,
             style: ButtonStyle(
                 minimumSize: MaterialStateProperty.all(Size(150, 50))),
-            child: Text(text, style: Theme.of(context).textTheme.button)));
+            child: Text(text, style: Theme.of(context).textTheme.labelLarge)));
   }
 }

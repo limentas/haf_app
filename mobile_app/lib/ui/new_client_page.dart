@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:quiver/strings.dart';
+import 'package:quiver/collection.dart';
 
 import '../logger.dart';
 import '../server_connection_exception.dart';
@@ -16,9 +17,10 @@ import '../model/instrument_instance.dart';
 import '../model/forms_history_item.dart';
 
 class NewClientPage extends StatelessWidget {
-  NewClientPage(this._connection, this._projectInfo, {Key key})
+  NewClientPage(this._connection, this._projectInfo, {Key? key})
       : _instrumentInstance = _projectInfo.initInstrument
-            .instanceFromNonRepeatingForm(null, null),
+            .instanceFromNonRepeatingForm(
+                null, new ListMultimap<String, String>()),
         super(key: key);
 
   final ServerConnection _connection;
@@ -108,7 +110,7 @@ class NewClientPage extends StatelessWidget {
   Future<void> sendData(BuildContext context) async {
     var recordId = await _connection.createNewRecord(1, _instrumentInstance);
     if (recordId == null) {
-      Scaffold.of(context).showSnackBar(SnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
               'Ошибка добавления нового пользователя - свяжитесь с разработчиком')));
       return;
@@ -119,14 +121,14 @@ class NewClientPage extends StatelessWidget {
 
     if (secondaryId.isEmpty) {
       logger.e("Couldn't get secondary id for the new created client");
-      Scaffold.of(context).showSnackBar(SnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
               'Ошибка добавления нового пользователя - свяжитесь с разработчиком')));
       return;
     }
 
     var historyItem = new FormsHistoryItem(
-        tokenHash: UserInfo.tokenHash,
+        tokenHash: UserInfo.tokenHash!,
         createTime: DateTime.now(),
         lastEditTime: DateTime.now(),
         formName: _projectInfo.initInstrument.formNameId,
@@ -143,7 +145,7 @@ class NewClientPage extends StatelessWidget {
           _projectInfo, recordId);
       if (clientInfo == null) {
         logger.e("Could not found recently added new record");
-        Scaffold.of(context).showSnackBar(SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(
                 'Ошибка добавления нового пользователя - свяжитесь с разработчиком')));
         return;
@@ -152,7 +154,7 @@ class NewClientPage extends StatelessWidget {
       var secondaryId = clientInfo.secondaryId;
       if (isEmpty(secondaryId)) {
         logger.e("Could not found secondary id for new record");
-        Scaffold.of(context).showSnackBar(SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(
                 'Ошибка добавления нового пользователя - свяжитесь с разработчиком')));
         return;
@@ -165,13 +167,14 @@ class NewClientPage extends StatelessWidget {
         ),
       );
     } on SocketException catch (e) {
-      logger.e("NewClientPage: caught SocketException", e);
-      Scaffold.of(context).showSnackBar(SnackBar(
+      logger.e("NewClientPage: caught SocketException", error: e);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
               'Не удалось подключиться к серверу - повторите попытку позже')));
     } on ServerConnectionException catch (e) {
-      logger.e("NewClientPage: caught ServerConnectionException", e);
-      Scaffold.of(context).showSnackBar(SnackBar(content: Text(e.cause)));
+      logger.e("NewClientPage: caught ServerConnectionException", error: e);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.cause)));
     }
   }
 }

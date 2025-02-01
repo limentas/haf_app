@@ -14,22 +14,20 @@ class AddServerDialog extends StatefulWidget {
 
 class _AddServerDialogState extends State<AddServerDialog> {
   final _serverTextFieldController = TextEditingController(text: "https://");
-  String _checkServerError = "";
+  String? _checkServerError = "";
 
   @override
   Widget build(BuildContext context) {
     return new AlertDialog(
       contentPadding: EdgeInsets.all(24),
       title: new Text('Добавить веб-сервер',
-          style: Theme.of(context).primaryTextTheme.headline5),
+          style: Theme.of(context).primaryTextTheme.headlineSmall),
       content: Column(mainAxisSize: MainAxisSize.min, children: [
         TextField(
           controller: _serverTextFieldController,
         ),
         SizedBox(height: 30, width: 500),
-        Text(_checkServerError == null
-            ? "Проверка выполнена успешно"
-            : _checkServerError)
+        Text(_checkServerError ?? "Проверка выполнена успешно")
       ]),
       actions: <Widget>[
         new TextButton(

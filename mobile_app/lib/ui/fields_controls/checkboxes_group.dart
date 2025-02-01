@@ -13,7 +13,7 @@ class CheckboxesGroup extends StatefulWidget {
       this._onValidateStatusChanged,
       this._onChanged,
       this._onSaved,
-      {Key key})
+      {Key? key})
       : super(key: key);
 
   final Map<String, String> _valueTitleMap;
@@ -50,10 +50,10 @@ class _CheckboxesGroupState extends State<CheckboxesGroup>
   final FieldSaveValue _onSaved;
   final MyFormController _formController;
 
-  List<String> _currentValue;
-  int _formFieldId;
-  String _errorMessage; //null if there is no error
-  String _lastNotifiedValidateStatus;
+  Iterable<String> _currentValue;
+  late int _formFieldId;
+  String? _errorMessage; //null if there is no error
+  String? _lastNotifiedValidateStatus;
   bool _validateStatusWasNotified = false;
 
   @override
@@ -90,9 +90,9 @@ class _CheckboxesGroupState extends State<CheckboxesGroup>
     _onChanged(newValue);
   }
 
-  String validate() {
-    String result;
-    if (_isMandatory) result = Utils.checkMandatoryList(_currentValue);
+  String? validate() {
+    String? result;
+    if (_isMandatory) result = Utils.checkMandatoryIterable(_currentValue);
     //Notify for the first time or when status changed
     if (!_validateStatusWasNotified || _lastNotifiedValidateStatus != result) {
       _onValidateStatusChanged(result);
@@ -105,8 +105,8 @@ class _CheckboxesGroupState extends State<CheckboxesGroup>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final itemTextStyle = Theme.of(context).primaryTextTheme.subtitle1;
-    final resetStyle = Theme.of(context).primaryTextTheme.subtitle1.copyWith(
+    final itemTextStyle = Theme.of(context).primaryTextTheme.titleMedium;
+    final resetStyle = Theme.of(context).primaryTextTheme.titleMedium?.copyWith(
         color: Theme.of(context).primaryColorDark,
         fontWeight: FontWeight.bold,
         decoration: TextDecoration.underline);

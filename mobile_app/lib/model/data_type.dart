@@ -11,7 +11,7 @@ enum DataType {
   PartialTime
 }
 
-DataType parseDataType(String text) {
+DataType? parseDataType(String text) {
   switch (text) {
     case "text":
       return DataType.Text;

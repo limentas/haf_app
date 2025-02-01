@@ -20,7 +20,7 @@ import 'form_instance_edit_scaffold.dart';
 import 'non_repeat_form_edit.dart';
 
 class LastSentForms extends StatefulWidget {
-  LastSentForms(this._connection, this._projectInfo, {Key key})
+  LastSentForms(this._connection, this._projectInfo, {Key? key})
       : super(key: key);
 
   final ServerConnection _connection;
@@ -37,7 +37,7 @@ class _LastSentFormsState extends State<LastSentForms> {
 
   final ServerConnection _connection;
   final ProjectInfo _projectInfo;
-  SplayTreeSet<FormsHistoryItem> _formsHistory;
+  late SplayTreeSet<FormsHistoryItem> _formsHistory;
 
   final _titleTextStyle = new TextStyle(color: Colors.grey[700], fontSize: 16);
   final _valueTextStyle = new TextStyle(color: Colors.black, fontSize: 18);
@@ -129,7 +129,7 @@ class _LastSentFormsState extends State<LastSentForms> {
 
       if (clientInfo == null) {
         logger.w("Client with a such secondId doesn't exist anymore");
-        Scaffold.of(context).showSnackBar(SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text("Такого участника больше не существует в базе")));
         Storage.removeHistoryItem(historyItem);
         return;
@@ -139,7 +139,7 @@ class _LastSentFormsState extends State<LastSentForms> {
         var instances = clientInfo.repeatInstruments[instrumentInfo.formNameId];
         if (instances == null) {
           logger.w("There are no instances of this instrument for this client");
-          Scaffold.of(context).showSnackBar(
+          ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text("Не найден экземпляр формы в базе")));
           Storage.removeHistoryItem(historyItem);
           return;
@@ -148,7 +148,7 @@ class _LastSentFormsState extends State<LastSentForms> {
         var instrumentInstance = instances[historyItem.instanceNumber];
         if (instrumentInstance == null) {
           logger.w("Client with a such secondId doesn't exist anymore");
-          Scaffold.of(context).showSnackBar(
+          ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text("Не найден экземпляр формы в базе")));
           Storage.removeHistoryItem(historyItem);
           return;
@@ -180,13 +180,14 @@ class _LastSentFormsState extends State<LastSentForms> {
                     clientInfo.recordId)));
       }
     } on SocketException catch (e) {
-      logger.e("LastSentForms: caught SocketException", e);
-      Scaffold.of(context).showSnackBar(SnackBar(
+      logger.e("LastSentForms: caught SocketException", error: e);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
               'Не удалось подключиться к серверу - повторите попытку позже')));
     } on ServerConnectionException catch (e) {
-      logger.e("LastSentForms: caught ServerConnectionException", e);
-      Scaffold.of(context).showSnackBar(SnackBar(content: Text(e.cause)));
+      logger.e("LastSentForms: caught ServerConnectionException", error: e);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.cause)));
     }
   }
 
@@ -201,7 +202,7 @@ class _LastSentFormsState extends State<LastSentForms> {
           instrumentInfo, clientInfo.recordId, instrumentInstance);
 
       if (!result) {
-        Scaffold.of(context).showSnackBar(SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content:
                 Text('Ошибка добавления данных - свяжитесь с разработчиком')));
         return;
@@ -223,8 +224,8 @@ class _LastSentFormsState extends State<LastSentForms> {
         ),
       );
     } on SocketException catch (e) {
-      logger.e("SocketException during creating new client", e);
-      Scaffold.of(context).showSnackBar(SnackBar(
+      logger.e("SocketException during creating new client", error: e);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
               'Не удалось подключиться к серверу - повторите попытку позже')));
     }

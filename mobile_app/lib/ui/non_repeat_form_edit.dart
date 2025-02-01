@@ -15,7 +15,7 @@ import 'form_instance_edit.dart';
 class NonRepeatFormEdit extends StatelessWidget with SendFormMixin {
   NonRepeatFormEdit(this._connection, this._projectInfo, this._clientInfo,
       this._instrumentInfo, this._recordId,
-      {Key key})
+      {Key? key})
       : _instrumentInstance = _instrumentInfo.instanceFromNonRepeatingForm(
             _clientInfo, _clientInfo.valuesMap),
         super(key: key);
@@ -106,7 +106,7 @@ class NonRepeatFormEdit extends StatelessWidget with SendFormMixin {
           _instrumentInfo, _recordId, _instrumentInstance);
 
       if (!result) {
-        Scaffold.of(context).showSnackBar(SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content:
                 Text('Ошибка добавления данных - свяжитесь с разработчиком')));
         return;
@@ -116,8 +116,8 @@ class NonRepeatFormEdit extends StatelessWidget with SendFormMixin {
       //Result is sign: do we need to refresh current client's info
       Navigator.pop(context, true);
     } on SocketException catch (e) {
-      logger.e("SocketException during sending form", e);
-      Scaffold.of(context).showSnackBar(SnackBar(
+      logger.e("SocketException during sending form", error: e);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
               'Не удалось подключиться к серверу - повторите попытку позже')));
     }

@@ -10,7 +10,7 @@ class PipingEvaluator {
   final RegExp _smartVarItemRegexp = RegExp(r"\[[^\]]+\]");
   final SmartVariablesEvaluator smartVariablesEvaluator;
 
-  PipingEvaluator(ProjectInfo projectInfo, ClientInfo clientInfo)
+  PipingEvaluator(ProjectInfo? projectInfo, ClientInfo? clientInfo)
       : smartVariablesEvaluator =
             new SmartVariablesEvaluator(projectInfo, clientInfo);
 
@@ -18,9 +18,9 @@ class PipingEvaluator {
       String expression, InstrumentInstance currentInstance) {
     smartVariablesEvaluator.currentInstance = currentInstance;
     var result = expression;
-    RegExpMatch match;
+    RegExpMatch? match;
     while ((match = _smartVarsGroupRegexp.firstMatch(result)) != null) {
-      var matchString = result.substring(match.start, match.end);
+      var matchString = result.substring(match!.start, match.end);
       var smartVarsGroup = _smartVarItemRegexp
           .allMatches(matchString)
           .map((e) => matchString.substring(e.start, e.end));

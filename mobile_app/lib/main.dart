@@ -15,7 +15,7 @@ void main() async {
         .then((data) => SecurityContext.defaultContext
             .setTrustedCertificatesBytes(data.buffer.asUint8List()));
   } on Exception catch (e) {
-    logger.e("Couldn't load certificate: ", e);
+    logger.e("Couldn't load certificate: ", error: e);
   }
 
   runApp(AppWidget());

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'client_qr_page_content.dart';
 
 class ClientQrPage extends StatelessWidget {
-  ClientQrPage(this._clientId, {Key key}) : super(key: key);
+  ClientQrPage(this._clientId, {Key? key}) : super(key: key);
 
   final String _clientId;
 

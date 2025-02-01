@@ -22,15 +22,13 @@ class ComboboxFieldType extends FieldType {
   @override
   Widget buildEditControl(BuildContext context, MyFormController formController,
       Iterable<String> initialValue,
-      {@required ValidateStatusChange onValidateStatusChanged,
-      @required FieldValueChange onChanged,
-      @required FieldSaveValue onSaved}) {
+      {required ValidateStatusChange onValidateStatusChanged,
+      required FieldValueChange onChanged,
+      required FieldSaveValue onSaved}) {
     return Combobox(
         formController,
         codeList.codeListItems,
-        initialValue == null || initialValue.isEmpty
-            ? null
-            : initialValue.first,
+        initialValue.isEmpty ? "" : initialValue.first,
         instrumentField.isMandatory,
         onValidateStatusChanged,
         onChanged,

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:haf_spb_app/ui/settings_page_content.dart';
 
 class SettingsPage extends StatelessWidget {
-  SettingsPage({Key key}) : super(key: key);
+  SettingsPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
