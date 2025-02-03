@@ -22,8 +22,6 @@ class ClientOverviewTab extends StatelessWidget {
   final void Function(String) _switchToTabFunc;
   final void Function(InstrumentInfo) _createNewInstrumentInstance;
 
-  bool _isPrintingInProgress = false;
-
   @override
   Widget build(BuildContext context) {
     final birthday = _clientInfo.getBirthday(_projectInfo);

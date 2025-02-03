@@ -27,8 +27,14 @@ class Combobox extends StatefulWidget {
 
   @override
   _ComboboxState createState() {
-    return _ComboboxState(_formController, _valueTitleMap, _initialValue,
-        _isMandatory, _onValidateStatusChanged, _onChanged, _onSaved);
+    return _ComboboxState(
+        _formController,
+        _valueTitleMap,
+        _initialValue.isEmpty ? null : _initialValue,
+        _isMandatory,
+        _onValidateStatusChanged,
+        _onChanged,
+        _onSaved);
   }
 }
 

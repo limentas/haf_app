@@ -4,11 +4,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:flutter_archive/flutter_archive.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:provider/provider.dart';
 
 import '../logger.dart';
 import '../model/empirical_evidence.dart';
 import '../os_functions.dart';
 import '../storage.dart';
+import '../thememode_controller.dart';
 import '../utils.dart';
 import "../sticker_printer.dart";
 
@@ -27,7 +29,6 @@ class _SettingsPageContentState extends State<SettingsPageContent> {
   _SettingsPageContentState();
 
   _DeviceOrientation _orientation = _DeviceOrientation.Portrait;
-  bool _showBusyIndicator = false;
 
   _DeviceOrientation get orientation => _orientation;
   void set orientation(_DeviceOrientation value) {
@@ -64,6 +65,16 @@ class _SettingsPageContentState extends State<SettingsPageContent> {
 
     SystemChrome.setPreferredOrientations(deviceOrientation);
   }
+
+  ThemeMode _themeMode = ThemeMode.system;
+
+  ThemeMode get themeMode => _themeMode;
+  void set themeMode(ThemeMode value) {
+    if (_themeMode == value) return;
+    _themeMode = value;
+  }
+
+  bool _showBusyIndicator = false;
 
   @override
   void initState() {
@@ -116,13 +127,59 @@ class _SettingsPageContentState extends State<SettingsPageContent> {
                         });
                       }),
                   const SizedBox(height: 60),
+                  Text("Цветовая схема",
+                      style: Theme.of(context).textTheme.titleLarge),
+                  const SizedBox(height: 10),
+                  RadioListTile<ThemeMode>(
+                      title: Text("Светлая",
+                          style: Theme.of(context).textTheme.titleMedium),
+                      value: ThemeMode.light,
+                      groupValue: themeMode,
+                      onChanged: (ThemeMode? value) {
+                        setState(() {
+                          if (value == null) return;
+
+                          themeMode = value;
+                          Provider.of<ThemeController>(context, listen: false)
+                              .themeMode = themeMode;
+                        });
+                      }),
+                  RadioListTile<ThemeMode>(
+                      title: Text("Тёмная",
+                          style: Theme.of(context).textTheme.titleMedium),
+                      value: ThemeMode.dark,
+                      groupValue: themeMode,
+                      onChanged: (ThemeMode? value) {
+                        setState(() {
+                          if (value == null) return;
+
+                          themeMode = value;
+                          Provider.of<ThemeController>(context, listen: false)
+                              .themeMode = themeMode;
+                        });
+                      }),
+                  RadioListTile<ThemeMode>(
+                      title: Text("Как в настройках системы",
+                          style: Theme.of(context).textTheme.titleMedium),
+                      value: ThemeMode.system,
+                      groupValue: themeMode,
+                      onChanged: (ThemeMode? value) {
+                        setState(() {
+                          if (value == null) return;
+
+                          themeMode = value;
+                          Provider.of<ThemeController>(context, listen: false)
+                              .themeMode = themeMode;
+                        });
+                      }),
+                  const SizedBox(height: 60),
                   ElevatedButton(
                     style: ButtonStyle(
                         padding: MaterialStateProperty.all(
                             const EdgeInsets.symmetric(
                                 horizontal: 40, vertical: 15))),
                     child: Text('Отправить лог-файл приложения',
-                        style: Theme.of(context).textTheme.labelLarge),
+                        style: Theme.of(context).primaryTextTheme.titleMedium),
                     onPressed: () {
                       _sendLogs();
                     },
@@ -134,7 +191,7 @@ class _SettingsPageContentState extends State<SettingsPageContent> {
                             const EdgeInsets.symmetric(
                                 horizontal: 40, vertical: 15))),
                     child: Text('Тест принтера',
-                        style: Theme.of(context).textTheme.labelLarge),
+                        style: Theme.of(context).primaryTextTheme.titleMedium),
                     onPressed: () {
                       _testPrinter();
                     },

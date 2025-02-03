@@ -1,11 +1,10 @@
 name: hash_lib
 description: Hash functions.
 version: 1.0.0
-homepage:
 
 environment:
   sdk: "^3.4.4"
-  flutter: "^3.22.3"
+  flutter: "^3.27.3"
 
 dependencies:
   flutter:
@@ -21,7 +20,7 @@ dev_dependencies:
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter.
-flutter:
+#flutter:
 
   # To add assets to your package, add an assets section, like this:
   # assets:

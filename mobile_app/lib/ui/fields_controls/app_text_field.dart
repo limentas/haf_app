@@ -110,7 +110,7 @@ class _AppTextFieldState extends State<AppTextField>
 
   String? validateMandatory(String value) {
     if (_isMandatory) return Utils.checkMandatory(value);
-    return "";
+    return null;
   }
 
   String? validateSecondaryId(String value) {

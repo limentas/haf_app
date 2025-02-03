@@ -36,10 +36,15 @@ class FormInstanceDetails extends StatelessWidget {
         var section = Container(
             margin: EdgeInsets.symmetric(vertical: 20),
             decoration: BoxDecoration(
-              color: Colors.black.withAlpha(0x0C),
-              border: const Border.symmetric(
+              color: Theme.of(context)
+                  .textTheme
+                  .headlineMedium
+                  ?.color
+                  ?.withAlpha(10),
+              border: Border.symmetric(
                   horizontal: BorderSide(
-                color: Colors.black54,
+                color: Theme.of(context).textTheme.headlineMedium?.color ??
+                    Colors.black,
                 width: 2,
               )),
             ),
@@ -49,7 +54,7 @@ class FormInstanceDetails extends StatelessWidget {
                     alignment: Alignment.center,
                     child: Text(
                       field.sectionName,
-                      style: Theme.of(context).textTheme.titleMedium,
+                      style: Theme.of(context).textTheme.bodyLarge,
                     ))));
         listItems.add(section);
       }

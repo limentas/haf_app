@@ -39,8 +39,8 @@ class ClientRepeatFormTab extends StatelessWidget {
       var field = _instrumentInfo.fieldsByVariable[labelVar];
       if (field != null) labelFields[labelVar] = field;
     }
-    return SliverFixedExtentList(
-      itemExtent: 22.0 * labelFields.length + 40,
+    return SliverList(
+      //itemExtent: 22.0 * labelFields.length + 40,
       delegate: SliverChildBuilderDelegate(
         (context, index) {
           var instance = _formInstances[
@@ -70,6 +70,7 @@ class ClientRepeatFormTab extends StatelessWidget {
           }
           final status = instance.getInstanceStatus(_instrumentInfo);
           return Card(
+              margin: EdgeInsets.all(10),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
               child: InkWell(
@@ -85,7 +86,7 @@ class ClientRepeatFormTab extends StatelessWidget {
                       ),
                     );
                   },
-                  child: Stack(children: [
+                  child: Stack(alignment: Alignment.bottomCenter, children: [
                     Padding(
                         padding:
                             EdgeInsets.symmetric(vertical: 15, horizontal: 30),

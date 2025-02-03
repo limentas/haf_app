@@ -48,7 +48,8 @@ class NewClientPage extends StatelessWidget {
                   handle:
                       NestedScrollView.sliverOverlapAbsorberHandleFor(context),
                   sliver: SliverAppBar(
-                    title: Text("Новый участник"),
+                    title: Text("Новый участник",
+                        style: Theme.of(context).primaryTextTheme.titleLarge),
                     centerTitle: true,
                     floating: true,
                     pinned: false,

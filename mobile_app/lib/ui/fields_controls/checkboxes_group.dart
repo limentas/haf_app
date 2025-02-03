@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../logger.dart';
 import '../../model/field_type.dart';
 import '../../utils.dart';
 import '../my_form_controller.dart';
@@ -105,11 +106,11 @@ class _CheckboxesGroupState extends State<CheckboxesGroup>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final itemTextStyle = Theme.of(context).primaryTextTheme.titleMedium;
-    final resetStyle = Theme.of(context).primaryTextTheme.titleMedium?.copyWith(
-        color: Theme.of(context).primaryColorDark,
-        fontWeight: FontWeight.bold,
-        decoration: TextDecoration.underline);
+    final itemTextStyle = Theme.of(context).textTheme.bodyLarge;
+    final resetStyle = Theme.of(context).textTheme.titleMedium?.apply(
+        color: Theme.of(context).colorScheme.onPrimaryFixedVariant,
+        decoration: TextDecoration.underline,
+        fontSizeFactor: 1.2);
     return new InputDecorator(
         decoration: InputDecoration(
             border: OutlineInputBorder(),

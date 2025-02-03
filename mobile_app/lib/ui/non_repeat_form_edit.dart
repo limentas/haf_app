@@ -48,7 +48,8 @@ class NonRepeatFormEdit extends StatelessWidget with SendFormMixin {
                   handle:
                       NestedScrollView.sliverOverlapAbsorberHandleFor(context),
                   sliver: SliverAppBar(
-                    title: Text("Редактирование ${_instrumentInfo.formName}"),
+                    title: Text("Редактирование ${_instrumentInfo.formName}",
+                        style: Theme.of(context).primaryTextTheme.titleLarge),
                     centerTitle: true,
                     floating: true,
                     pinned: false,

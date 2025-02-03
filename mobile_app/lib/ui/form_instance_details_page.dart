@@ -38,7 +38,8 @@ class FormInstanceDetailsPage extends StatelessWidget {
                       NestedScrollView.sliverOverlapAbsorberHandleFor(context),
                   sliver: SliverAppBar(
                     title: Text(
-                        "${_instrumentInfo.formName} - ${_instrumentInstance.number}"),
+                        "${_instrumentInfo.formName} - ${_instrumentInstance.number}",
+                        style: Theme.of(context).primaryTextTheme.titleLarge),
                     centerTitle: true,
                     floating: true,
                     pinned: false,

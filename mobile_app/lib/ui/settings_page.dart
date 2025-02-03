@@ -10,12 +10,13 @@ class SettingsPage extends StatelessWidget {
         drawer: null,
         appBar: AppBar(
             leading: IconButton(
-              icon: Icon(Icons.arrow_back),
+              icon: Icon(Icons.arrow_back, color: Colors.black),
               onPressed: () => Navigator.of(context).pop(),
             ),
             automaticallyImplyLeading: false,
             centerTitle: true,
-            title: Text("Настройки")),
+            title: Text("Настройки",
+                style: Theme.of(context).primaryTextTheme.titleLarge)),
         body: SettingsPageContent());
   }
 }

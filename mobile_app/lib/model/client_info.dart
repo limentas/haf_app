@@ -170,7 +170,7 @@ class ClientInfo {
         _instancesStatus[instrumentNameId] = result;
       }
     }
-    return result!;
+    return result ?? FormInstancesStatus.AllComplete;
   }
 
   int getNextInstrumentInstanceNumber(String instrumentName) {

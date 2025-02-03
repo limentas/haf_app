@@ -7,11 +7,16 @@ part of 'redcap_record.dart';
 // **************************************************************************
 
 RedcapRecord _$RedcapRecordFromJson(Map<String, dynamic> json) {
+  $checkKeys(
+    json,
+    requiredKeys: const ['record'],
+    disallowNullValues: const ['record', 'value'],
+  );
   return RedcapRecord(
     record: Utils.stringOrIntToInt(json['record']),
-    redcapRepeatInstrument: json['redcap_repeat_instrument'] as String,
+    redcapRepeatInstrument: json['redcap_repeat_instrument'] as String?,
     redcapRepeatInstance:
-        Utils.stringOrIntToInt(json['redcap_repeat_instance']),
+        Utils.stringOrIntToNullableInt(json['redcap_repeat_instance']),
     fieldName: json['field_name'] as String,
     value: json['value'] as String,
   );

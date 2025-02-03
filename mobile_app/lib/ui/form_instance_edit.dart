@@ -85,10 +85,10 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
           builder: (dialogContext) => new AlertDialog(
             contentPadding: EdgeInsets.all(24),
             title: new Text('Отменить изменения?',
-                style: Theme.of(context).primaryTextTheme.headlineSmall),
+                style: Theme.of(context).textTheme.headlineSmall),
             content: Text(
                 'Вы действительно хотите отменить введенные изменения?',
-                style: Theme.of(context).primaryTextTheme.bodyMedium),
+                style: Theme.of(context).textTheme.bodyMedium),
             actions: <Widget>[
               new TextButton(
                   onPressed: () => Navigator.of(context).pop(false),
@@ -143,6 +143,7 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
       _sendFunction(context).then((v) {
         BusyIndicatorDialog.close(context);
         _savingInProgress = false;
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
       });
     }));
 
@@ -309,10 +310,15 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.black.withAlpha(0x0C),
-            border: const Border.symmetric(
+            color: Theme.of(context)
+                .textTheme
+                .headlineMedium
+                ?.color
+                ?.withAlpha(10),
+            border: Border.symmetric(
                 horizontal: BorderSide(
-              color: Colors.black54,
+              color: Theme.of(context).textTheme.headlineMedium?.color ??
+                  Colors.black,
               width: 2,
             )),
           ),
@@ -362,6 +368,7 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
             onPressed: onPressed,
             style: ButtonStyle(
                 minimumSize: MaterialStateProperty.all(Size(150, 50))),
-            child: Text(text, style: Theme.of(context).textTheme.labelLarge)));
+            child: Text(text,
+                style: Theme.of(context).primaryTextTheme.titleMedium)));
   }
 }

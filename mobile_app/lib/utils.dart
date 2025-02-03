@@ -42,7 +42,26 @@ class Utils {
   }
 
   static int stringOrIntToInt(dynamic number) {
-    if (number is String) return int.parse(number);
+    try {
+      if (number is String) return int.parse(number);
+    } on FormatException catch (e) {
+      logger.e("Couldn't parse '${number}' as a number", error: e);
+      rethrow;
+    }
+    return number;
+  }
+
+  static int? stringOrIntToNullableInt(dynamic number) {
+    if (number == null) return null;
+    try {
+      if (number is String) {
+        if (number.isEmpty) return null;
+        return int.parse(number);
+      }
+    } on FormatException catch (e) {
+      logger.e("Couldn't parse '${number}' as a number", error: e);
+      rethrow;
+    }
     return number;
   }
 

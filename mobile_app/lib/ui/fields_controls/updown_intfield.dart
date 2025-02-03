@@ -158,12 +158,9 @@ class _UpDownIntFieldState extends State<UpDownIntField>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final buttonTextStyle = Theme.of(context)
-        .primaryTextTheme
-        .headlineSmall
-        ?.copyWith(
-            color: Theme.of(context).primaryColorDark,
-            fontWeight: FontWeight.bold);
+    final buttonTextStyle = Theme.of(context).textTheme.headlineSmall?.copyWith(
+        color: Theme.of(context).primaryColorLight,
+        fontWeight: FontWeight.bold);
     return InputDecorator(
         decoration: InputDecoration(
             errorText: _errorMessage,

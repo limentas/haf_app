@@ -8,10 +8,12 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:haf_spb_app/model/empirical_evidence.dart';
 import 'package:package_info/package_info.dart';
+import 'package:provider/provider.dart';
 
 import '../settings.dart';
 import '../storage.dart';
 import '../location.dart';
+import '../thememode_controller.dart';
 import '../user_info.dart';
 import '../logger.dart';
 import '../model/project_info.dart';
@@ -19,6 +21,7 @@ import '../server_connection.dart';
 import '../utils.dart';
 import 'add_server_dialog.dart';
 import 'main_page.dart';
+import 'style.dart';
 import 'svg_icon_button.dart';
 
 class LoginPage extends StatefulWidget {
@@ -54,7 +57,7 @@ class _LoginPageState extends State<LoginPage> {
   String? _userNameError;
   String? _serverError;
   List<String> _serversList = ["https://db.haf-spb.org/api/"];
-  String _serverAddress = "";
+  String? _serverAddress;
   ProjectInfo? _projectInfo;
   final serversFieldState = GlobalKey<FormFieldState>();
 
@@ -134,7 +137,7 @@ class _LoginPageState extends State<LoginPage> {
       setState(() {
         _serverAddress = resultServerAddress;
         if (!_serversList.contains(_serverAddress)) {
-          _serversList.add(_serverAddress);
+          _serversList.add(_serverAddress!);
         }
       });
 
@@ -185,7 +188,8 @@ class _LoginPageState extends State<LoginPage> {
         .add(DropdownMenuItem(value: null, child: Text("Добавить новый...")));
     var screenSize = MediaQuery.of(context).size;
     logger.i(
-        "Screen size = $screenSize, devicePixelRatio = ${MediaQuery.of(context).devicePixelRatio}");
+        "Screen size = $screenSize, devicePixelRatio = ${MediaQuery.of(context).devicePixelRatio}, "
+        "theme mode = ${Provider.of<ThemeController>(context, listen: false).themeMode}");
     tokenToShowLinesCount = MediaQuery.of(context).size.width > 700 ? 1 : 2;
     // To let flutter think that field changed when we change the value
     return Scaffold(
@@ -304,21 +308,24 @@ class _LoginPageState extends State<LoginPage> {
                         const SizedBox(height: 50),
                         ElevatedButton(
                           style: ButtonStyle(
-                              padding: MaterialStateProperty.all(
+                              minimumSize:
+                                  WidgetStatePropertyAll(Size(200, 60)),
+                              padding: WidgetStateProperty.all(
                                   const EdgeInsets.symmetric(
                                       horizontal: 40, vertical: 15))),
                           child: Text('ВОЙТИ',
-                              style: Theme.of(context).textTheme.labelLarge),
+                              style: Theme.of(context)
+                                  .primaryTextTheme
+                                  .titleMedium),
                           onPressed: () {
                             submitToken();
                           },
                         ),
-                        SizedBox(height: 40),
+                        SizedBox(height: 80),
                         Visibility(
                             visible: _showBusyIndicator,
                             child: SpinKitCircle(
-                                size: 100,
-                                color: Theme.of(context).primaryColor)),
+                                size: 100, color: Style.primaryColor)),
                         SizedBox(height: 20),
                         Visibility(
                             visible:
@@ -385,7 +392,7 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      final serverUri = Uri.parse(_serverAddress);
+      final serverUri = Uri.parse(_serverAddress!);
       Settings.redcapUrl = serverUri;
       logger.d("Using server: ${Settings.redcapUrl}");
     } on FormatException catch (e) {
@@ -408,7 +415,7 @@ class _LoginPageState extends State<LoginPage> {
       }
 
       Storage.setDefaultValue(
-          EmpiricalEvidence.serverAddressStaticVariable, [_serverAddress]);
+          EmpiricalEvidence.serverAddressStaticVariable, [_serverAddress!]);
 
       if (!_usingTokenFromStore) {
         var saveResult = await _saveToken(token);

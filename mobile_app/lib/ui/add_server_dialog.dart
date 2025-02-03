@@ -21,7 +21,7 @@ class _AddServerDialogState extends State<AddServerDialog> {
     return new AlertDialog(
       contentPadding: EdgeInsets.all(24),
       title: new Text('Добавить веб-сервер',
-          style: Theme.of(context).primaryTextTheme.headlineSmall),
+          style: Theme.of(context).textTheme.headlineSmall),
       content: Column(mainAxisSize: MainAxisSize.min, children: [
         TextField(
           controller: _serverTextFieldController,

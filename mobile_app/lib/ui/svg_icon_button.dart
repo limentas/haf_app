@@ -26,7 +26,7 @@ class SvgIconButton extends StatelessWidget {
             elevation: 3,
             shape: CircleBorder(),
             fixedSize: Size.fromHeight(height),
-            minimumSize: Size.fromWidth(width),
+            minimumSize: Size(width, height),
             tapTargetSize: MaterialTapTargetSize.padded),
         child: SvgPicture.asset(
           //TODO: replace to standard icons

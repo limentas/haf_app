@@ -12,8 +12,10 @@ class MyLogPrinter extends ExtLogger.LogPrinter {
   List<String> log(ExtLogger.LogEvent event) {
     var messageStr = _stringifyMessage(event.message);
     var errorStr = event.error != null ? "  ERROR: ${event.error}" : "";
+    var stackTrace =
+        event.stackTrace != null ? "  STACK: ${event.stackTrace}" : "";
     return [
-      '${_dateFormatter.format(DateTime.now())} ${_labelFor(event.level)} $messageStr$errorStr'
+      '${_dateFormatter.format(DateTime.now())} ${_labelFor(event.level)} $messageStr$errorStr$stackTrace'
     ];
   }
 

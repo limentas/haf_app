@@ -67,7 +67,7 @@ class InstrumentInfo {
         continue;
       }
 
-      late Iterable<String> valueToInsert;
+      Iterable<String> valueToInsert = [];
       if (field.annotation.contains("@NOW") &&
           field.fieldTypeEnum == FieldTypeEnum.Text) {
         //Using this format to behave as @DEFAULT acts.

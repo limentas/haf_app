@@ -72,7 +72,7 @@ class _ClientPageState extends State<ClientPage>
       _tabIndexer[instrument.formNameId] = _tabs.length;
       _tabs.add(tab);
       // Add or edit button
-      late Widget floatingButton;
+      Widget? floatingButton;
       if (instrument.isRepeating) {
         floatingButton = new SvgIconButton(
             iconName: 'resources/icons/plus.svg',
@@ -179,7 +179,8 @@ class _ClientPageState extends State<ClientPage>
               // widgets that do not overlap the next sliver.
               handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
               sliver: SliverAppBar(
-                title: Text("Участник $_clientSecondaryId"),
+                title: Text("Участник $_clientSecondaryId",
+                    style: Theme.of(context).primaryTextTheme.titleLarge),
                 centerTitle: true,
                 floating: true,
                 pinned: true,

@@ -49,7 +49,8 @@ class FormInstanceEditScaffold extends StatelessWidget with SendFormMixin {
                   handle:
                       NestedScrollView.sliverOverlapAbsorberHandleFor(context),
                   sliver: SliverAppBar(
-                    title: Text(_titleText),
+                    title: Text(_titleText,
+                        style: Theme.of(context).primaryTextTheme.titleLarge),
                     centerTitle: true,
                     floating: true,
                     pinned: false,

@@ -47,7 +47,8 @@ class ClientQrPageContent extends StatelessWidget {
                         alignment: Alignment.center,
                         child: Text('ПЕЧАТЬ НАКЛЕЙКИ',
                             textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.labelLarge)),
+                            style:
+                                Theme.of(context).primaryTextTheme.labelLarge)),
                     onPressed: () {
                       onPrintQrCodeClicked(context);
                     },
@@ -58,7 +59,8 @@ class ClientQrPageContent extends StatelessWidget {
                         alignment: Alignment.center,
                         child: Text('ПОДЕЛИТЬСЯ',
                             textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.labelLarge)),
+                            style:
+                                Theme.of(context).primaryTextTheme.labelLarge)),
                     onPressed: () {
                       onShareClicked(context);
                     },

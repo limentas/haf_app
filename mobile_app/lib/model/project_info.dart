@@ -169,7 +169,7 @@ class ProjectInfo {
         var codeList = new CodeList(codeListElement.getAttribute("OID")!,
             codeListElement.getAttribute("Name")!, variable,
             checkboxesChoices:
-                codeListElement.getAttribute("redcap:CheckboxChoices")!);
+                codeListElement.getAttribute("redcap:CheckboxChoices") ?? "");
         codeListMap.add(variable, codeList);
 
         var codeListItems = codeListElement.findAllElements("CodeListItem");
@@ -278,10 +278,10 @@ class ProjectInfo {
           instrument,
           oid,
           variable,
-          itemDef.getAttribute("redcap:FieldAnnotation")!,
+          itemDef.getAttribute("redcap:FieldAnnotation") ?? "",
           name: itemDef.getAttribute("Name")!,
           question: question,
-          note: itemDef.getAttribute("redcap:FieldNote")!,
+          note: itemDef.getAttribute("redcap:FieldNote") ?? "",
           isMandatory: itemDef.getAttribute("redcap:RequiredField") == "y",
           fieldTypeEnum: fieldTypeEnum,
           fieldType: fieldType,
@@ -319,13 +319,17 @@ class ProjectInfo {
       project._fillVarDependencies();
       return project;
     } on XmlParserException catch (e) {
-      logger.e("Project xml parse error", error: e);
+      logger.e("Project xml parse error: ${e.toString()}");
       return null;
     } on NoSuchMethodError catch (e) {
-      logger.e("Project xml structure error", error: e);
+      logger.e("Project xml structure error",
+          error: e, stackTrace: e.stackTrace);
+      return null;
+    } on TypeError catch (e) {
+      logger.e("Project xml type error", error: e, stackTrace: e.stackTrace);
       return null;
     } catch (e) {
-      logger.e("Project xml other error", error: e);
+      logger.e("Project xml other error: ${e.toString()}");
       return null;
     }
   }

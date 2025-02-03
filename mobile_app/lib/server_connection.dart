@@ -195,9 +195,9 @@ class ServerConnection {
 
       var result = new ClientInfo(projectInfo, recordsList.first.record);
       for (var record in recordsList) {
-        if (record.redcapRepeatInstrument.isEmpty == false) {
+        if (isNotEmpty(record.redcapRepeatInstrument)) {
           var instrumentInstances = result.repeatInstruments.putIfAbsent(
-              record.redcapRepeatInstrument,
+              record.redcapRepeatInstrument!,
               () => new Map<int, InstrumentInstance>());
           if (record.redcapRepeatInstance == null) {
             logger.w(
@@ -387,7 +387,8 @@ class ServerConnection {
       var recordsJsonList = recordsListRaw as List;
       return recordsJsonList.isNotEmpty;
     } on FormatException catch (e) {
-      logger.e("Json format exception", error: e);
+      logger.e("Json format exception ${e.toString()}", error: e);
+      rethrow;
     }
     return null;
   }
@@ -417,7 +418,7 @@ class ServerConnection {
       var recordsJsonList = recordsListRaw as List;
       return recordsJsonList.map((e) => RedcapRecord.fromJson(e)).toList();
     } on FormatException catch (e) {
-      logger.e("Json format exception", error: e);
+      logger.e("Json format exception ${e.toString()}", error: e);
     }
     return List<RedcapRecord>.empty();
   }

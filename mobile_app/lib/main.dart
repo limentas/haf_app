@@ -3,7 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'ui/app_widget.dart';
+import 'storage.dart';
+import 'ui/app_root_widget.dart';
 import 'logger.dart';
 
 void main() async {
@@ -18,5 +19,7 @@ void main() async {
     logger.e("Couldn't load certificate: ", error: e);
   }
 
-  runApp(AppWidget());
+  await Storage.init();
+
+  runApp(AppRootWidget());
 }

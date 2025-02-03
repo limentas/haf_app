@@ -23,7 +23,7 @@ class MainPage extends StatelessWidget {
         drawer: null,
         appBar: AppBar(
             leading: IconButton(
-                icon: Icon(Icons.settings, size: 32),
+                icon: Icon(Icons.settings, size: 32, color: Colors.black),
                 iconSize: 40,
                 onPressed: () => Navigator.push(
                     context,

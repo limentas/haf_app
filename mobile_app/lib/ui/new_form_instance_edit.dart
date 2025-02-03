@@ -48,7 +48,8 @@ class NewRepeatingFormInstanceEdit extends StatelessWidget with SendFormMixin {
                   handle:
                       NestedScrollView.sliverOverlapAbsorberHandleFor(context),
                   sliver: SliverAppBar(
-                    title: Text("Добавление ${_instrumentInfo.formName}"),
+                    title: Text("Добавление ${_instrumentInfo.formName}",
+                        style: Theme.of(context).primaryTextTheme.titleLarge),
                     centerTitle: true,
                     floating: true,
                     pinned: false,

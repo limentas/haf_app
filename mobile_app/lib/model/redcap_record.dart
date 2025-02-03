@@ -12,11 +12,11 @@ class RedcapRecord {
       fromJson: Utils.stringOrIntToInt,
       toJson: Utils.stringFromInt)
   final int record;
-  final String redcapRepeatInstrument;
+  final String? redcapRepeatInstrument;
   @JsonKey(
-      disallowNullValue: true,
-      required: true,
-      fromJson: Utils.stringOrIntToInt,
+      disallowNullValue: false,
+      required: false,
+      fromJson: Utils.stringOrIntToNullableInt,
       toJson: Utils.stringFromInt)
   final int? redcapRepeatInstance;
   final String fieldName;

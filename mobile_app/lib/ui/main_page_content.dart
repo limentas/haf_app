@@ -70,7 +70,8 @@ class _MainPageContentState extends State<MainPageContent> {
                   const SizedBox(height: 60),
                   ElevatedButton(
                       child: Text('СКАНИРОВАТЬ КОД',
-                          style: Theme.of(context).textTheme.labelLarge),
+                          style:
+                              Theme.of(context).primaryTextTheme.titleMedium),
                       onPressed: () {
                         _scanFromQrCode(context);
                       }),
@@ -87,7 +88,7 @@ class _MainPageContentState extends State<MainPageContent> {
                   const SizedBox(height: 20),
                   ElevatedButton(
                     child: Text('НАЙТИ',
-                        style: Theme.of(context).textTheme.labelLarge),
+                        style: Theme.of(context).primaryTextTheme.titleMedium),
                     onPressed: () {
                       FocusScope.of(context).unfocus(); //to unfocus id field
                       _findClient(_clientIdTextFieldController.text, context);
@@ -102,7 +103,8 @@ class _MainPageContentState extends State<MainPageContent> {
                           FormPermission.ReadAndWrite,
                       child: ElevatedButton(
                         child: Text('СОЗДАТЬ НОВОГО',
-                            style: Theme.of(context).textTheme.labelLarge),
+                            style:
+                                Theme.of(context).primaryTextTheme.titleMedium),
                         onPressed: () {
                           FocusScope.of(context)
                               .unfocus(); //to unfocus id field
@@ -120,7 +122,9 @@ class _MainPageContentState extends State<MainPageContent> {
                         alignment: Alignment.center,
                         child: Text('ЖУРНАЛ ВНЕСЕННЫХ ИЗМЕНЕНИЙ',
                             textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.labelLarge)),
+                            style: Theme.of(context)
+                                .primaryTextTheme
+                                .titleMedium)),
                     onPressed: () {
                       FocusScope.of(context).unfocus(); //to unfocus id field
                       Navigator.push(

@@ -10,6 +10,7 @@ class EmpiricalEvidence {
   static final deviceOrientationStaticVariable = "orientation#static#unified";
   static final serverAddressStaticVariable = "server_address#static#unified";
   static final fellowWorkerUnifiedVariable = "staff#unified";
+  static final themeModeStaticVariable = "theme#static#unified";
 
   //Key - variable name, that could be stored in DB,
   //Value - unified name to store as key in DB
