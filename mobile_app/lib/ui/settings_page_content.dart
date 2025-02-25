@@ -127,71 +127,63 @@ class _SettingsPageContentState extends State<SettingsPageContent> {
                         });
                       }),
                   const SizedBox(height: 60),
-                  Text("Цветовая схема",
-                      style: Theme.of(context).textTheme.titleLarge),
-                  const SizedBox(height: 10),
-                  RadioListTile<ThemeMode>(
-                      title: Text("Светлая",
-                          style: Theme.of(context).textTheme.titleMedium),
-                      value: ThemeMode.light,
-                      groupValue: themeMode,
-                      onChanged: (ThemeMode? value) {
-                        setState(() {
-                          if (value == null) return;
+                  // Text("Цветовая схема",
+                  //     style: Theme.of(context).textTheme.titleLarge),
+                  // const SizedBox(height: 10),
+                  // RadioListTile<ThemeMode>(
+                  //     title: Text("Светлая",
+                  //         style: Theme.of(context).textTheme.titleMedium),
+                  //     value: ThemeMode.light,
+                  //     groupValue: themeMode,
+                  //     onChanged: (ThemeMode? value) {
+                  //       setState(() {
+                  //         if (value == null) return;
 
-                          themeMode = value;
-                          Provider.of<ThemeController>(context, listen: false)
-                              .themeMode = themeMode;
-                        });
-                      }),
-                  RadioListTile<ThemeMode>(
-                      title: Text("Тёмная",
-                          style: Theme.of(context).textTheme.titleMedium),
-                      value: ThemeMode.dark,
-                      groupValue: themeMode,
-                      onChanged: (ThemeMode? value) {
-                        setState(() {
-                          if (value == null) return;
+                  //         themeMode = value;
+                  //         Provider.of<ThemeController>(context, listen: false)
+                  //             .themeMode = themeMode;
+                  //       });
+                  //     }),
+                  // RadioListTile<ThemeMode>(
+                  //     title: Text("Тёмная",
+                  //         style: Theme.of(context).textTheme.titleMedium),
+                  //     value: ThemeMode.dark,
+                  //     groupValue: themeMode,
+                  //     onChanged: (ThemeMode? value) {
+                  //       setState(() {
+                  //         if (value == null) return;
 
-                          themeMode = value;
-                          Provider.of<ThemeController>(context, listen: false)
-                              .themeMode = themeMode;
-                        });
-                      }),
-                  RadioListTile<ThemeMode>(
-                      title: Text("Как в настройках системы",
-                          style: Theme.of(context).textTheme.titleMedium),
-                      value: ThemeMode.system,
-                      groupValue: themeMode,
-                      onChanged: (ThemeMode? value) {
-                        setState(() {
-                          if (value == null) return;
+                  //         themeMode = value;
+                  //         Provider.of<ThemeController>(context, listen: false)
+                  //             .themeMode = themeMode;
+                  //       });
+                  //     }),
+                  // RadioListTile<ThemeMode>(
+                  //     title: Text("Как в настройках системы",
+                  //         style: Theme.of(context).textTheme.titleMedium),
+                  //     value: ThemeMode.system,
+                  //     groupValue: themeMode,
+                  //     onChanged: (ThemeMode? value) {
+                  //       setState(() {
+                  //         if (value == null) return;
 
-                          themeMode = value;
-                          Provider.of<ThemeController>(context, listen: false)
-                              .themeMode = themeMode;
-                        });
-                      }),
-                  const SizedBox(height: 60),
+                  //         themeMode = value;
+                  //         Provider.of<ThemeController>(context, listen: false)
+                  //             .themeMode = themeMode;
+                  //       });
+                  //     }),
+                  // const SizedBox(height: 60),
                   ElevatedButton(
-                    style: ButtonStyle(
-                        padding: MaterialStateProperty.all(
-                            const EdgeInsets.symmetric(
-                                horizontal: 40, vertical: 15))),
                     child: Text('Отправить лог-файл приложения',
-                        style: Theme.of(context).primaryTextTheme.titleMedium),
+                        style: Theme.of(context).textTheme.titleMedium),
                     onPressed: () {
                       _sendLogs();
                     },
                   ),
                   const SizedBox(height: 60),
                   ElevatedButton(
-                    style: ButtonStyle(
-                        padding: MaterialStateProperty.all(
-                            const EdgeInsets.symmetric(
-                                horizontal: 40, vertical: 15))),
                     child: Text('Тест принтера',
-                        style: Theme.of(context).primaryTextTheme.titleMedium),
+                        style: Theme.of(context).textTheme.titleMedium),
                     onPressed: () {
                       _testPrinter();
                     },

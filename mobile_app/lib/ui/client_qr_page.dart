@@ -13,12 +13,13 @@ class ClientQrPage extends StatelessWidget {
         drawer: null,
         appBar: AppBar(
             leading: IconButton(
-              icon: Icon(Icons.arrow_back),
+              icon: Icon(Icons.arrow_back, color: Colors.black),
               onPressed: () => Navigator.of(context).pop(),
             ),
             automaticallyImplyLeading: false,
             centerTitle: true,
-            title: Text("Идентификатор участника")),
+            title: Text("Идентификатор участника",
+                style: Theme.of(context).textTheme.titleLarge)),
         body: ClientQrPageContent(_clientId));
   }
 }

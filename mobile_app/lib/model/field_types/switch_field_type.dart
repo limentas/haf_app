@@ -30,9 +30,7 @@ class SwitchFieldType extends FieldType {
       required FieldSaveValue onSaved}) {
     return TristateSwitch(_type, formController, instrumentField.isMandatory,
         onValidateStatusChanged, onChanged, onSaved,
-        initialValue: initialValue == null ||
-                initialValue.isEmpty ||
-                initialValue.first.isEmpty
+        initialValue: initialValue.isEmpty || initialValue.first.isEmpty
             ? null
             : initialValue.first == "1");
   }

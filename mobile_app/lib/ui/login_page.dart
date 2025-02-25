@@ -308,15 +308,11 @@ class _LoginPageState extends State<LoginPage> {
                         const SizedBox(height: 50),
                         ElevatedButton(
                           style: ButtonStyle(
-                              minimumSize:
-                                  WidgetStatePropertyAll(Size(200, 60)),
                               padding: WidgetStateProperty.all(
                                   const EdgeInsets.symmetric(
                                       horizontal: 40, vertical: 15))),
                           child: Text('ВОЙТИ',
-                              style: Theme.of(context)
-                                  .primaryTextTheme
-                                  .titleMedium),
+                              style: Theme.of(context).textTheme.titleMedium),
                           onPressed: () {
                             submitToken();
                           },
@@ -325,7 +321,8 @@ class _LoginPageState extends State<LoginPage> {
                         Visibility(
                             visible: _showBusyIndicator,
                             child: SpinKitCircle(
-                                size: 100, color: Style.primaryColor)),
+                                size: 100,
+                                color: Theme.of(context).primaryColor)),
                         SizedBox(height: 20),
                         Visibility(
                             visible:

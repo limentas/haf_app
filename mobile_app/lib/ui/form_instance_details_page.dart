@@ -39,7 +39,7 @@ class FormInstanceDetailsPage extends StatelessWidget {
                   sliver: SliverAppBar(
                     title: Text(
                         "${_instrumentInfo.formName} - ${_instrumentInstance.number}",
-                        style: Theme.of(context).primaryTextTheme.titleLarge),
+                        style: Theme.of(context).textTheme.titleLarge),
                     centerTitle: true,
                     floating: true,
                     pinned: false,

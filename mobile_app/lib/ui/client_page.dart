@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:haf_spb_app/model/form_permission.dart';
@@ -180,13 +179,17 @@ class _ClientPageState extends State<ClientPage>
               handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
               sliver: SliverAppBar(
                 title: Text("Участник $_clientSecondaryId",
-                    style: Theme.of(context).primaryTextTheme.titleLarge),
+                    style: Theme.of(context).textTheme.titleLarge),
                 centerTitle: true,
                 floating: true,
                 pinned: true,
                 forceElevated: innerBoxIsScrolled,
                 bottom: TabBar(
                     indicatorColor: Colors.black,
+                    //labelColor: Theme.of(context).textButtonTheme,
+                    labelStyle: Theme.of(context).textTheme.titleLarge,
+                    unselectedLabelStyle:
+                        Theme.of(context).textTheme.titleMedium,
                     tabs: _tabs,
                     controller: _tabController),
               ),

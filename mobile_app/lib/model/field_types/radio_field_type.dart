@@ -28,9 +28,7 @@ class RadioFieldType extends FieldType {
     return RadioButtonsGroup(
         formController,
         codeList.codeListItems,
-        initialValue == null || initialValue.isEmpty
-            ? null
-            : initialValue.first,
+        initialValue.isEmpty ? null : initialValue.first,
         instrumentField.isMandatory,
         onValidateStatusChanged,
         onChanged,

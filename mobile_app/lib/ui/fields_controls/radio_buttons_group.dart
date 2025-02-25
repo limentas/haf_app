@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../logger.dart';
 import '../../model/field_type.dart';
 import '../../utils.dart';
 import '../my_form_controller.dart';
@@ -108,10 +107,11 @@ class _RadioButtonsGroupState extends State<RadioButtonsGroup>
   Widget build(BuildContext context) {
     super.build(context);
     final itemTextStyle = Theme.of(context).textTheme.bodyLarge;
-    final resetStyle = Theme.of(context).textTheme.titleMedium?.apply(
-        color: Theme.of(context).colorScheme.onPrimaryFixedVariant,
-        decoration: TextDecoration.underline,
-        fontSizeFactor: 1.2);
+    final resetStyle = Theme.of(context).primaryTextTheme.titleMedium?.apply(
+        color: Theme.of(context).primaryColorDark,
+        fontSizeFactor: 1.3,
+        fontWeightDelta: 2,
+        decoration: TextDecoration.underline);
     return new InputDecorator(
         decoration: InputDecoration(
             border: OutlineInputBorder(),

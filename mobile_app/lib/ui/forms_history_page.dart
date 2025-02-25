@@ -15,7 +15,10 @@ class FormsHistoryPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return new Scaffold(
         drawer: null,
-        appBar: AppBar(centerTitle: true, title: Text("Журнал")),
+        appBar: AppBar(
+            centerTitle: true,
+            title:
+                Text("Журнал", style: Theme.of(context).textTheme.titleLarge)),
         body: CustomScrollView(
             slivers: [LastSentForms(_connection, _projectInfo)]));
   }

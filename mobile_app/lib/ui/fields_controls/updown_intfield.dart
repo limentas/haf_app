@@ -159,8 +159,7 @@ class _UpDownIntFieldState extends State<UpDownIntField>
   Widget build(BuildContext context) {
     super.build(context);
     final buttonTextStyle = Theme.of(context).textTheme.headlineSmall?.copyWith(
-        color: Theme.of(context).primaryColorLight,
-        fontWeight: FontWeight.bold);
+        color: Theme.of(context).primaryColorDark, fontWeight: FontWeight.bold);
     return InputDecorator(
         decoration: InputDecoration(
             errorText: _errorMessage,
@@ -180,7 +179,6 @@ class _UpDownIntFieldState extends State<UpDownIntField>
                         FocusScope.of(context).unfocus();
                         var current = currentValue;
                         if (current == _minValue) return;
-                        if (current == null) current = _startValue;
                         currentValue = current - 100;
                       },
                       child: Text("‒100", style: buttonTextStyle)),
@@ -189,7 +187,6 @@ class _UpDownIntFieldState extends State<UpDownIntField>
                         FocusScope.of(context).unfocus();
                         var current = currentValue;
                         if (current == _minValue) return;
-                        if (current == null) current = _startValue;
                         currentValue = current - 10;
                       },
                       child: Text("‒10", style: buttonTextStyle)),

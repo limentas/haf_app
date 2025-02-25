@@ -57,7 +57,7 @@ class InstrumentField {
       required this.maxValue,
       required this.isRecordId,
       required this.isSecondaryId}) {
-    if (annotation != null && annotation.isNotEmpty) {
+    if (annotation.isNotEmpty) {
       isHidden = annotation != null
           ? annotation.contains("@HIDDEN") || annotation.contains("@HIDDEN-APP")
           : false;

@@ -366,9 +366,6 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
         padding: EdgeInsets.only(bottom: 25),
         child: ElevatedButton(
             onPressed: onPressed,
-            style: ButtonStyle(
-                minimumSize: MaterialStateProperty.all(Size(150, 50))),
-            child: Text(text,
-                style: Theme.of(context).primaryTextTheme.titleMedium)));
+            child: Text(text, style: Theme.of(context).textTheme.titleMedium)));
   }
 }

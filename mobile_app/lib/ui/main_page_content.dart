@@ -58,89 +58,81 @@ class _MainPageContentState extends State<MainPageContent> {
       SingleChildScrollView(
           child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 30),
-        child: ElevatedButtonTheme(
-            data: ElevatedButtonThemeData(
-                style: ButtonStyle(
-                    padding: MaterialStateProperty.all(
-                        EdgeInsets.symmetric(horizontal: 40, vertical: 15)))),
-            child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: 60),
-                  ElevatedButton(
-                      child: Text('СКАНИРОВАТЬ КОД',
-                          style:
-                              Theme.of(context).primaryTextTheme.titleMedium),
-                      onPressed: () {
-                        _scanFromQrCode(context);
-                      }),
-                  const SizedBox(height: 50),
-                  TextFormField(
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                    decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'Идентификатор участника',
-                        errorMaxLines: 3),
-                    validator: Utils.clientIdValidator,
-                    controller: _clientIdTextFieldController,
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    child: Text('НАЙТИ',
-                        style: Theme.of(context).primaryTextTheme.titleMedium),
-                    onPressed: () {
-                      FocusScope.of(context).unfocus(); //to unfocus id field
-                      _findClient(_clientIdTextFieldController.text, context);
-                    },
-                  ),
-                  Visibility(
-                      visible: _projectInfo.initInstrument.permission ==
-                          FormPermission.ReadAndWrite,
-                      child: const SizedBox(height: 50)),
-                  Visibility(
-                      visible: _projectInfo.initInstrument.permission ==
-                          FormPermission.ReadAndWrite,
-                      child: ElevatedButton(
-                        child: Text('СОЗДАТЬ НОВОГО',
-                            style:
-                                Theme.of(context).primaryTextTheme.titleMedium),
-                        onPressed: () {
-                          FocusScope.of(context)
-                              .unfocus(); //to unfocus id field
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    NewClientPage(_connection, _projectInfo),
-                              ));
-                        },
-                      )),
-                  const SizedBox(height: 50),
-                  ElevatedButton(
-                    child: Align(
-                        alignment: Alignment.center,
-                        child: Text('ЖУРНАЛ ВНЕСЕННЫХ ИЗМЕНЕНИЙ',
-                            textAlign: TextAlign.center,
-                            style: Theme.of(context)
-                                .primaryTextTheme
-                                .titleMedium)),
+        child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 60),
+              ElevatedButton(
+                  child: Text('СКАНИРОВАТЬ КОД',
+                      style: Theme.of(context).textTheme.titleMedium),
+                  onPressed: () {
+                    _scanFromQrCode(context);
+                  }),
+              const SizedBox(height: 50),
+              TextFormField(
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'Идентификатор участника',
+                    errorMaxLines: 3),
+                validator: Utils.clientIdValidator,
+                controller: _clientIdTextFieldController,
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                child: Text('НАЙТИ',
+                    style: Theme.of(context).textTheme.titleMedium),
+                onPressed: () {
+                  FocusScope.of(context).unfocus(); //to unfocus id field
+                  _findClient(_clientIdTextFieldController.text, context);
+                },
+              ),
+              Visibility(
+                  visible: _projectInfo.initInstrument.permission ==
+                      FormPermission.ReadAndWrite,
+                  child: const SizedBox(height: 50)),
+              Visibility(
+                  visible: _projectInfo.initInstrument.permission ==
+                      FormPermission.ReadAndWrite,
+                  child: ElevatedButton(
+                    child: Text('СОЗДАТЬ НОВОГО',
+                        style: Theme.of(context).textTheme.titleMedium),
                     onPressed: () {
                       FocusScope.of(context).unfocus(); //to unfocus id field
                       Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
-                                FormsHistoryPage(_connection, _projectInfo),
+                                NewClientPage(_connection, _projectInfo),
                           ));
                     },
-                  ),
-                  const SizedBox(height: 40),
-                  Visibility(
-                      visible: _showBusyIndicator,
-                      child: SpinKitCircle(
-                          size: 100, color: Theme.of(context).primaryColor)),
-                ])),
+                  )),
+              const SizedBox(height: 50),
+              ElevatedButton(
+                style: ButtonStyle(
+                    minimumSize: WidgetStatePropertyAll(Size(200, 60))),
+                child: Align(
+                    alignment: Alignment.center,
+                    child: Text('ЖУРНАЛ ВНЕСЕННЫХ ИЗМЕНЕНИЙ',
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.titleMedium)),
+                onPressed: () {
+                  FocusScope.of(context).unfocus(); //to unfocus id field
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            FormsHistoryPage(_connection, _projectInfo),
+                      ));
+                },
+              ),
+              const SizedBox(height: 40),
+              Visibility(
+                  visible: _showBusyIndicator,
+                  child: SpinKitCircle(
+                      size: 100, color: Theme.of(context).primaryColor)),
+            ]),
       )),
       Container(
           alignment: Alignment.bottomLeft,

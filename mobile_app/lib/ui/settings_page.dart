@@ -16,7 +16,7 @@ class SettingsPage extends StatelessWidget {
             automaticallyImplyLeading: false,
             centerTitle: true,
             title: Text("Настройки",
-                style: Theme.of(context).primaryTextTheme.titleLarge)),
+                style: Theme.of(context).textTheme.titleLarge)),
         body: SettingsPageContent());
   }
 }
