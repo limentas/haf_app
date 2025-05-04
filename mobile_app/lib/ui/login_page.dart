@@ -7,7 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:haf_spb_app/model/empirical_evidence.dart';
-import 'package:package_info/package_info.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 
 import '../settings.dart';
@@ -21,7 +21,6 @@ import '../server_connection.dart';
 import '../utils.dart';
 import 'add_server_dialog.dart';
 import 'main_page.dart';
-import 'style.dart';
 import 'svg_icon_button.dart';
 
 class LoginPage extends StatefulWidget {
@@ -385,6 +384,8 @@ class _LoginPageState extends State<LoginPage> {
 
     setState(() {
       _showBusyIndicator = true;
+      _serverError = null;
+      _tokenValidateError = null;
       _busyMessage = "Проверяем...";
     });
 
