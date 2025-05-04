@@ -57,17 +57,15 @@ class _ClientPageState extends State<ClientPage>
     super.initState();
 
     //The overview page
-    _tabs.add(Tab(text: "Обзор"));
+    _tabs.add(Tab(text: "Обзор", height: 80));
     _floatingButtons.add(null);
 
     for (var instrument in _projectInfo.instrumentsByName.values) {
       if (instrument.permission == FormPermission.NoAccess) continue;
       var tab = Tab(
-          child: Text(
-        instrument.formName,
-        maxLines: 2,
-        textAlign: TextAlign.center,
-      ));
+          height: 80,
+          child: Text(instrument.formName,
+              maxLines: 2, textAlign: TextAlign.center));
       _tabIndexer[instrument.formNameId] = _tabs.length;
       _tabs.add(tab);
       // Add or edit button
@@ -186,6 +184,7 @@ class _ClientPageState extends State<ClientPage>
                 forceElevated: innerBoxIsScrolled,
                 bottom: TabBar(
                     indicatorColor: Colors.black,
+                    indicatorWeight: 3,
                     //labelColor: Theme.of(context).textButtonTheme,
                     labelStyle: Theme.of(context).textTheme.titleLarge,
                     unselectedLabelStyle:
