@@ -158,6 +158,7 @@ class _UpDownIntFieldState extends State<UpDownIntField>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final focus = FocusScope.of(context);
     final buttonTextStyle = Theme.of(context).textTheme.headlineSmall?.copyWith(
         color: Theme.of(context).primaryColorDark, fontWeight: FontWeight.bold);
     return InputDecorator(
@@ -174,73 +175,87 @@ class _UpDownIntFieldState extends State<UpDownIntField>
                 child: Row(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                  OutlinedButton(
-                      onPressed: () {
-                        FocusScope.of(context).unfocus();
-                        var current = currentValue;
-                        if (current == _minValue) return;
-                        currentValue = current - 100;
-                      },
-                      child: Text("‒100", style: buttonTextStyle)),
-                  OutlinedButton(
-                      onPressed: () {
-                        FocusScope.of(context).unfocus();
-                        var current = currentValue;
-                        if (current == _minValue) return;
-                        currentValue = current - 10;
-                      },
-                      child: Text("‒10", style: buttonTextStyle)),
-                  OutlinedButton(
-                      onPressed: () {
-                        FocusScope.of(context).unfocus();
-                        var current = currentValue;
-                        if (currentValue == _minValue) return;
-                        if (current == null) current = _startValue;
-                        currentValue = current - 1;
-                      },
-                      child: Text("‒1", style: buttonTextStyle)),
+                  ExcludeFocus(
+                      child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                        OutlinedButton(
+                            onPressed: () {
+                              FocusScope.of(context).unfocus();
+                              var current = currentValue;
+                              if (current == _minValue) return;
+                              currentValue = current - 100;
+                            },
+                            child: Text("‒100", style: buttonTextStyle)),
+                        OutlinedButton(
+                            onPressed: () {
+                              FocusScope.of(context).unfocus();
+                              var current = currentValue;
+                              if (current == _minValue) return;
+                              currentValue = current - 10;
+                            },
+                            child: Text("‒10", style: buttonTextStyle)),
+                        OutlinedButton(
+                            onPressed: () {
+                              FocusScope.of(context).unfocus();
+                              var current = currentValue;
+                              if (currentValue == _minValue) return;
+                              if (current == null) current = _startValue;
+                              currentValue = current - 1;
+                            },
+                            child: Text("‒1", style: buttonTextStyle)),
+                      ])),
                   SizedBox(width: 30),
                   Expanded(
                       child: TextField(
                     keyboardType: TextInputType.numberWithOptions(signed: true),
                     textAlign: TextAlign.center,
                     style: Style.fieldRegularTextStyle,
+                    textInputAction: TextInputAction.next,
                     controller: _textController,
-                    onSubmitted: (value) => _checkNewValue,
-                    onEditingComplete: _checkNewValue,
-                    onChanged: (value) => _checkNewValue,
+                    onSubmitted: (value) => _checkNewValue(),
+                    onEditingComplete: () {
+                      _checkNewValue();
+                      focus.nextFocus();
+                    },
+                    onChanged: (value) => _checkNewValue(),
                     inputFormatters: <TextInputFormatter>[
                       FilteringTextInputFormatter.allow(RegExp(r'^-|\d\d*')),
                     ],
                   )),
                   SizedBox(width: 30),
-                  OutlinedButton(
-                      onPressed: () {
-                        FocusScope.of(context).unfocus();
-                        var current = currentValue;
-                        if (currentValue == _maxValue) return;
-                        if (current == null) current = _startValue;
-                        currentValue = current + 1;
-                      },
-                      child: Text("+1", style: buttonTextStyle)),
-                  OutlinedButton(
-                      onPressed: () {
-                        FocusScope.of(context).unfocus();
-                        var current = currentValue;
-                        if (currentValue == _maxValue) return;
-                        if (current == null) current = _startValue;
-                        currentValue = current + 10;
-                      },
-                      child: Text("+10", style: buttonTextStyle)),
-                  OutlinedButton(
-                      onPressed: () {
-                        FocusScope.of(context).unfocus();
-                        var current = currentValue;
-                        if (currentValue == _maxValue) return;
-                        if (current == null) current = _startValue;
-                        currentValue = current + 100;
-                      },
-                      child: Text("+100", style: buttonTextStyle)),
+                  ExcludeFocus(
+                      child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                        OutlinedButton(
+                            onPressed: () {
+                              FocusScope.of(context).unfocus();
+                              var current = currentValue;
+                              if (currentValue == _maxValue) return;
+                              if (current == null) current = _startValue;
+                              currentValue = current + 1;
+                            },
+                            child: Text("+1", style: buttonTextStyle)),
+                        OutlinedButton(
+                            onPressed: () {
+                              FocusScope.of(context).unfocus();
+                              var current = currentValue;
+                              if (currentValue == _maxValue) return;
+                              if (current == null) current = _startValue;
+                              currentValue = current + 10;
+                            },
+                            child: Text("+10", style: buttonTextStyle)),
+                        OutlinedButton(
+                            onPressed: () {
+                              FocusScope.of(context).unfocus();
+                              var current = currentValue;
+                              if (currentValue == _maxValue) return;
+                              if (current == null) current = _startValue;
+                              currentValue = current + 100;
+                            },
+                            child: Text("+100", style: buttonTextStyle))
+                      ])),
                 ]))));
   }
 }

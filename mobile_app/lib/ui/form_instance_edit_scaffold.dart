@@ -68,35 +68,35 @@ class FormInstanceEditScaffold extends StatelessWidget with SendFormMixin {
                 // sliverOverlapAbsorberHandleFor() can find the
                 // NestedScrollView.
                 builder: (BuildContext context) {
-                  return Padding(
-                      padding: EdgeInsets.only(
-                          bottom: MediaQuery.of(context).viewInsets.bottom),
-                      child: CustomScrollView(
-                        // The "controller" and "primary" members should be left
-                        // unset, so that the NestedScrollView can control this
-                        // inner scroll view.
-                        // If the "controller" property is set, then this scroll
-                        // view will not be associated with the NestedScrollView.
-                        // The PageStorageKey should be unique to this ScrollView;
-                        // it allows the list to remember its scroll position when
-                        // the tab view is not on the screen.
-                        slivers: <Widget>[
-                          SliverOverlapInjector(
-                            // This is the flip side of the SliverOverlapAbsorber
-                            // above.
-                            handle:
-                                NestedScrollView.sliverOverlapAbsorberHandleFor(
-                                    context),
-                          ),
-                          FormInstanceEdit(
-                              _connection,
-                              _projectInfo,
-                              _clientInfo,
-                              _instrumentInfo,
-                              _instrumentInstance,
-                              _sendFunction),
-                        ],
-                      ));
+                  return FocusScope(
+                      child: Padding(
+                          padding: EdgeInsets.only(
+                              bottom: MediaQuery.of(context).viewInsets.bottom),
+                          child: CustomScrollView(
+                            // The "controller" and "primary" members should be left
+                            // unset, so that the NestedScrollView can control this
+                            // inner scroll view.
+                            // If the "controller" property is set, then this scroll
+                            // view will not be associated with the NestedScrollView.
+                            // The PageStorageKey should be unique to this ScrollView;
+                            // it allows the list to remember its scroll position when
+                            // the tab view is not on the screen.
+                            slivers: <Widget>[
+                              SliverOverlapInjector(
+                                // This is the flip side of the SliverOverlapAbsorber
+                                // above.
+                                handle: NestedScrollView
+                                    .sliverOverlapAbsorberHandleFor(context),
+                              ),
+                              FormInstanceEdit(
+                                  _connection,
+                                  _projectInfo,
+                                  _clientInfo,
+                                  _instrumentInfo,
+                                  _instrumentInstance,
+                                  _sendFunction),
+                            ],
+                          )));
                 },
               ),
             )));
