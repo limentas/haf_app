@@ -25,7 +25,7 @@ class InstrumentInstance {
     if (place.isEmpty) return null;
 
     return VisitInfo(
-        instrument.fillingPlaceField!.fieldType.toReadableForm(place), date);
+        instrument.fillingPlaceField!.fieldType!.toReadableForm(place), date);
   }
 
   FormInstanceStatus getInstanceStatus(InstrumentInfo instrument) {

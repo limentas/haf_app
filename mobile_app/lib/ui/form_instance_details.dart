@@ -68,7 +68,7 @@ class FormInstanceDetails extends StatelessWidget {
 
   Widget? createVariableRow(BuildContext context, InstrumentField field) {
     var values = _instrumentInstance.valuesMap[field.variable];
-    var valueText = field.fieldType.toReadableForm(values);
+    var valueText = field.fieldType!.toReadableForm(values);
     var row = Padding(
         padding: const EdgeInsets.only(top: 7),
         child: Row(children: [

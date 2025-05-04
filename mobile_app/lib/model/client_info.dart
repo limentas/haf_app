@@ -98,7 +98,7 @@ class ClientInfo {
       if (lastDate == null || lastDate.isBefore(date)) {
         lastDate = date;
         lastPlace = fillingPlace != null
-            ? instrument.fillingPlaceField!.fieldType
+            ? instrument.fillingPlaceField!.fieldType!
                 .toReadableForm([fillingPlace])
             : null;
       }

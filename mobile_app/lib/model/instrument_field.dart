@@ -21,7 +21,7 @@ class InstrumentField {
   final String branchingLogic;
   final String matrixGroupName; //TODO: matrixGroupName process
   final String annotation;
-  final FieldType fieldType;
+  final FieldType? fieldType;
   final String minValue;
   final String maxValue;
   final bool isRecordId;
@@ -33,11 +33,7 @@ class InstrumentField {
   String? defaultValue;
 
   String get helperText {
-    return isMandatory
-        ? note == null
-            ? "* Обязательное поле"
-            : "$note\n* Обязательное поле"
-        : note;
+    return isMandatory ? "$note\n* Обязательное поле" : note;
   }
 
   InstrumentField(this.instrumentInfo, this.oid, this.variable, this.annotation,
@@ -46,7 +42,7 @@ class InstrumentField {
       required this.note,
       required this.isMandatory,
       required this.fieldTypeEnum,
-      required this.fieldType,
+      this.fieldType,
       required this.dataType,
       required this.sectionName,
       this.textValidationType,
@@ -58,9 +54,8 @@ class InstrumentField {
       required this.isRecordId,
       required this.isSecondaryId}) {
     if (annotation.isNotEmpty) {
-      isHidden = annotation != null
-          ? annotation.contains("@HIDDEN") || annotation.contains("@HIDDEN-APP")
-          : false;
+      isHidden =
+          annotation.contains("@HIDDEN") || annotation.contains("@HIDDEN-APP");
 
       final defaultPrefix = "@DEFAULT=";
       var prefixIndex = annotation.indexOf(defaultPrefix);
@@ -82,9 +77,5 @@ class InstrumentField {
         isHidden = true;
       }
     }
-  }
-
-  Widget buildWidgetToDisplay(BuildContext context, Iterable<String> value) {
-    return new Text(fieldType.toReadableForm(value));
   }
 }

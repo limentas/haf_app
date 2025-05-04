@@ -248,7 +248,7 @@ class _FormInstanceEditState extends State<FormInstanceEdit> {
   }
 
   Widget _createEditWidgetGroup(BuildContext context, InstrumentField field) {
-    var editWidget = field.fieldType.buildEditControl(
+    var editWidget = field.fieldType!.buildEditControl(
         context, _formController, _instrumentInstance.valuesMap[field.variable],
         onValidateStatusChanged: (errorMessage) {
           setState(() {

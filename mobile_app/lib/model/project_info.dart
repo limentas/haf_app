@@ -298,7 +298,15 @@ class ProjectInfo {
           isSecondaryId: secondaryKey == oid,
         );
 
-        fieldType.instrumentField = field;
+        if (fieldType == null && !field.isHidden) {
+          logger.e("Project error: Field ${field.variable} of instrument "
+              "${instrument.formName} has type ${fieldTypeEnum}. "
+              "This field type is not implemented and should be hidden "
+              "using @HIDDEN or @HIDDEN-APP annptation");
+          throw new UnimplementedError();
+        }
+
+        if (fieldType != null) fieldType.instrumentField = field;
 
         if (EmpiricalEvidence.isFieldFormStatus(field))
           instrument.formStatusField = field;

@@ -59,8 +59,10 @@ class InstrumentInfo {
       if (field.defaultValue != null) {
         var valueWithoutSmartVars =
             evaluator.calcPipingValue(field.defaultValue!, instance);
-        final defaultValues =
-            field.fieldType.parseDefaultValue(valueWithoutSmartVars);
+        final defaultValues = List<String>.empty();
+        if (field.fieldType != null) {
+          field.fieldType!.parseDefaultValue(valueWithoutSmartVars);
+        }
         if (defaultValues.isNotEmpty) {
           instance.valuesMap.addValues(entry.key, defaultValues);
         }

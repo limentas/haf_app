@@ -29,7 +29,7 @@ abstract class FieldType {
       required FieldValueChange onChanged,
       required FieldSaveValue onSaved});
 
-  factory FieldType.create(FieldTypeEnum type, Iterable<CodeList> codeLists) {
+  static FieldType? create(FieldTypeEnum type, Iterable<CodeList> codeLists) {
     switch (type) {
       case FieldTypeEnum.Text:
         return TextFieldType();
@@ -51,9 +51,8 @@ abstract class FieldType {
         return SliderFieldType();
       case FieldTypeEnum.File:
       case FieldTypeEnum.DescriptiveText:
-      default:
-        throw ArgumentError.value(
-            type, "type", "Этот тип поля не поддерживается: ${type}");
+        print("Этот тип поля не поддерживается: ${type}");
+        return null;
     }
   }
 }

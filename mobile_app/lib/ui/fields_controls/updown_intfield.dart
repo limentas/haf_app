@@ -200,7 +200,6 @@ class _UpDownIntFieldState extends State<UpDownIntField>
                               FocusScope.of(context).unfocus();
                               var current = currentValue;
                               if (currentValue == _minValue) return;
-                              if (current == null) current = _startValue;
                               currentValue = current - 1;
                             },
                             child: Text("‒1", style: buttonTextStyle)),
@@ -233,7 +232,6 @@ class _UpDownIntFieldState extends State<UpDownIntField>
                               FocusScope.of(context).unfocus();
                               var current = currentValue;
                               if (currentValue == _maxValue) return;
-                              if (current == null) current = _startValue;
                               currentValue = current + 1;
                             },
                             child: Text("+1", style: buttonTextStyle)),
@@ -242,7 +240,6 @@ class _UpDownIntFieldState extends State<UpDownIntField>
                               FocusScope.of(context).unfocus();
                               var current = currentValue;
                               if (currentValue == _maxValue) return;
-                              if (current == null) current = _startValue;
                               currentValue = current + 10;
                             },
                             child: Text("+10", style: buttonTextStyle)),
@@ -251,7 +248,6 @@ class _UpDownIntFieldState extends State<UpDownIntField>
                               FocusScope.of(context).unfocus();
                               var current = currentValue;
                               if (currentValue == _maxValue) return;
-                              if (current == null) current = _startValue;
                               currentValue = current + 100;
                             },
                             child: Text("+100", style: buttonTextStyle))
